@@ -55,6 +55,12 @@ class SqlParse:
         
         self.queries[current_name] = current_sql
 
+    def get(self, name: str):
+        if name not in self.queries:
+            raise CommandNotFoundException(name)
+        
+        return self.queries[name]
+
 
 if __name__ == "__main__":
     sql_parse = SqlParse("test.sql")

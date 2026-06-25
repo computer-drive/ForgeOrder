@@ -4,3 +4,9 @@ class EmptyFileException(Exception):
         super().__init__()
 
         self.file_path = file_path
+
+class CommandNotFoundException(Exception):
+    def __init__(self, name: str):
+        super().__init__()
+
+        self.name = name
