@@ -22,4 +22,10 @@ class Database:
     def commit(self):
         self.conn.commit()
 
+    def fetchall(self):
+        return self.conn.cursor().fetchall()
+    
+    def fetchone(self):
+        return self.conn.cursor().fetchone()
+
     
