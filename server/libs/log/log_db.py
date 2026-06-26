@@ -52,7 +52,7 @@ class LogDatabase(Database):
         
         # !: 表名总是由日期构成，无需注意SQL注入问题
         self.execute(self.parser.get("insert_log").replace("{table_name}", f"log_{self.date_now}"), (time, level, class_name, method, message))
-        self.commit()
+        
 
 if __name__ == "__main__":
     log_db = LogDatabase("test.db")

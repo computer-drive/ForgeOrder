@@ -1,0 +1,111 @@
+import logging
+from const import *
+from .log_db import LogDatabase
+import queue
+import datetime
+from .worker import create_worker
+
+class Logger(logging.Logger):
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def log(self, msg: str, level: int, class_name: str, method: str): # type:ignore
+        extra = {"class_name": class_name, "method": method}
+
+        super().log(level, msg, extra=extra)
+
+    def info(self, msg: str, class_name: str, method: str):  # type:ignore
+        self.log(msg, logging.INFO, class_name, method)
+
+    def warning(self, msg: str, class_name: str, method: str):  # type:ignore
+        self.log(msg, logging.WARNING, class_name, method)
+
+    def error(self, msg: str, class_name: str, method: str):  # type:ignore
+        self.log(msg, logging.ERROR, class_name, method)
+
+    def critical(self, msg: str, class_name: str, method: str):  # type:ignore
+        self.log(msg, logging.CRITICAL, class_name, method)
+
+    def debug(self, msg: str, class_name: str, method: str):  # type:ignore
+        self.log(msg, logging.DEBUG, class_name, method)
+
+class DatabaseHandler(logging.Handler):
+    def __init__(self, queue: queue.Queue):
+        super().__init__()
+
+        self.q = queue
+
+    def emit(self, record: logging.LogRecord):
+        
+        time = datetime.datetime.fromtimestamp(record.created)
+
+        level = 0
+
+        match record.levelname:
+            case "DEBUG":
+                level = logging.DEBUG
+            case "INFO":
+                level = logging.INFO
+            case "WARNING":
+                level = logging.WARNING
+            case "ERROR":
+                level = logging.ERROR
+            case "CRITICAL":
+                level = logging.CRITICAL
+            case _:
+                level = logging.INFO
+
+        self.q.put((time, level, record.class_name, record.method, record.msg))
+        
+        
+
+    
+
+class Formatter(logging.Formatter):
+
+    def format(self, record: logging.LogRecord) -> str:
+        
+        record.color = ""
+        record.reset = "\033[0m"
+        
+        match record.levelname:
+            case "DEBUG":
+                record.levelname = "\033[94mDEBUG\033[0m"
+            case "INFO":
+                record.levelname = "\033[92mINFO\033[0m"
+            case "WARNING":
+                record.color = "\033[93m"
+            case "ERROR":
+                record.color = "\033[91m"
+            case "CRITICAL":
+                record.color = "\033[95m"
+
+        return super().format(record)
+
+
+
+def setup_logger(name: str):
+    logger = Logger(name)
+
+    formatter = Formatter(LOG.FORMAT)
+    
+    # 控制台日志记录器
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    # 数据库日志记录器
+
+    queue, thread = create_worker("log.db")
+
+    db_handler = DatabaseHandler(queue)
+    db_handler.setFormatter(formatter)
+    logger.addHandler(db_handler)
+
+    return logger, thread, queue
+
+
+
+    
+
