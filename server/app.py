@@ -3,9 +3,13 @@ from libs.log.logger import setup_logger
 import logging
 from flask import Flask
 import threading
+from script import blueprints
 
 def setup_app():
     app = Flask(__name__, static_folder="static", template_folder="res")
+
+    for bp in blueprints:
+        app.register_blueprint(bp)
 
     return app
 
