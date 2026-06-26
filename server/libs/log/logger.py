@@ -84,7 +84,7 @@ class Formatter(logging.Formatter):
 
 
 
-def setup_logger(name: str):
+def setup_logger(name: str, db_name: str):
     logger = Logger(name)
 
     formatter = Formatter(LOG.FORMAT)
@@ -97,7 +97,7 @@ def setup_logger(name: str):
 
     # 数据库日志记录器
 
-    queue, thread = create_worker("log.db")
+    queue, thread = create_worker(db_name)
 
     db_handler = DatabaseHandler(queue)
     db_handler.setFormatter(formatter)

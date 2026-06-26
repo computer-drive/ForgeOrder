@@ -1,13 +1,22 @@
 import extensions
 from libs.log.logger import setup_logger
 import logging
+from flask import Flask
+import threading
+
+def setup_app():
+    app = Flask(__name__, static_folder="static", template_folder="res")
+
+    return app
+
 
 def init():
     # 初始化日志记录器
-    logger, thread, queue = setup_logger("ForgeOrder")
+    logger, thread, queue = setup_logger(__name__, "log.db")
     extensions.logger = logger
     extensions.db_logger_thread = thread
     extensions.db_logger_queue = queue
+    extensions.server_status = 101
 
 def shutdown():
     # 关闭数据库日志记录器线程
@@ -20,14 +29,16 @@ def shutdown():
 
 
 if __name__ == "__main__":
-    init()
+    app = setup_app()
+    extensions.server_status = 100
 
-    extensions.logger.info("Hello, World!", "app", "main")
-    extensions.logger.warning("Hello, World!", "app", "main")
-    extensions.logger.error("Hello, World!", "app", "main")
-    extensions.logger.critical("Hello, World!", "app", "main")
-    extensions.logger.debug("Hello, World!", "app", "main")
+    load_thread = threading.Thread(target=init)
+    load_thread.start()
 
+    extensions.server_status = 200
+    app.run()
+
+    extensions.server_status = 299
     shutdown()
 
 
