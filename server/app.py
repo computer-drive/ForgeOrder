@@ -5,6 +5,7 @@ from flask import Flask
 import threading
 from script import blueprints
 from libs.utils import create_server_info_by_exception
+from libs.config import Config
 
 def setup_app():
     app = Flask(__name__, static_folder="static", template_folder="res")
@@ -18,7 +19,7 @@ def setup_app():
 def init():
     # 初始化日志记录器
     try:
-        logger, thread, queue = setup_logger(__name__, "log.db")
+        logger, thread, queue = setup_logger(__name__, extensions.config.get("log.database")) #type: ignore
     except Exception as e:
         extensions.server_status = 300
         extensions.server_info = create_server_info_by_exception(e)
@@ -43,6 +44,9 @@ def shutdown():
 
 
 if __name__ == "__main__":
+    # 加载配置文件
+    extensions.config = Config("config.json")
+
     # 初始化flask
     app = setup_app()
     extensions.server_status = 100
@@ -53,7 +57,10 @@ if __name__ == "__main__":
 
     # 运行服务器
     extensions.server_status = 200
-    app.run()
+    app.run(
+        host=extensions.config.get("server.host"), #type: ignore
+        port=extensions.config.get("server.port"), #type: ignore
+    )
 
     # 关闭服务器
     extensions.server_status = 299
