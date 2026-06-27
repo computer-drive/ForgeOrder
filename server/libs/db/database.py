@@ -19,6 +19,9 @@ class Database:
     def execute(self, sql: str, params: tuple = None): # type: ignore
         self.conn.execute(sql, params or ())
 
+    def executescript(self, sql: str):
+        self.conn.executescript(sql)
+
     def commit(self):
         self.conn.commit()
 
