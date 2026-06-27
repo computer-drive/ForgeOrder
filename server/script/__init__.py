@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template
 from extensions import *
-from server import extensions
+import extensions
 
 basic_bp = Blueprint("script", __name__)
 
-@basic_bp.before.before_request
+@basic_bp.before_request
 def before_request():
 
     if extensions.server_status == 300:
