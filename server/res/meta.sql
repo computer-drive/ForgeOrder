@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS dish_stats (
     FOREIGN KEY (id) REFERENCES dishs (id)
 )
 
+-- Category 表操作
+
 -- command: category.get_all
 SELECT * FROM dishes_category
 
@@ -43,4 +45,11 @@ SELECT * FROM dishes_category WHERE name = ?
 
 -- command: category.update
 UPDATE dishes_category SET name = ? WHERE id = ?
+
+-- Dish 表操作
+
+-- command: dishes.create
+INSERT INTO dishes (name, price, category, description, image, is_available, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
 

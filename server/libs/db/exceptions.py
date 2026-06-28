@@ -10,3 +10,10 @@ class CommandNotFoundException(Exception):
         super().__init__()
 
         self.name = name
+
+
+class NotFoundException(Exception):
+    def __init__(self, name: str):
+        super().__init__()
+
+        self.name = name

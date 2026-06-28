@@ -1,8 +1,9 @@
+import datetime
 import sqlite3
-
 from libs.db.database import Database
 from libs.db.sql_parse import SqlParse
 import os
+from libs.db.exceptions import NotFoundException
 
 class _DishedCategory:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
@@ -31,7 +32,33 @@ class _DishedCategory:
         cursor = self.conn.execute(self.sql_parse.get("category.update"), (name, id))
         self.conn.commit()
         
-  
+class _Dishes:
+    def __init__(self, parent_database: MetaDatabase, conn: sqlite3.Connection, sql_parse: SqlParse):
+        self.conn = conn
+        self.sql_parse = sql_parse
+        self.parent_database = parent_database
+
+    def create(self,
+               name: str,
+               price: int, # 单位：分
+               category_id: int,
+               description: str = "",
+               image: str = "",
+               is_available: bool = True,
+               ):
+        # 生成创建时间
+        created_at = datetime.datetime.now()
+        
+        # 验证分类是否存在
+        category = self.parent_database.category.get_from_id(category_id)
+        category = dict(category)
+
+        if not category:
+            raise NotFoundException(str(category_id))
+        
+        cursor = self.conn.execute(self.sql_parse.get("dishes.create"), (name, price, category_id, description, image, is_available, created_at))
+        
+        self.conn.commit()
 
 class MetaDatabase(Database):
     def __init__(self, db_name: str):
