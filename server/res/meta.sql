@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS dish_stats (
     monthly_sales INTEGER NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL,
     FOREIGN KEY (id) REFERENCES dishs (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS dish_choices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS dish_choices (
     name TEXT NOT NULL,
     options JSON NOT NULL,
     FOREIGN KEY (dish_id) REFERENCES dishes (id)
-)
+);
 
 -- Category 表操作
 
@@ -58,7 +58,7 @@ UPDATE dishes_category SET name = ? WHERE id = ?
 
 -- command: dishes.create1
 INSERT INTO dishes (name, price, category, description, image, is_available, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- command: dishes.create2
 INSERT INTO dish_stats (id, updated_at)

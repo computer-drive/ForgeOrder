@@ -15,10 +15,36 @@ class _DishedCategory:
         return cursor.fetchall()
     
     def new(self, name: str):
-        cursor = self.conn.execute(self.sql_parse.get("category.new"), (name,))
-        self.conn.commit()
+        '''
+        创建一个新分类。返回新分类的id
+
+        注意：在分类存在时抛出ValueError。不抛出异常的方法为new_s。
+        '''
+        try:
+            cursor = self.conn.execute(self.sql_parse.get("category.new"), (name,))
+        except sqlite3.IntegrityError:
+            raise ValueError(f"Category {name} already exists")
         
-        return cursor.lastrowid
+        else:
+            self.conn.commit()
+        
+            return cursor.lastrowid
+        
+    def new_s(self, name: str):
+        '''
+        创建一个新分类。若分类已存在，则返回这个分类的id。
+
+        注意：本方法不抛出异常（与new相对）
+        '''
+
+        # 检查分类是否存在
+
+        category = self.get_from_name(name)
+        if category:
+            return category["id"]
+        else:
+            return self.new(name)
+        
     
     def get_from_id(self, id: int):
         cursor = self.conn.execute(self.sql_parse.get("category.get_from_id"), (id,))
@@ -52,10 +78,11 @@ class _Dishes:
         
         # 验证分类是否存在
         category = self.parent_database.category.get_from_id(category_id)
-        category = dict(category)
-
         if not category:
             raise NotFoundException(str(category_id))
+        category = dict(category)
+
+        
         
         # 执行create1和create2命令以在dishes和dish_stats表中创建新菜品
         cursor = self.conn.execute(
@@ -104,6 +131,8 @@ class MetaDatabase(Database):
 
         self.category = _DishedCategory(self.conn, self.sql_parse)
 
+        self.dishes = _Dishes(self, self.conn, self.sql_parse)
+
     def _init(self):
         ## 获取meta.sql
         current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
@@ -122,11 +151,23 @@ class MetaDatabase(Database):
         self.conn.row_factory = sqlite3.Row # !: 无需注意SQL注入问题
 
 if __name__ == "__main__":
-    meta_db = MetaDatabase("test.db")
-    
-    # meta_db.category.new("test")
+    meta_db = MetaDatabase("meta.db")
 
-    print(dict(meta_db.category.get_from_id(1)))
+    # 创建一个新分类
+    category_id = meta_db.category.new("测试分类")
+
+    # 创建一个新菜品
+    meta_db.dishes.create(
+        name="测试菜品",
+        price=100,
+        category_id=category_id,
+        description="这是一个测试菜品",
+        image="https://example.com/test.jpg",
+        is_available=True,
+        choices={            "大小": ["小", "中", "大"],
+            "口味": ["甜", "酸", "咸"]
+        }
+    )
 
     
 
