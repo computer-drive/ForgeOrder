@@ -10,11 +10,16 @@ class _DishedCategory:
         self.conn = conn
         self.sql_parse = sql_parse
 
-    def get_all(self):
+    def get_all(self) -> list[sqlite3.Row]:
+        '''
+        获取所有分类。
+
+        注意：数据库使用了RowFactory，返回一个Row对象列表。
+        '''
         cursor = self.conn.execute(self.sql_parse.get("category.get_all"))
         return cursor.fetchall()
     
-    def new(self, name: str):
+    def new(self, name: str) -> int:
         '''
         创建一个新分类。返回新分类的id
 
@@ -28,9 +33,9 @@ class _DishedCategory:
         else:
             self.conn.commit()
         
-            return cursor.lastrowid
-        
-    def new_s(self, name: str):
+            return cursor.lastrowid # type: ignore
+             
+    def new_s(self, name: str) -> int:
         '''
         创建一个新分类。若分类已存在，则返回这个分类的id。
 
@@ -46,15 +51,28 @@ class _DishedCategory:
             return self.new(name)
         
     
-    def get_from_id(self, id: int):
+    def get_from_id(self, id: int) -> sqlite3.Row | None:
+        '''
+        根据id获取分类。
+
+        注意：数据库使用了RowFactory，返回一个Row对象或None。
+        '''
         cursor = self.conn.execute(self.sql_parse.get("category.get_from_id"), (id,))
         return cursor.fetchone()
     
-    def get_from_name(self, name: str):
+    def get_from_name(self, name: str) -> sqlite3.Row | None:
+        '''
+        根据名称获取分类。
+
+        注意：数据库使用了RowFactory，返回一个Row对象或None。
+        '''
         cursor = self.conn.execute(self.sql_parse.get("category.get_from_name"), (name,))
         return cursor.fetchone()
     
-    def update(self, id: int, name: str):
+    def update(self, id: int, name: str) -> None:
+        '''
+        更新分类名称。
+        '''
         cursor = self.conn.execute(self.sql_parse.get("category.update"), (name, id))
         self.conn.commit()
         
@@ -72,7 +90,11 @@ class _Dishes:
                image: str = "",
                is_available: bool = True,
                choices: dict = {}
-               ):
+               ) -> None:
+        '''
+        创建一个新菜品。
+        '''
+
         # 生成创建时间
         created_at = datetime.datetime.now()
         
@@ -121,7 +143,7 @@ class _Dishes:
         self.conn.commit()
 
 class MetaDatabase(Database):
-    def __init__(self, db_name: str):
+    def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
         self.connect()
@@ -133,7 +155,10 @@ class MetaDatabase(Database):
 
         self.dishes = _Dishes(self, self.conn, self.sql_parse)
 
-    def _init(self):
+    def _init(self) -> None:
+        '''
+        初始化数据库。
+        '''
         ## 获取meta.sql
         current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
         res_path = os.path.join(
@@ -148,6 +173,7 @@ class MetaDatabase(Database):
         self.executescript(self.sql_parse.get("init"))
         self.commit()
         
+        # 设置RowFactory
         self.conn.row_factory = sqlite3.Row # !: 无需注意SQL注入问题
 
 if __name__ == "__main__":
