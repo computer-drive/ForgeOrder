@@ -56,8 +56,17 @@ UPDATE dishes_category SET name = ? WHERE id = ?
 
 -- Dish 表操作
 
--- command: dishes.create
+-- command: dishes.create1
 INSERT INTO dishes (name, price, category, description, image, is_available, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- command: dishes.create2
+INSERT INTO dish_stats (id, updated_at)
+VALUES (?, ?);
+
+-- command: dishes.create3
+INSERT INTO dish_choices (dish_id, name, options)
+VALUES (?, ?, ?);
+
 
 

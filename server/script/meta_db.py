@@ -45,6 +45,7 @@ class _Dishes:
                description: str = "",
                image: str = "",
                is_available: bool = True,
+               choices: dict = {}
                ):
         # 生成创建时间
         created_at = datetime.datetime.now()
@@ -56,8 +57,40 @@ class _Dishes:
         if not category:
             raise NotFoundException(str(category_id))
         
-        cursor = self.conn.execute(self.sql_parse.get("dishes.create"), (name, price, category_id, description, image, is_available, created_at))
+        # 执行create1和create2命令以在dishes和dish_stats表中创建新菜品
+        cursor = self.conn.execute(
+            self.sql_parse.get("dishes.create1"),
+            (name, price, category_id, description, image, is_available, created_at)
+            )
         
+        dish_id = cursor.lastrowid
+
+        cursor = self.conn.execute(
+            self.sql_parse.get("dishes.create2"),
+            (dish_id, created_at)
+            )
+        
+        # 执行create3命令以在dish_choices表中创建新菜品的选择
+        # 判断是否有选择
+        if choices != {}:
+            for name, options in choices.items():
+
+                if not (isinstance(name, str) and isinstance(options, list)):
+                    # 验证选择类型
+                    raise ValueError(f"Choice type error: {name}")
+                
+                for option in options: #type: ignore
+                    # 验证选项类型
+                    if not isinstance(option, str):
+                        raise ValueError(f"Option type error in {name}: {option}(type: {type(option).__name__}")
+                    
+                # 执行create3命令以在dish_choices表中创建新菜品的选择
+                self.conn.execute(
+                    self.sql_parse.get("dishes.create3"),
+                    (dish_id, name, options)
+                )
+        
+        # 提交事务
         self.conn.commit()
 
 class MetaDatabase(Database):
