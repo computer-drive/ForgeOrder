@@ -29,6 +29,14 @@ CREATE TABLE IF NOT EXISTS dish_stats (
     FOREIGN KEY (id) REFERENCES dishs (id)
 )
 
+CREATE TABLE IF NOT EXISTS dish_choices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    options JSON NOT NULL,
+    FOREIGN KEY (dish_id) REFERENCES dishes (id)
+)
+
 -- Category 表操作
 
 -- command: category.get_all
