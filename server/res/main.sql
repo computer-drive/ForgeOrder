@@ -71,3 +71,17 @@ SELECT * FROM users WHERE username = ?
 -- command: users.get_from_id
 SELECT * FROM users WHERE id = ?
 
+-- command: tables.new
+INSERT INTO tables (name, is_available)
+VALUES (?, ?);
+
+-- command: tables.get_from_name
+SELECT * FROM tables WHERE name = ?
+
+-- command: tables.get_all_available
+SELECT * FROM tables WHERE is_available = 1
+
+
+
+
+
