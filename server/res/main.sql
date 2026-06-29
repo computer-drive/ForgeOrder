@@ -60,3 +60,10 @@ CREATE TABLE IF NOT EXISTS tables (
     is_available INTEGER NOT NULL DEFAULT 1
 );
 
+
+-- command: users.new
+INSERT INTO users (username, password, is_admin, is_available, created_at, last_login_at)
+VALUES (?, ?, ?, ?, ?);
+
+-- command: users.get_from_username
+SELECT * FROM users WHERE username = ?
