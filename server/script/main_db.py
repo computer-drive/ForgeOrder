@@ -72,6 +72,8 @@ class MainDatabse(Database):
 
         self._init()
 
+        self.users = _Users(self.conn, self.sql_parse)
+
     def _init(self):
         # 获取res
         current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
