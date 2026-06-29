@@ -67,3 +67,7 @@ VALUES (?, ?, ?, ?, ?);
 
 -- command: users.get_from_username
 SELECT * FROM users WHERE username = ?
+
+-- command: users.get_from_id
+SELECT * FROM users WHERE id = ?
+

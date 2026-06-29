@@ -63,7 +63,67 @@ class _Users:
             return None
         
         return self.new(username, password, is_admin, is_available, created_at)
-        
+    
+    def get_from_id(self, user_id: int):
+        '''
+        根据用户id获取用户信息。用户不存在将返回None。
+
+        注意：数据库使用了Row factory，返回的用户信息为Row对象。
+        '''
+        cursor = self.conn.execute(
+            self.sql_parse.get("users.get_from_id"),
+            (user_id,)
+            )
+        user = cursor.fetchone()
+        if user:
+            return user
+        return None
+
+    def get_from_username(self, username: str):
+        '''
+        根据用户名获取用户信息。用户不存在将返回None。
+
+        注意：数据库使用了Row factory，返回的用户信息为Row对象。
+        '''
+        cursor = self.conn.execute(
+            self.sql_parse.get("users.get_from_username"),
+            (username,)
+            )
+        user = cursor.fetchone()
+        if user:
+            return user
+        return None
+    
+    def verify(self, username: str, password: str):
+        '''
+        验证用户名和密码是否匹配。元组(int, sqlite3.Row)。
+
+        返回的元组第一个表示验证状态（0=成功，1=用户不存在，2=密码错误，3=用户已被禁用）
+
+        注意：password参数应传递哈希值而不是明文密码。
+        若用户不存在，则会返回None。
+        '''
+
+        # 获取用户
+        cursor = self.conn.execute(
+            self.sql_parse.get("users.get_from_username"),
+            (username,)
+            )
+        user = cursor.fetchone()
+
+        if not user:
+            # 用户不存在
+            return 1, None
+
+        if user["password"] != password:
+            # 密码错误
+            return 2, None
+
+        if user["is_available"] == 0:
+            # 用户已被禁用
+            return 3, None
+
+        return 0, user
 
 class MainDatabse(Database):
     def __init__(self, db_name: str) -> None:
