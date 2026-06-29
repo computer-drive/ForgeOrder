@@ -1,4 +1,6 @@
 -- command: init
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
@@ -50,5 +52,11 @@ CREATE TABLE IF NOT EXISTS order_stats (
     finally_mount INTEGER, --最终金额
 
     FOREIGN KEY (id) REFERENCES orders (id),
-)
+);
+
+CREATE TABLE IF NOT EXISTS tables (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    is_available INTEGER NOT NULL DEFAULT 1
+);
 
