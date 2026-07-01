@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS orders (
     table_no INTEGER NOT NULL,
     total_mount INTEGER NOT NULL,
     note TEXT,
-
+    
+    FOREIGN KEY (table_no) REFERENCES tables (id),
     FOREIGN KEY (creator) REFERENCES users (id)
 );
 
@@ -81,7 +82,18 @@ SELECT * FROM tables WHERE name = ?
 -- command: tables.get_all_available
 SELECT * FROM tables WHERE is_available = 1
 
+-- command: orders.get_latest_order
+SELECT * FROM orders WHERE id LIKE ? ORDER BY id DESC LIMIT 1
 
+-- command: order_items.new
+INSERT INTO order_items (order_id, dish_id, price, count, total_mount, choices)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- command: orders.update_orders
+UPDATE orders SET creator = ?, display_no = ?, table_no = ?, total_mount = ?, note = ? WHERE id = ?
+
+-- command: order_stats.update_order_stats
+UPDATE order_stats SET status = ?, updated_at = ?, pay_at = ?, finish_at = ?, pay_method = ?, discount = ?, finally_mount = ? WHERE id = ?
 
 
 
