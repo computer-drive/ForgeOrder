@@ -1,6 +1,5 @@
 <template>
     <mdui-top-app-bar
-        variant="center-aligned"
         scroll-behavior="elevate shrink"
       >
 
