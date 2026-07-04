@@ -139,14 +139,16 @@ const handleSubmit = async () => {
         console.error(data)
         alert({
           headline: '登录失败',
-          description: `未知错误（${data["status"]}）：${data["data"]}`
+          description: `未知错误（${data["status"]}）：${data["data"]}`,
+          confirmText: '确定'
         })
       }
 
     } catch (error) {
       alert({
         headline: '登录失败',
-        description: `网络错误：${error.message}`
+        description: `网络错误：${error.message}`,
+        confirmText: '确定'
       })
 
     } finally {
@@ -166,9 +168,9 @@ const handleSubmit = async () => {
 <style>
   .container {
     height: 70vh;
-    width: 100%;
-
-    margin: 12px auto;
+    width: auto;
+    padding: 12px;
+    /* margin: 24px auto; */
 
   }
 
