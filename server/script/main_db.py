@@ -430,3 +430,15 @@ class MainDatabase(Database):
         self.conn.row_factory = sqlite3.Row
 
 
+if __name__ == "__main__":
+    from werkzeug.security import generate_password_hash
+    
+    db = MainDatabase("main.db")
+
+    db.users.new(
+        "user1",
+        generate_password_hash("123456"),
+        True,
+        True,
+        datetime.datetime.now(),
+    )

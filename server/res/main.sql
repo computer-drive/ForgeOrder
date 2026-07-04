@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS order_stats (
 
 
 -- command: users.new
-INSERT INTO users (username, password, is_admin, is_available, created_at, last_login_at)
+INSERT INTO users (username, password, is_admin, is_available, created_at)
 VALUES (?, ?, ?, ?, ?);
 
 -- command: users.get_from_username

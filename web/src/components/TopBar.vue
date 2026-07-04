@@ -1,16 +1,18 @@
 <template>
+    
     <mdui-top-app-bar
         scroll-behavior="elevate shrink"
       >
-
+        
         <mdui-button-icon v-if="canGoBack" @click="goBack">
           <mdui-icon-arrow-back></mdui-icon-arrow-back>
         </mdui-button-icon>
+        
 
-        <mdui-button-icon v-if="isNotHomePage" @click="goHome">
+        <mdui-button-icon v-if="isNotHomePage && showHome === 'true'" @click="goHome">
           <mdui-icon-home></mdui-icon-home>
         </mdui-button-icon>
-
+        
         <mdui-top-app-bar-title>{{ title }}</mdui-top-app-bar-title>
 
         <slot name="right"></slot> 
@@ -36,6 +38,10 @@
       title: {
         type: String,
         default: 'ForgeOrder'
+      },
+      showHome: {
+        type: String,
+        default: 'true'
       }
     })
 
