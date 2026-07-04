@@ -6,6 +6,8 @@ import threading
 from script import blueprints
 from libs.utils import create_server_info_by_exception
 from libs.config import Config
+from script.main_db import MainDatabase
+from script.meta_db import MetaDatabase
 
 def setup_app():
     app = Flask(__name__, static_folder="static", template_folder="res")
@@ -20,14 +22,21 @@ def init():
     # 初始化日志记录器
     try:
         logger, thread, queue = setup_logger(__name__, extensions.config.get("log.database")) #type: ignore
+    
+    
+        extensions.logger = logger
+        extensions.db_logger_thread = thread
+        extensions.db_logger_queue = queue
+
+        # 初始化数据库
+        extensions.meta_db = MetaDatabase(extensions.config.get("meta_db"))
+        extensions.main_db = MainDatabase(extensions.config.get("main_db"))
     except Exception as e:
         extensions.server_status = 300
         extensions.server_info = create_server_info_by_exception(e)
+        print(extensions.server_info)
         return
-    
-    extensions.logger = logger
-    extensions.db_logger_thread = thread
-    extensions.db_logger_queue = queue
+
     extensions.server_status = 101
 
 def shutdown():
