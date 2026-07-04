@@ -1,4 +1,5 @@
 import traceback
+from typing import Literal
 
 def create_server_info_by_exception(e: Exception):
     info = ""
@@ -7,3 +8,21 @@ def create_server_info_by_exception(e: Exception):
         info += "\n"
     
     return info
+
+def pad_string(string: str,
+               length: int,
+               pad_char: str = "0",
+               position: Literal["left", "right"] = "left") -> str:
+    '''
+    根据长度补齐字符串
+    '''
+
+    if len(string) >= length:
+        return string
+    
+    pad_length = length - len(string)
+
+    if position == "left":
+        return pad_char * pad_length + string
+    else:
+        return string + pad_char * pad_length
