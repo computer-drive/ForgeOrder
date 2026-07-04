@@ -6,10 +6,12 @@ from libs.utils import create_server_info_by_exception, make_response
 from libs.config import Config
 from script.models.exceptions import *
 from script.db import close_databases
-
+from libs.auth import AuthManager
+import json
+import os
 
 def setup_app():
-    app = Flask(__name__, static_folder="static", template_folder="res")
+    app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
 
     from script import blueprints
     for bp in blueprints:
@@ -47,11 +49,17 @@ def setup_app():
     def teardown_appcontext(error):
         close_databases()
         if error is not None:
-            extensions.logger.error(str(error), "FLASK_APP", "RequestError")
+            extensions.logger.error(json.dumps(
+                {
+                    "error": {
+                        "emsg": str(error),
+                        "type": type(error).__name__,
+                    }
+                    
+                }
+            ), "FLASK_APP", "RequestError")
 
     return app
-
-    
 
 
 def init():
@@ -66,6 +74,11 @@ def init():
         extensions.logger = logger
         extensions.db_logger_thread = thread
         extensions.db_logger_queue = queue
+
+        extensions.auth_manager = AuthManager(
+            extensions.config.get("auth.secret_key"),
+            int(extensions.config.get("auth.available_time")),
+        )
 
     
     except Exception as e:
@@ -92,6 +105,9 @@ def shutdown():
 if __name__ == "__main__":
     # 加载配置文件
     init()
+
+    # 设置环境
+    os.environ["ENV"] = extensions.config.get("server.env")
 
     # 初始化flask
     app = setup_app()

@@ -1,6 +1,8 @@
 import traceback
 from typing import Literal
 from typehints.utils import Args
+from flask import request
+import os
 
 def create_server_info_by_exception(e: Exception):
     info = ""
@@ -46,3 +48,10 @@ def make_response(status: int, data: dict | list | int | str | bool | None):
         "status": status,
         "data": data
     }
+
+def get_client_ip():
+    if os.environ["ENV"] == "dev":
+        # print(1)
+        return request.headers["X-Real-IP"]
+    else:
+        return request.remote_addr

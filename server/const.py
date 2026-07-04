@@ -14,4 +14,9 @@ class CONFIG:
 
         "main_db": "main.db",
         "meta_db": "meta.db",
+
+        "auth.secret_key": "development_key",
+        "auth.available_time": 60, # 60分钟
+
+        "server.env": "dev",
     }
