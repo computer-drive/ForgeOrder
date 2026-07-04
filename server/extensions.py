@@ -6,11 +6,11 @@ from queue import Queue
 from libs.config import Config
 
 
-logger : Logger = None # type:ignore
-db_logger_thread : Thread = None   # type:ignore
-db_logger_queue : Queue = None # type:ignore
+logger : Logger | None = None
+db_logger_thread : Thread | None = None 
+db_logger_queue : Queue | None = None
 
 server_status : int = -1
 server_info: str = ""
 
-config : Config = None # type: ignore
+config : Config | None = None 
