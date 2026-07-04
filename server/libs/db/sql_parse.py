@@ -50,7 +50,7 @@ class SqlParse:
                 continue
 
             else:
-                current_sql += line 
+                current_sql += line + "\n"
 
         
         self.queries[current_name] = current_sql
