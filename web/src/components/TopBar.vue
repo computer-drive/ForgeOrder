@@ -11,7 +11,9 @@
           <mdui-icon-home></mdui-icon-home>
         </mdui-button-icon>
 
-        <mdui-top-app-bar-title>ForgeOrder</mdui-top-app-bar-title>
+        <mdui-top-app-bar-title>{{ title }}</mdui-top-app-bar-title>
+
+        <slot name="right"></slot> 
       </mdui-top-app-bar>
 </template> 
 
@@ -29,6 +31,13 @@
 
     const route = useRoute();
     const router = useRouter();
+
+    const props = defineProps({
+      title: {
+        type: String,
+        default: 'ForgeOrder'
+      }
+    })
 
     // 返回与主页按钮 
     const isNotHomePage = computed(() => {
