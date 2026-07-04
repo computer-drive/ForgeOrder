@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
     last_login_at TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS tables (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    is_available INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY,
     creator INTEGER NOT NULL,
@@ -52,14 +58,9 @@ CREATE TABLE IF NOT EXISTS order_stats (
     discount INTEGER, --优惠金额
     finally_mount INTEGER, --最终金额
 
-    FOREIGN KEY (id) REFERENCES orders (id),
-);
+    FOREIGN KEY (id) REFERENCES orders (id)
+)
 
-CREATE TABLE IF NOT EXISTS tables (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    is_available INTEGER NOT NULL DEFAULT 1
-);
 
 
 -- command: users.new
