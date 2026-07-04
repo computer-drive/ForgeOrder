@@ -11,4 +11,7 @@ class CONFIG:
         "server.port": 5000,
         "log.level": "info",
         "log.database": "log.db",
+
+        "main_db": "main.db",
+        "meta_db": "meta.db",
     }
