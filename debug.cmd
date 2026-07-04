@@ -1,9 +1,9 @@
 @echo off
 
-cd web
-start npm run dev -- --host
+echo Start debugging...
 
-cd ../server
-start ".venv/Scripts/python.exe" app.py
+cd scripts
 
-cd ..
+start debug_server.cmd
+
+start debug_web.cmd

@@ -33,5 +33,8 @@ export default {
         }
       }
     }
-  }
+  },
+  build: {
+    outDir: '../server/static',
+  },
 };
