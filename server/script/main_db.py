@@ -417,9 +417,10 @@ class MainDatabase(Database):
             os.path.dirname(current_path), # server 目录
             "res",
         )
+        sql_file = os.path.join(res_path, "main.sql")
 
         # 执行sql_parse
-        self.sql_parse = SqlParse(res_path)
+        self.sql_parse = SqlParse(sql_file)
 
         # 执行初始化命令
         self.conn.executescript(self.sql_parse.get("init"))
