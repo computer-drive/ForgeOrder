@@ -157,6 +157,7 @@
       
       </div>
       
+      <p>{{  isLoggedIn }}</p>
 
 
     </div>
@@ -285,7 +286,31 @@ const changeBusinessStateConfirmClick = async () => {
 }
 
 
+const isLoggedIn = ref(false);
 
+onMounted( async () => {
+  let token = localStorage.getItem("token");
+
+  const response = await fetch("/api/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      "token": token
+    })
+  });
+
+  const data = await response.json()
+  if (data["status"] == 0) {
+    // 登录成功
+    isLoggedIn.value = "已登录";
+  } else {
+    // 登录失败
+    isLoggedIn.value = "未登录";
+  }
+
+})
 
 
 

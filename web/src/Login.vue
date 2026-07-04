@@ -16,7 +16,7 @@
             <h1>登录</h1>
             <div style="margin-bottom: 24px; font-size: 18px">输入用户名、密码以登录至ForgeOrder。</div>
             
-            <form @submit.prevent="handleSubmit">
+            <form @submit.prevent="handleSubmit(false)">
               <mdui-text-field 
               autofocus="true"
               label="用户名" 
@@ -59,7 +59,8 @@ import 'mdui/components/text-field.js';
 import { ref, onMounted } from 'vue' 
 import { useRouter } from 'vue-router'
 import { alert } from 'mdui/functions/alert.js';
-
+import { snackbar } from 'mdui/functions/snackbar.js'
+import { dialog } from 'mdui/functions/dialog.js';
 
 import '@mdui/icons/account-circle.js';
 import '@mdui/icons/password.js';
@@ -81,7 +82,7 @@ onMounted(() => {
     topProgressbar.value.hide()
 })
 
-const handleSubmit = async () => {
+const handleSubmit = async (coverLogin = false) => {
     topProgressbar.value.show()
     usernameInput.value.disabled = true
     passwordInput.value.disabled = true
@@ -111,22 +112,27 @@ const handleSubmit = async () => {
         return
     }
 
+    let data = null 
+
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
         body: JSON.stringify({
           username: username.value,
-          password: password.value
+          password: password.value,
+          cover: coverLogin
         }),
         headers: {
           'Content-Type': 'application/json'
         }
       })
 
-      const data = await response.json()
+      data = await response.json()
       
       if (data["status"] == 0) {
         // 登录成功
+
+        localStorage.setItem("token", data["data"]["token"])
         router.push("/")
       } else if (data["status"] == 3001) {
         // 用户名或密码错误
@@ -134,6 +140,31 @@ const handleSubmit = async () => {
       } else if (data["status"] == 3002) {
         // 服务器错误
         passwordInput.value.setCustomValidity('该用户未启用')
+      } else if (data["status"] == 3003) {
+        // 重复登录
+        snackbar({
+          message: '重复登录',
+        })
+        router.push("/")
+
+      } else if (data["status"] == 3004) {
+  
+        dialog({
+          headline: '新设备登录',
+          description: `已有一个设备（${data["data"]["old_device_ip"]}）登录，是否覆盖它的登录？`,
+          actions: [
+            {
+              text: '否',
+            },
+            {
+              text: '是',
+              onClick: () => {
+                handleSubmit(true)
+              }
+            },
+            
+          ]
+        })
       } else {
         // 其他错误
         console.error(data)
@@ -152,15 +183,15 @@ const handleSubmit = async () => {
       })
 
     } finally {
-      topProgressbar.value.hide()
-      usernameInput.value.disabled = false
-      passwordInput.value.disabled = false
-      loginButton.value.disabled = false
+      if (data !== null && data["status"] !== 3004) {
+        topProgressbar.value.hide()
+        usernameInput.value.disabled = false
+        passwordInput.value.disabled = false
+        loginButton.value.disabled = false
+      }
+      
     }
     
-
-
-
 
 }
 </script>

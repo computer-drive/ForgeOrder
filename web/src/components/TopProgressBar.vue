@@ -26,7 +26,7 @@
          position: fixed; 
          top: 0; 
          left: 0; 
-         z-index: 10000;
+         z-index: 2000; /* 这个值放在了topBar上，对话框的遮罩层之下*/
         /* opacity: 0; */
     }
 </style>
