@@ -21,13 +21,42 @@ const routes = [
     },
     {
         path: '/login',
-        component: () => import("./Login.vue")
+        name: 'Login',
+        component: () => import("./Login.vue"),
+        meta : {
+            noAuth: true
+        }
     }
 ]
 
 const router = createRouter({
     history: createWebHashHistory(),
     routes
+})
+
+router.beforeEach((to, from) => {
+    const token = localStorage.getItem('token')
+
+    if (to.meta?.noAuth == true) {
+        // 页面不需要认证。判断是否是登录页
+        if (to.path == '/login' && token) {
+            return '/'
+        } else {
+            return true
+        }
+        
+    } else {
+        if (!token) {
+            // 未登录
+            return {
+                name: 'Login'
+            }
+        } else {
+            return true
+        }
+    }
+
+
 })
 
 export default router

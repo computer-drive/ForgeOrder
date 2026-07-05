@@ -55,12 +55,15 @@
 
 import TopBar from './components/TopBar.vue'
 import TopProgressBar from './components/TopProgressBar.vue';
+import { useAuth } from './composables/auth.js'
+
 import 'mdui/components/text-field.js';
-import { ref, onMounted } from 'vue' 
-import { useRouter } from 'vue-router'
 import { alert } from 'mdui/functions/alert.js';
 import { snackbar } from 'mdui/functions/snackbar.js'
 import { dialog } from 'mdui/functions/dialog.js';
+
+import { ref, onMounted } from 'vue' 
+import { useRouter } from 'vue-router'
 
 import '@mdui/icons/account-circle.js';
 import '@mdui/icons/password.js';
@@ -75,11 +78,26 @@ const passwordInput = ref(null)
 const loginButton = ref(null)
 
 const router = useRouter()
+const { login } = useAuth()
+
+const props = defineProps({
+  msg: {
+    type: String,
+    default: ''
+  }
+})
 
 
 
 onMounted(() => {
     topProgressbar.value.hide()
+
+    if (props.msg !== '') {
+      alert({
+        headline: '登录状态失效',
+        description: props.msg
+      })
+    }
 })
 
 const handleSubmit = async (coverLogin = false) => {
@@ -112,46 +130,35 @@ const handleSubmit = async (coverLogin = false) => {
         return
     }
 
-    let data = null 
+
+
+
+    let result = null
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          username: username.value,
-          password: password.value,
-          cover: coverLogin
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+      result = await login(username.value, password.value, coverLogin)
 
-      data = await response.json()
-      
-      if (data["status"] == 0) {
+      if (result.status == 0) {
         // 登录成功
-
-        localStorage.setItem("token", data["data"]["token"])
-        router.push("/")
-      } else if (data["status"] == 3001) {
+        
+      } else if (result.status == 3001) {
         // 用户名或密码错误
         passwordInput.value.setCustomValidity('用户名或密码错误')
-      } else if (data["status"] == 3002) {
+      } else if (result.status == 3002) {
         // 服务器错误
         passwordInput.value.setCustomValidity('该用户未启用')
-      } else if (data["status"] == 3003) {
+      } else if (result.status == 3003) {
         // 重复登录
         snackbar({
           message: '重复登录',
         })
         router.push("/")
 
-      } else if (data["status"] == 3004) {
+      } else if (result.status == 3004) {
   
         dialog({
           headline: '新设备登录',
-          description: `已有一个设备（${data["data"]["old_device_ip"]}）登录，是否覆盖它的登录？`,
+          description: `已有一个设备（${result.data.old_device_ip}）登录，是否覆盖它的登录？`,
           actions: [
             {
               text: '否',
@@ -167,32 +174,30 @@ const handleSubmit = async (coverLogin = false) => {
         })
       } else {
         // 其他错误
-        console.error(data)
+        console.error(result)
         alert({
           headline: '登录失败',
-          description: `未知错误（${data["status"]}）：${data["data"]}`,
+          description: `未知错误（${result.status}）：${result.data}`,
           confirmText: '确定'
         })
       }
-
-    } catch (error) {
+    } 
+    
+    catch(error) {
       alert({
         headline: '登录失败',
         description: `网络错误：${error.message}`,
         confirmText: '确定'
       })
-
-    } finally {
-      if (data !== null && data["status"] !== 3004) {
-        topProgressbar.value.hide()
-        usernameInput.value.disabled = false
-        passwordInput.value.disabled = false
-        loginButton.value.disabled = false
-      }
-      
+    } 
+    finally {
+      if (result !== null && result.status !== 3004) {
+            topProgressbar.value.hide()
+            usernameInput.value.disabled = false
+            passwordInput.value.disabled = false
+            loginButton.value.disabled = false
+          }
     }
-    
-
 }
 </script>
 
