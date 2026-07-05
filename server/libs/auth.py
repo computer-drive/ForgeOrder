@@ -91,6 +91,12 @@ class AuthManager:
         '''
         for token_item in self.tokens:
             if token_item["token"] == token:
+                # 找到了token，看是否过期
+                if token_item["expire"] < int(time.time()):
+                    token_item["is_available"] = False  # 添加这行
+                    token_item["cause_expire"] = "expire"
+                    
+                # 判断是否有效
                 if token_item["is_available"]:
                     return (True, token_item)
                 

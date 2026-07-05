@@ -20,3 +20,14 @@ class CONFIG:
 
         "server.env": "dev",
     }
+
+class ROUTES:
+    # 未登录状态也可访问的路由
+    UNLOGGEDIN_ROUTES = [
+        "/api/login"
+    ]
+
+    # 管理员可访问的路由
+    ADMIN_ROUTES = [
+        
+    ]
