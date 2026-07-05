@@ -157,9 +157,6 @@
       
       </div>
       
-      <mdui-button @click="logout">注销</mdui-button>
-
-      <mdui-button @click="testApi">Test API</mdui-button>
 
 
     </div>
@@ -294,22 +291,6 @@ const changeBusinessStateConfirmClick = async () => {
 }
 
 
-
-const logout = async () => {
-  const { logout } = useAuth()
-
-  const data = await logout()
-
-  console.log(data)
-
-}
-
-const testApi = async () => {
-  
-
-  const response = await request.get("/test")
-  console.log(response.data.data)
-}
 
 
 
