@@ -8,7 +8,7 @@ import extensions
 
 accounts_bp = Blueprint("accounts", __name__)
 
-@accounts_bp.route("/api/login", methods=["POST"])
+@accounts_bp.route("/api/auth/login", methods=["POST"])
 def login():
     username = request.get_json().get("username", None)
     password = request.get_json().get("password", None)
@@ -118,7 +118,7 @@ def login():
             None
         ))
         
-@accounts_bp.route("/api/logout", methods=["POST"])
+@accounts_bp.route("/api/auth/logout", methods=["POST"])
 def logout():
     token = request.headers.get("Authorization")
 
@@ -135,7 +135,7 @@ def logout():
     
 
 
-@accounts_bp.route("/api/test")
+@accounts_bp.route("/api/auth/test")
 def test_api():
     return jsonify(make_response(
         0,

@@ -13,7 +13,7 @@ export function useAuth() {
 
     const login = async(username, password, cover) => {
         try {
-            const res = await request.post('/login', {
+            const res = await request.post('/auth/login', {
                 username,
                 password,
                 cover
@@ -58,7 +58,7 @@ export function useAuth() {
 
     const logout = async() => {
         try {
-            const res = await request.post('/logout')
+            const res = await request.post('/auth/logout')
             if (res.status == 200 && res.data.status == 0) {
                 // 退出登录成功
                 token.value = ''

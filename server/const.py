@@ -24,7 +24,7 @@ class CONFIG:
 class ROUTES:
     # 未登录状态也可访问的路由
     UNLOGGEDIN_ROUTES = [
-        "/api/login"
+        "/api/auth/login"
     ]
 
     # 管理员可访问的路由

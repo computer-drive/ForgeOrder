@@ -30,7 +30,7 @@
     
     const testApi = async () => {
 
-    const response = await request.get("/test")
+    const response = await request.get("/auth/test")
     snackbar({
         message: response.data.data,
     })
