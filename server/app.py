@@ -9,6 +9,7 @@ from script.db import close_databases
 from libs.auth import AuthManager
 import json
 import os
+import traceback
 
 def setup_app():
     app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
@@ -34,7 +35,7 @@ def setup_app():
     @app.errorhandler(500)
     def internal_server_error(e):
         return jsonify(make_response(
-            1004,
+            9001,
             500,
         )), 500
     
@@ -49,14 +50,19 @@ def setup_app():
     def teardown_appcontext(error):
         close_databases()
         if error is not None:
-            extensions.logger.error(json.dumps(
-                {
+            logs = {
                     "error": {
                         "emsg": str(error),
                         "type": type(error).__name__,
-                    }
+                    },
+                    "traceback": None
                     
                 }
+            if isinstance(error, Exception):
+                logs["traceback"] = traceback.format_exception(type(error), error, error.__traceback__) # type: ignore
+
+            extensions.logger.error(json.dumps(
+                logs
             ), "FLASK_APP", "RequestError")
 
     return app
