@@ -77,7 +77,9 @@ class AuthManager:
             if token_item["token"] == token:
                 token_item["is_available"] = False
                 token_item["cause_expire"] = "logout"
-                break
+                
+                return token_item
+            
 
     def verify(self, token: str):
         '''

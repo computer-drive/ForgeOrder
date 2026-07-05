@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from libs.utils import make_response, verify_args, get_client_ip
-
+import json
 from ..db import get_main_database
 from .exceptions import *
 from werkzeug.security import check_password_hash
@@ -76,6 +76,14 @@ def login():
                 token = result
                 extensions.logger.debug(f"成功生成Token：{token}", "LOGIN_REQUEST", "DebugMsg")
 
+                extensions.logger.info(
+                    json.dumps({
+                        "ip": get_client_ip(),
+                        "user_id": account["id"],
+                        "cover": cover
+                    }), "ACCOUNTS", "UserLogin"
+                )
+
                 return jsonify(make_response(
                     0,
                     {
@@ -123,10 +131,19 @@ def logout():
     token = request.headers.get("Authorization")
 
 
-    token = token.split(" ")[1]
+    token = token.split(" ")[1] #type: ignore
     
     
-    extensions.auth_manager.user_logout(token)
+    token_item : dict = extensions.auth_manager.user_logout(token) #type: ignore
+
+    
+
+    extensions.logger.info(
+        json.dumps({
+            "ip": get_client_ip(),
+            "user_id": token_item["user"]["id"],
+        }), "ACCOUNTS", "UserLogout"
+    )
 
     return jsonify(make_response(
         0,
