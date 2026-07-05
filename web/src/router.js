@@ -26,6 +26,11 @@ const routes = [
         meta : {
             noAuth: true
         }
+    },
+    {
+        path: '/develop',
+        name: 'Develop',
+        component: () => import("./Develop.vue"),
     }
 ]
 
