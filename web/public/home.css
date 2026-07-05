@@ -1,0 +1,73 @@
+.stats_content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+  }
+
+  .stats_item {
+    width: 50%
+  }
+
+
+  .stats_label {
+    font-size: 14px;
+    text-align: center;
+
+  }
+
+  .stats_value {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .table_conatiner {
+    width: 100% ;
+    margin-top:4px;
+    border: 0;
+    
+  }
+
+
+  .table_scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%
+  }
+
+  .table_content {
+    display: flex;
+    justify-content: center;
+    min-width: max-content;
+    gap: 8px;
+
+  
+  
+  }
+
+  .table_item {
+    /* width: 25%; */
+  }
+
+  .table_label {
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .table_value {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .actions_container {
+    display: flex; 
+    width: 100%; 
+    flex: 1;
+    justify-content: center;
+    gap: 8px;
+  }
+
+
+  .action_item {
+    width: calc(50% - 4px);
+  }

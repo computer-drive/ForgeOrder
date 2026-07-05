@@ -200,13 +200,3 @@ const handleSubmit = async (coverLogin = false) => {
 }
 </script>
 
-<style>
-  .container {
-    height: 70vh;
-    width: auto;
-    padding: 12px;
-    /* margin: 24px auto; */
-
-  }
-
-</style>

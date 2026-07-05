@@ -49,7 +49,7 @@
     </TopBar>
 
     <!-- 主体内容 -->
-    <div class="mdui-prose">
+    <div class="mdui-prose container">
       <div style="font-size: 24px">欢迎回来，{{ currentUser }}。</div>
     
       <!-- 打样信息 -->
@@ -157,7 +157,9 @@
       
       </div>
       
-      <p>{{  isLoggedIn }}</p>
+      <mdui-button @click="logout">注销</mdui-button>
+
+      <mdui-button @click="testApi">Test API</mdui-button>
 
 
     </div>
@@ -183,6 +185,9 @@
 </template> 
 
 <script setup>
+// 导入home.css
+import '/public/home.css'
+
 // 导入自定义组件
 import TipCard from '@/components/TipCard.vue'
 import TopBar from '@/components/TopBar.vue'
@@ -215,6 +220,9 @@ import '@mdui/icons/list.js';
 
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+
+import { useAuth } from '@/composables/auth.js'
+import request from '@/utils/request.js'
 
 const router = useRouter();
 const currentUser = ref('用户'); // 当前用户
@@ -286,109 +294,24 @@ const changeBusinessStateConfirmClick = async () => {
 }
 
 
-const isLoggedIn = ref(false);
 
-onMounted( async () => {
-  let token = localStorage.getItem("token");
+const logout = async () => {
+  const { logout } = useAuth()
 
-  const response = await fetch("/api/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      "token": token
-    })
-  });
+  const data = await logout()
 
-  const data = await response.json()
-  if (data["status"] == 0) {
-    // 登录成功
-    isLoggedIn.value = "已登录";
-  } else {
-    // 登录失败
-    isLoggedIn.value = "未登录";
-  }
+  console.log(data)
 
-})
+}
+
+const testApi = async () => {
+  
+
+  const response = await request.get("/test")
+  console.log(response.data.data)
+}
 
 
 
 </script>
 
-<style>
-  .stats_content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-  }
-
-  .stats_item {
-    width: 50%
-  }
-
-
-  .stats_label {
-    font-size: 14px;
-    text-align: center;
-
-  }
-
-  .stats_value {
-    font-size: 24px;
-    text-align: center;
-  }
-
-  .table_conatiner {
-    width: 100% ;
-    margin-top:4px;
-    border: 0;
-    
-  }
-
-
-  .table_scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
-    width: 100%
-  }
-
-  .table_content {
-    display: flex;
-    justify-content: center;
-    min-width: max-content;
-    gap: 8px;
-
-  
-  
-  }
-
-  .table_item {
-    /* width: 25%; */
-  }
-
-  .table_label {
-    font-size: 14px;
-    text-align: center;
-  }
-
-  .table_value {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  .actions_container {
-    display: flex; 
-    width: 100%; 
-    flex: 1;
-    justify-content: center;
-    gap: 8px;
-  }
-
-
-  .action_item {
-    width: calc(50% - 4px);
-  }
-
-</style>
