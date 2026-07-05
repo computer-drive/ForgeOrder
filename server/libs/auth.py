@@ -110,5 +110,23 @@ class AuthManager:
         # 不存在这个token
         return (False, None)
     
+    def update_time(self, token):
+        '''
+        更新过期时间。
+
+        注意：使用本方法时应以确定token有效
+        '''
+
+        for i, token_item in enumerate(self.tokens):
+            if token_item["token"] == token:
+                token_item["expire"] = int(time.time()) + self.available_time * 60
+                return token_item
+            
+        return None
+
+
+        
+    
+
 
         

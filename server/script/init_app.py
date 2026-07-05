@@ -113,7 +113,7 @@ def before_request():
     
     status, result = extensions.auth_manager.verify(token)
     
-    
+    # token无效。处理错误类型，返回正确的status代码
     if not status:
         match result:
             case None:
@@ -145,19 +145,26 @@ def before_request():
                 )) , 401
     else:
         # token有效，判断ip是否对应
-        if result["device_ip"] != get_client_ip():
-            extensions.logger.debug(f"token的ip：{result['device_ip']}， 当前ip：{get_client_ip()}，不一致！", "BEFORE_REQUEST", "DebugMsg")
+        if result["device_ip"] != get_client_ip(): # type: ignore
+            # ip不一致
+            extensions.logger.debug(f"token的ip：{result['device_ip']}， 当前ip：{get_client_ip()}，不一致！", "BEFORE_REQUEST", "DebugMsg") # type: ignore
             return jsonify(make_response(
                 2003,
                 None
             )) , 401
         
+        # token正确，更新到期时间
+        extensions.logger.debug("Token有效！", "BEFORE_REQUEST", "DebugMsg")
+        
+        extensions.auth_manager.update_time(token)
+        extensions.logger.debug(f"更新Token的有效时间为：{result['expire']}", "BEFORE_REQUEST", "DebugMsg") # type: ignore
+        
         # token 有效，判断是否为管理员页面
         if request.path in ROUTES.ADMIN_ROUTES :
             # 管理员页面，判断用户是否有权限
-            extensions.logger.debug(f"访问管理员页面（用户的管理员状态：{result['user']['is_admin']}）", "BEFORE_REQUEST", "DebugMsg")
+            extensions.logger.debug(f"访问管理员页面（用户的管理员状态：{result['user']['is_admin']}）", "BEFORE_REQUEST", "DebugMsg") # type: ignore
 
-            return None if result["user"]["is_admin"] == 1 else jsonify(make_response(
+            return None if result["user"]["is_admin"] == 1 else jsonify(make_response( # type: ignore
                 2002,
                 None
             )), 401
@@ -180,8 +187,8 @@ def setup_app():
     app.errorhandler(404)(not_found)
     app.errorhandler(500)(internal_server_error)
     app.errorhandler(ArgumentException)(argument_exception)
-    app.teardown_appcontext(teardown_appcontext)
-    app.before_request(before_request)
+    app.teardown_appcontext(teardown_appcontext) # type: ignore
+    app.before_request(before_request) # type: ignore
     
     return app
 
