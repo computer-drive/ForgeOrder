@@ -38,7 +38,7 @@ class AuthManager:
                 
                 # token有效，判断ip是否相同
                 if token_item["device_ip"] == device_ip:
-                    return False, (0, token_item["device_ip"]) # 重复登录
+                    return False, (0, token_item)#  重复登录
                 
                 else:
                     # 新设备登录，判断要不要覆盖旧设备

@@ -89,7 +89,10 @@ def login():
                 extensions.logger.debug(f"生成失败，重复登录。请求ip:{ip}, token中的ip:{result[1]}", "LOGIN_REQUEST", "DebugMsg")
                 return jsonify(make_response(
                     3003,
-                    None
+                    {
+                        "user_info": dict(account),
+                        "token": result[1]["token"]
+                    }
                 ))
             else:
                 # 失败，设备重复登录
@@ -115,17 +118,26 @@ def login():
             None
         ))
         
+@accounts_bp.route("/api/logout", methods=["POST"])
+def logout():
+    token = request.headers.get("Authorization")
 
-@accounts_bp.route("/api/verify", methods=["POST"]) # type: ignore
-def verify():
-    token = request.get_json().get("token", None)
+
+    token = token.split(" ")[1]
     
-    if token is None:
-        return jsonify(make_response(1, None))
-    else:
-        status, result = extensions.auth_manager.verify(token)
+    
+    extensions.auth_manager.user_logout(token)
 
-        if status:
-            return jsonify(make_response(0, None))
-        else:
-            return jsonify(make_response(1, None))
+    return jsonify(make_response(
+        0,
+        None
+    ))
+    
+
+
+@accounts_bp.route("/api/test")
+def test_api():
+    return jsonify(make_response(
+        0,
+        "登录后才可访问的接口"
+    ))
