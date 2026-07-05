@@ -80,22 +80,21 @@ const loginButton = ref(null)
 const router = useRouter()
 const { login } = useAuth()
 
-const props = defineProps({
-  msg: {
-    type: String,
-    default: ''
-  }
-})
+let errorMsg = history.state.msg
 
 
 
 onMounted(() => {
     topProgressbar.value.hide()
 
-    if (props.msg !== '') {
+    // window.history.replaceState()
+
+    if (errorMsg) {
+      history.replaceState({}, document.title)
       alert({
         headline: '登录状态失效',
-        description: props.msg
+        description: errorMsg,
+        confirmText: '确定',
       })
     }
 })

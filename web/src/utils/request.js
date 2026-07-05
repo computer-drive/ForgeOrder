@@ -31,6 +31,8 @@ request.interceptors.response.use(
             localStorage.removeItem("token")
 
             // 识别status
+            const status = error.response.data.status
+
             let msg = ''
             if (status == 2002) {
                 // 对于权限不足的api，应不跳转到登录页
@@ -38,6 +40,7 @@ request.interceptors.response.use(
             } else if (status == 2003) {
                 msg = 'Token无效，请重新登录。'
             } else if (status == 2004) {
+                
                 msg = 'Token过期，请重新登录。'
             } else if (status == 2005) {
                 msg = '有新的设备覆盖了你的登录状态，请重新登录。'
