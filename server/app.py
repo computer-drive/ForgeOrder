@@ -1,72 +1,12 @@
 import extensions
 from libs.log.logger import setup_logger
 import logging
-from flask import Flask, jsonify
-from libs.utils import create_server_info_by_exception, make_response
+from libs.utils import create_server_info_by_exception
 from libs.config import Config
 from script.models.exceptions import *
-from script.db import close_databases
 from libs.auth import AuthManager
-import json
 import os
-import traceback
-
-def setup_app():
-    app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
-
-    from script import blueprints
-    for bp in blueprints:
-        app.register_blueprint(bp)
-
-    @app.errorhandler(405)
-    def method_not_allowed(e):
-        return jsonify(make_response(
-            1002,
-            405,
-        )), 405
-    
-    @app.errorhandler(404)
-    def not_found(e):
-        return jsonify(make_response(
-            1003,
-            404,
-        )), 404
-    
-    @app.errorhandler(500)
-    def internal_server_error(e):
-        return jsonify(make_response(
-            9001,
-            500,
-        )), 500
-    
-    @app.errorhandler(ArgumentException)
-    def argument_exception(e):
-        return jsonify(make_response(
-            1001,
-            e.args_,
-        )), 400
-    
-    @app.teardown_appcontext
-    def teardown_appcontext(error):
-        close_databases()
-        if error is not None:
-            logs = {
-                    "error": {
-                        "emsg": str(error),
-                        "type": type(error).__name__,
-                    },
-                    "traceback": None
-                    
-                }
-            if isinstance(error, Exception):
-                logs["traceback"] = traceback.format_exception(type(error), error, error.__traceback__) # type: ignore
-
-            extensions.logger.error(json.dumps(
-                logs
-            ), "FLASK_APP", "RequestError")
-
-    return app
-
+from script.init_app import setup_app
 
 def init():
     # 加载配置文件
