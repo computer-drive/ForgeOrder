@@ -8,10 +8,16 @@
             <mdui-list-item 
             headline="测试登录状态"
             description="调用API测试。若未登录将跳转到登录页面。" nonclickable>
-            <mdui-button slot="end-icon" @click="testApi">Test</mdui-button>
+            <mdui-button slot="end-icon" @click="testApi">Run</mdui-button>
         </mdui-list-item>
 
-            <mdui-list-item>Item 2</mdui-list-item>
+            <mdui-list-item
+            headline="退出登录"
+            description="退出登录。"
+            nonclickable
+            >
+            <mdui-button slot="end-icon" @click="logout">Run</mdui-button>
+        </mdui-list-item>
         </mdui-list>
 
 
@@ -26,13 +32,27 @@
     import 'mdui/components/list-subheader.js';
     import 'mdui/components/button.js';
     import { snackbar } from 'mdui/functions/snackbar.js';
+
+    import { useRouter } from 'vue-router'
+
+    import { useAuth } from '@/composables/auth.js'
     import request from '@/utils/request.js'
     
+    const { logout } = useAuth()
+
     const testApi = async () => {
 
     const response = await request.get("/auth/test")
     snackbar({
-        message: response.data.data,
+        message: 'Test Pass',
     })
+
+    const logout = async() => {
+        await logout()
+        router.push('/login')
+        snackbar({
+            message: '退出登录成功',
+        })
+    }
 }
 </script>

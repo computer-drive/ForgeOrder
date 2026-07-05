@@ -139,5 +139,5 @@ def logout():
 def test_api():
     return jsonify(make_response(
         0,
-        "登录后才可访问的接口"
+        "Test Pass"
     ))
