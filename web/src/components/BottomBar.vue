@@ -13,7 +13,7 @@
         </mdui-navigation-bar-item>
 
 
-        <mdui-navigation-bar-item @click="goAccount" value="account">
+        <mdui-navigation-bar-item @click="goMe" value="me">
           我的
           <mdui-icon-account-circle--outlined slot="icon"></mdui-icon-account-circle--outlined>
           <mdui-icon-account-circle slot="active-icon"></mdui-icon-account-circle>
@@ -54,11 +54,11 @@ function goOrders() {
   } 
 }
 
-function goAccount() {
-  if (route.path === '/account') {
+function goMe() {
+  if (route.path === '/me') {
     return
   } else {
-    router.push('/account');
+    router.push('/me');
   } 
 }
 
@@ -77,8 +77,8 @@ onMounted(() => {
     
   } else if (route.path === '/orders') {
     bottomBar.value.setAttribute('value', 'orders')
-  } else if (route.path === '/account') {
-    bottomBar.value.setAttribute('value', 'account')
+  } else if (route.path === '/me') {
+    bottomBar.value.setAttribute('value', 'me')
   }
 })
 
