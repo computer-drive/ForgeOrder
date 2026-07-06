@@ -161,6 +161,12 @@ const handleSubmit = async (coverLogin = false) => {
           actions: [
             {
               text: '否',
+              onClick: () => {
+                topProgressbar.value.hide()
+                usernameInput.value.disabled = false
+                passwordInput.value.disabled = false
+                loginButton.value.disabled = false
+              }
             },
             {
               text: '是',
