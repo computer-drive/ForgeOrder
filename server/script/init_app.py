@@ -164,7 +164,13 @@ def before_request():
             # 管理员页面，判断用户是否有权限
             extensions.logger.debug(f"访问管理员页面（用户的管理员状态：{result['user']['is_admin']}）", "BEFORE_REQUEST", "DebugMsg") # type: ignore
 
-            return None if result["user"]["is_admin"] == 1 else jsonify(make_response( # type: ignore
+            if result["user"]["is_admin"] == 1:
+                # 管理员页面，继续请求
+                return None
+
+            else:
+                # 非管理员页面，返回错误
+                return jsonify(make_response( # type: ignore
                 2002,
                 None
             )), 401
