@@ -2,6 +2,7 @@
     
     <mdui-top-app-bar
         scroll-behavior="elevate shrink"
+        style="align-items: center;"
       >
         
         <mdui-button-icon v-if="canGoBack" @click="goBack">
@@ -16,6 +17,7 @@
         <mdui-top-app-bar-title>{{ title }}</mdui-top-app-bar-title>
 
         <slot name="right"></slot> 
+
       </mdui-top-app-bar>
 </template> 
 

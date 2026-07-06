@@ -1,7 +1,18 @@
 .container {
-    height: 70vh;
     width: auto;
     padding: 6px;
-    /* margin: 24px auto; */
-
+    flex: 1;
+    overflow: auto;
+    align-self: flex-start; 
   }
+
+body {
+  height: 100%;
+  padding: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

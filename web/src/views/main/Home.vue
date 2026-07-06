@@ -228,7 +228,7 @@ import request from '@/utils/request.js'
 const router = useRouter();
 const currentUser = ref('用户'); // 当前用户
 
-const isBusiness = ref(false); // 是否营业
+const isBusiness = ref(true); // 是否营业
 
 const isAdmin = ref(false); // 是否管理员
 
