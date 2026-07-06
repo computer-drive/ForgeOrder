@@ -17,3 +17,5 @@ server_status : int = -1
 server_info: str = ""
 
 config : Config
+
+is_business: bool = True

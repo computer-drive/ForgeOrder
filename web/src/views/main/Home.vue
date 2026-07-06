@@ -14,7 +14,7 @@
             
           
             <div v-if="isAdmin">
-              <mdui-menu-item @click="goShopSettings">店铺设置
+              <mdui-menu-item @click="router.push('/shop/settings')">店铺设置
                 <mdui-icon-shopping-cart slot="icon"></mdui-icon-shopping-cart>
               </mdui-menu-item>
 
@@ -26,19 +26,22 @@
               
             </div>
 
+            <mdui-menu-item @click="router.push('/develop')">Develop
+              
+            </mdui-menu-item>
             <mdui-divider></mdui-divider>
 
 
-            <mdui-menu-item  @click="goScanQR">扫描
+            <mdui-menu-item  @click="router.push('/scan')">扫描
               <mdui-icon-qr-code-scanner slot="icon"></mdui-icon-qr-code-scanner>
             </mdui-menu-item>
-            <mdui-menu-item @click="goSettings">选项
+            <mdui-menu-item @click="router.push('/me/settings')">选项
               <mdui-icon-settings slot="icon" ></mdui-icon-settings>
             </mdui-menu-item>
 
             <mdui-divider></mdui-divider>
 
-            <mdui-menu-item @click="goDashboard">数据看板
+            <mdui-menu-item @click="router.push('/dashboard')">数据看板
               <mdui-icon-open-in-new slot="icon"></mdui-icon-open-in-new>
             </mdui-menu-item>
           </mdui-menu>
@@ -50,7 +53,8 @@
 
     <!-- 主体内容 -->
     <div class="mdui-prose container">
-      <div style="font-size: 24px">欢迎回来，{{ currentUser }}。</div>
+      <!-- <div style="font-size: 24px">欢迎回来，{{ currentUser }}。</div> -->
+      <h2>欢迎回来，{{ currentUser }}。</h2>
     
       <!-- 打样信息 -->
       <div v-if="!isBusiness">
@@ -226,7 +230,21 @@ const currentUser = ref('用户'); // 当前用户
 
 const isBusiness = ref(false); // 是否营业
 
-const isAdmin = ref(true); // 是否管理员
+const isAdmin = ref(false); // 是否管理员
+
+onMounted(async () => {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (userInfo) {
+    currentUser.value = userInfo.username;
+
+    isAdmin.value = userInfo.is_admin;
+    // console.log(isAdmin.value)
+
+    const response = await request.get('/shop/getBusinessState');
+    isBusiness.value = response.data.data;
+
+  }
+})
 
 const refreshOrdersButton = ref(null);
 const refreshTablesButton = ref(null);
@@ -247,30 +265,12 @@ const refreshTables = async () => {
   refreshTablesButton.value.loading = false;
 };
 
-const goNewOrder = () => {
-  router.push("/orders/new");
-}
 
-const goScanQR = () => {
-  router.push("/scan");
-}
 
-const goSettings = () => {
-  router.push("/account/settings");
-}
-
-const goDashboard = () => {
-  router.push("/dashboard");
-}
-
-const goShopSettings = () => {
-  router.push("/shop/settings");
-}
 
 const changeBusinessStateDialog = ref(null);
 const changeBusinessStateConfrim = ref(null);
 const changeBusinessStateisLoading = ref(false);
-
 
 
 const changeBusinessState = () => {
@@ -279,13 +279,21 @@ const changeBusinessState = () => {
 
 const changeBusinessStateConfirmClick = async () => {
   changeBusinessStateisLoading.value = true;
+
   changeBusinessStateDialog.value.description = '正在切换营业状态';
   
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const response = await request.post('/shop/setBusinessState', {
+    is_business: !isBusiness.value,
+  })
+
+  if (response.data.status == 0) {
+    console.log("切换营业状态成功")
+    isBusiness.value = !isBusiness.value;
+  }
+  
   changeBusinessStateisLoading.value = false;
 
-  
 
   changeBusinessStateDialog.value.open = false
 }

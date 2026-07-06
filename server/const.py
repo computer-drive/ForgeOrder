@@ -27,7 +27,7 @@ class ROUTES:
         "/api/auth/login"
     ]
 
-    # 管理员可访问的路由
+    # 仅管理员可访问的路由
     ADMIN_ROUTES = [
-        
+        "/api/shop/setBusinessState",
     ]
