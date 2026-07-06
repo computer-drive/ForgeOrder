@@ -29,8 +29,9 @@
         />
         </div>
 
-        <mdui-fab size="normal" style="position: absolute; bottom: 0px; right: 20px;">
+        <mdui-fab size="normal" style="position: fixed; bottom: 100px; right: 20px;" @click="router.push('/order/new')" extended>
             <mdui-icon-edit slot="icon"></mdui-icon-edit>
+            添加订单
         </mdui-fab>
 
     </div>
@@ -47,7 +48,8 @@
     import 'mdui/components/button-icon.js';
 
     import '@mdui/icons/search.js';
+    import { useRouter } from 'vue-router';
     
-
+    const router = useRouter();
 
 </script>
