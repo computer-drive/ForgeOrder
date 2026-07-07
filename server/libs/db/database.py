@@ -1,4 +1,15 @@
 import sqlite3
+import datetime 
+
+def adapt_datetime(dt: datetime.datetime) -> str:
+    return dt.isoformat()
+
+def convert_datetime(dt: str) -> datetime.datetime:
+    return datetime.datetime.fromisoformat(dt)
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime)
+sqlite3.register_converter("datetime", convert_datetime) #type: ignore
+
 
 class Database:
     def __init__(self, db_name: str):
