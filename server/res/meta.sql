@@ -69,4 +69,18 @@ INSERT INTO dish_choices (dish_id, name, options)
 VALUES (?, ?, ?);
 
 
+-- command: dishes.get_all
+SELECT * FROM dishes
+ORDER BY id DESC
+
+-- command: dish_stats.get_all
+SELECT * FROM dish_stats
+ORDER BY id DESC
+
+-- command: dish_choices.get_all
+SELECT * FROM dish_choices
+ORDER BY id DESC
+
+
+
 

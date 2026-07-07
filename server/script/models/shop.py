@@ -1,6 +1,7 @@
 import extensions
 from flask import Blueprint, jsonify, request
 from libs.utils import make_response
+from ..db import get_meta_database
 
 shop_bp = Blueprint("shop", __name__)
 
@@ -20,4 +21,18 @@ def set_business_state():
     return jsonify(make_response(
         0,
         None
+    ))
+
+@shop_bp.route("/api/shop/dishes/getAll")
+def get_all_dishes():
+    meta_db = get_meta_database()
+
+    dishes, categories = meta_db.dishes.get_all()
+
+    return jsonify(make_response(
+        0,
+        {
+            "dishes": dishes,
+            "categories": categories
+        }
     ))

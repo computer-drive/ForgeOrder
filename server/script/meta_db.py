@@ -6,7 +6,7 @@ import os
 from libs.db.exceptions import NotFoundException
 import json
 
-class _DishedCategory:
+class _DishesCategory:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
         self.conn = conn
         self.sql_parse = sql_parse
@@ -143,6 +143,68 @@ class _Dishes:
         # 提交事务
         self.conn.commit()
 
+
+    def get_all(self):
+        '''
+        获取所有菜品。
+        '''
+        result = {}
+
+        # 1、获取所有分类
+        categories = self.parent_database.category.get_all()
+        
+        # 1.1、初始化分类的菜品列表为空
+        for category in categories:
+            result[category["id"]] = []
+
+        # 2、从dishes表中获取菜品
+        dishes = self.conn.execute(self.sql_parse.get("dishes.get_all")).fetchall()
+        
+        
+
+        dishes = [dict(dish) for dish in dishes] # 2.1、转换为字典
+
+        # 3、从dish_stats表中获取菜品统计信息
+        dish_stats = self.conn.execute(self.sql_parse.get("dish_stats.get_all")).fetchall()
+
+        # 3.1、将菜品统计信息与菜品关联
+        for dish in dishes:
+            for stat in dish_stats:
+                if stat["id"] == dish["id"]:
+                    dish["stat"] = dict(stat)
+                    break
+
+        # 4、从dish_choices表中获取菜品选择
+        dish_choices = self.conn.execute(self.sql_parse.get("dish_choices.get_all")).fetchall()
+
+        # 4.1、将菜品选择与菜品关联
+        for dish in dishes:
+            for choice in dish_choices:
+                if choice["dish_id"] == dish["id"]:
+                    if "choices" not in dish:
+                        dish["choices"] = {}
+
+                    dish["choices"][choice["name"]] = json.loads(choice["options"])
+
+        # 5、分组
+        for dish in dishes:
+            result[dish["category"]].append(dict(dish))
+
+        # 6、将result的key转换为分类名称
+
+        # 6.1 将categories转换为字典
+        categories = {category["id"]: category["name"] for category in categories}
+
+        result_ = {} # 创建新字典因为key不可改变
+        for category_id in result:
+            result_[categories[category_id]] = result[category_id]
+
+        return result_, categories
+
+
+                
+    
+
 class MetaDatabase(Database):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
@@ -152,7 +214,7 @@ class MetaDatabase(Database):
 
         self._init()
 
-        self.category = _DishedCategory(self.conn, self.sql_parse)
+        self.category = _DishesCategory(self.conn, self.sql_parse)
 
         self.dishes = _Dishes(self, self.conn, self.sql_parse)
 
@@ -178,23 +240,31 @@ class MetaDatabase(Database):
         self.conn.row_factory = sqlite3.Row # !: 无需注意SQL注入问题
 
 if __name__ == "__main__":
+    import random
     meta_db = MetaDatabase("meta.db")
 
     # 创建一个新分类
-    category_id = meta_db.category.new_s("测试分类")
+    for i in range(4):
+        category_id = meta_db.category.new_s(f"分类{i}")
 
-    # 创建一个新菜品
-    meta_db.dishes.create(
-        name="测试菜品",
-        price=100,
-        category_id=category_id,
-        description="这是一个测试菜品",
-        image="https://example.com/test.jpg",
-        is_available=True,
-        choices={            "大小": ["小", "中", "大"],
-            "口味": ["甜", "酸", "咸"]
-        }
-    )
+        # 创建一个新菜品
+        for j in range(10):
+            meta_db.dishes.create(
+            name=f"测试菜品{i}_{j}",
+            price=random.randint(100, 200),
+            category_id=category_id,
+            description="这是一个测试菜品",
+            is_available=True,
+            choices={            
+                "大小": ["小", "中", "大"],
+                "口味": ["甜", "酸", "咸"]
+            }
+        )
+    # meta_db = MetaDatabase("meta.db")
+    # dishes, categories = meta_db.dishes.get_all()
+    # print(categories)
+    # with open("dishes.json", "w", encoding="utf-8") as f:
+    #     json.dump(dishes, f, ensure_ascii=False, indent=2)
 
     
 
