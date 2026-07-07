@@ -5,12 +5,21 @@
                 <mdui-icon-arrow-back></mdui-icon-arrow-back>
             </mdui-button-icon>
         </template>
+
+        <template #right>
+            <slot name="customRight">
+                <component :is="rightComponent" />
+            </slot>
+        </template>
     </TopBar>
+
+    <router-view/>
 </template> 
 
 <script setup>
 import TopBar from '@/components/TopBar.vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ref, provide } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,4 +38,14 @@ const goBack = () => {
         }
     }
 }
+
+const rightComponent = ref(null)
+
+const setRightComponent = (component) => {
+    rightComponent.value = component
+}
+
+provide('setRightComponent', setRightComponent)
+
+
 </script>
