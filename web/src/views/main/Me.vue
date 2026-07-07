@@ -1,6 +1,7 @@
 <template>
     <TopBar title="我的" showHome="false">
     </TopBar>
+    <TopProgressBar ref="topProgressBar"></TopProgressBar>
 
     <TipCard variant="filled" background-color="#BB1614" color="#fff" v-if="isDevelopment">
         <mdui-icon-warning style="flex-shrink: 0"></mdui-icon-warning>
@@ -79,12 +80,14 @@
 <script setup>
     import TopBar from '@/components/TopBar.vue'
     import TipCard from '@/components/TipCard.vue'
+    import TopProgressBar from '@/components/TopProgressBar.vue'
 
     import 'mdui/components/card.js'
     import 'mdui/components/list.js'
     import 'mdui/components/list-item.js'
     import 'mdui/components/divider.js'
     import { snackbar } from 'mdui/functions/snackbar.js';
+    import { dialog } from 'mdui/functions/dialog.js';
 
     import '@mdui/icons/account-circle.js'
     import '@mdui/icons/manage-accounts.js'
@@ -96,40 +99,65 @@
     import '@mdui/icons/receipt.js'
     import '@mdui/icons/info.js'
 
-    import { ref, computed } from 'vue'
+    import { ref, computed, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
     import { useAuth } from '@/composables/auth.js'
+    import request from '@/utils/request.js'
 
     const { logout } = useAuth()
 
     const router = useRouter()
 
     const isDevelopment = ref(false)
-
     const username = computed(() => JSON.parse(localStorage.getItem('userInfo')).username)
-
     const isAdmin = computed(() => JSON.parse(localStorage.getItem('userInfo')).is_admin)
-
     const ipAddress = ref('192.168.1.5')
-
     const version = ref('1.0.0')
 
-    const handleLogout = async () => {
-        await logout()
-        
-        snackbar({
-            message: '退出登录成功',
-        })
-        
-        router.push('/login')
+    const topProgressBar = ref(null)
 
+    const handleLogout = async () => {
+        dialog({
+            headline: '退出登录',
+            description: '确认退出登录吗？',
+            actions: [
+                {
+                    text: '取消',
+                    onClick: () => {
+                        topProgressBar.value.hide()
+                    }
+                },
+                {
+                    text: '确定',
+                    onClick: async () => {
+                        topProgressBar.value.show()
+                        await logout()
+                        topProgressBar.value.hide()
+                        snackbar({
+                            message: '退出登录成功',
+                        })
+                        router.push('/login')
+                    }
+                },
+                
+            ]
+        })
         
 
     }
 
 
-
+    onMounted( async () => {
+        const res = await request.get('/system/getSystemInfo')
+        if (res.data.status == 0) {
+            version.value = res.data.data.version
+            isDevelopment.value = true ? res.data.data.env == 'dev' : false
+            ipAddress.value = res.data.data.ip_address
+        } else {
+            console.log("获取失败")
+        }
+    })
     
 
 

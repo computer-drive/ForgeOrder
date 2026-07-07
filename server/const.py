@@ -1,4 +1,6 @@
 
+VERSION = "1.0.1"
+
 class LOG:
     FORMAT = "%(color)s[%(asctime)s/%(class_name)s] %(levelname)s in %(method)s: %(message)s%(reset)s"
 
@@ -24,7 +26,8 @@ class CONFIG:
 class ROUTES:
     # 未登录状态也可访问的路由
     UNLOGGEDIN_ROUTES = [
-        "/api/auth/login"
+        "/api/auth/login",
+        "/api/system/getSystemInfo"
     ]
 
     # 仅管理员可访问的路由

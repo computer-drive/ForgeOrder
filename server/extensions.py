@@ -10,7 +10,6 @@ logger : Logger
 db_logger_thread : Thread
 db_logger_queue : Queue
 
-
 auth_manager : AuthManager
 
 server_status : int = -1
@@ -19,3 +18,5 @@ server_info: str = ""
 config : Config
 
 is_business: bool = True
+
+local_ip: str = ""

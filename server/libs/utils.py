@@ -3,6 +3,7 @@ from typing import Literal
 from typehints.utils import Args
 from flask import request
 import os
+import socket 
 
 def create_server_info_by_exception(e: Exception):
     info = ""
@@ -40,9 +41,7 @@ def verify_args(args: dict, args_format: list[Args]):
             args_invalid.append(arg["arg_name"])
     
     return args_invalid
-   
-
-    
+      
 def make_response(status: int, data: dict | list | int | str | bool | None):
     return {
         "status": status,
@@ -55,3 +54,14 @@ def get_client_ip():
         return request.headers["X-Real-IP"]
     else:
         return request.remote_addr
+    
+
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"

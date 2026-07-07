@@ -7,6 +7,8 @@ from script.models.exceptions import *
 from libs.auth import AuthManager
 import os
 from script.init_app import setup_app
+from libs.utils import get_local_ip
+from const import *
 
 def init():
     # 加载配置文件
@@ -32,6 +34,8 @@ def init():
         extensions.server_info = create_server_info_by_exception(e)
         print(extensions.server_info)
         return
+    
+    extensions.local_ip = get_local_ip()
 
     extensions.server_status = 101
 
@@ -51,6 +55,7 @@ def shutdown():
 if __name__ == "__main__":
     # 加载配置文件
     init()
+    extensions.logger.debug(f"版本：{VERSION}, IP地址：{extensions.local_ip}", "MAIN", "DebugMsg")
 
     # 设置环境
     os.environ["ENV"] = extensions.config.get("server.env")
