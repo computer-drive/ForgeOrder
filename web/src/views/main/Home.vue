@@ -137,7 +137,8 @@
         </div>
         
         <div class="action_item">
-          <mdui-button full-width variant="outlined" style="height: 70px;">
+          <mdui-button full-width variant="outlined" style="height: 70px;"
+          @click="router.push('/shop/dishes')">
 
             <div style="font-size: 24px; display: block">
               <mdui-icon-list></mdui-icon-list>
