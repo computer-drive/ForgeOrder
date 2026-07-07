@@ -178,8 +178,8 @@
     </div>
 
   
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">否</mdui-button>
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfrim">是</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">取消</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfrim">确定</mdui-button>
   </mdui-dialog>
 
 
