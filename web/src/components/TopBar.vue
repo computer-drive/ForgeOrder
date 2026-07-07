@@ -39,12 +39,22 @@
     const props = defineProps({
       title: {
         type: String,
-        default: 'ForgeOrder'
+        default: null
       },
       showHome: {
         type: String,
         default: 'true'
       }
+    })
+
+    const barTitle  = computed(() => {
+        if (props.title) {
+            return props.title
+        } else if (route.meta.title) {
+            return route.meta.title
+        } else {
+            return 'ForgeOrder'
+        }
     })
 
     // 返回与主页按钮 
