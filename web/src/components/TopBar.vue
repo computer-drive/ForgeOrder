@@ -5,6 +5,8 @@
         style="align-items: center;"
       >
         
+        <slot name="left"></slot>
+
         <mdui-button-icon v-if="showBack" @click="goBack">
           <mdui-icon-arrow-back></mdui-icon-arrow-back>
         </mdui-button-icon>
