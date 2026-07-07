@@ -1,7 +1,7 @@
 <template>
   <div>
     
-    <TopBar title="登录" showHome="false" />
+    <TopBar title="登录" :showHome="false" />
     <TopProgressBar ref="topProgressbar"/>
 
     <div class="container">
