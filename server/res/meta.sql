@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     is_available INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL,
 
-    FOREIGN KEY (category) REFERENCES dishs_category (id)
+    FOREIGN KEY (category) REFERENCES dishes_category (id)
 );
 
 CREATE TABLE IF NOT EXISTS dish_stats (
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS dish_stats (
     total_sales INTEGER NOT NULL DEFAULT 0,
     monthly_sales INTEGER NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (id) REFERENCES dishs (id)
+    FOREIGN KEY (id) REFERENCES dishes (id)
 );
 
 CREATE TABLE IF NOT EXISTS dish_choices (
