@@ -4,6 +4,7 @@ from libs.db.database import Database
 from libs.db.sql_parse import SqlParse
 import os
 from libs.db.exceptions import NotFoundException
+import json
 
 class _DishedCategory:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
@@ -136,7 +137,7 @@ class _Dishes:
                 # 执行create3命令以在dish_choices表中创建新菜品的选择
                 self.conn.execute(
                     self.sql_parse.get("dishes.create3"),
-                    (dish_id, name, options)
+                    (dish_id, name, json.dumps(options))
                 )
         
         # 提交事务
@@ -180,7 +181,7 @@ if __name__ == "__main__":
     meta_db = MetaDatabase("meta.db")
 
     # 创建一个新分类
-    category_id = meta_db.category.new("测试分类")
+    category_id = meta_db.category.new_s("测试分类")
 
     # 创建一个新菜品
     meta_db.dishes.create(
