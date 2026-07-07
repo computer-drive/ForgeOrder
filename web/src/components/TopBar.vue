@@ -5,16 +5,16 @@
         style="align-items: center;"
       >
         
-        <mdui-button-icon v-if="canGoBack" @click="goBack">
+        <mdui-button-icon v-if="showBack" @click="goBack">
           <mdui-icon-arrow-back></mdui-icon-arrow-back>
         </mdui-button-icon>
         
 
-        <mdui-button-icon v-if="isNotHomePage && showHome === 'true'" @click="goHome">
+        <mdui-button-icon v-if="isNotHomePage && showHome" @click="goHome">
           <mdui-icon-home></mdui-icon-home>
         </mdui-button-icon>
         
-        <mdui-top-app-bar-title>{{ title }}</mdui-top-app-bar-title>
+        <mdui-top-app-bar-title>{{ barTitle }}</mdui-top-app-bar-title>
 
         <slot name="right"></slot> 
 
@@ -42,8 +42,12 @@
         default: null
       },
       showHome: {
-        type: String,
-        default: 'true'
+        type: Boolean,
+        default: false
+      },
+      showBack: {
+        type: Boolean,
+        default: false
       }
     })
 
@@ -57,12 +61,9 @@
         }
     })
 
-    // 返回与主页按钮 
+    // 主页按钮 
     const isNotHomePage = computed(() => {
-    return route.path !== '/';
-    });
-
-    const canGoBack = computed(() => {
+      return route.path !== '/';
     });
 
     function goHome() {
@@ -71,5 +72,16 @@
     } else {
         router.push('/');
     } 
+    }
+
+    // 返回按钮 
+    function goBack() {
+        if (route.matched == 1) {
+          router.push('/')
+        } else {
+          router.push(
+            route.path.split('/').slice(0, -1).join('/') || '/'
+          )
+        }
     }
 </script>

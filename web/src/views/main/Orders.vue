@@ -1,5 +1,5 @@
 <template>
-    <TopBar title="订单" showHome="false">
+    <TopBar title="订单" :showHome="false">
         <template #right >
             <mdui-text-field variant="outlined" placeholder="搜索" style="width: auto; height: 100%">
             </mdui-text-field>

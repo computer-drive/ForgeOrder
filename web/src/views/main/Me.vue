@@ -1,5 +1,5 @@
 <template>
-    <TopBar title="我的" showHome="false">
+    <TopBar title="我的" :showHome="false">
     </TopBar>
     <TopProgressBar ref="topProgressBar"></TopProgressBar>
 
