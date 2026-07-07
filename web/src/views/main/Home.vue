@@ -187,7 +187,7 @@
 
 <script setup>
 // 导入home.css
-import '/public/home.css'
+import '@/assets/home.css'
 
 // 导入自定义组件
 import TipCard from '@/components/TipCard.vue'
