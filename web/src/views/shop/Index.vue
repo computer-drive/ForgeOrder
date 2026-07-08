@@ -45,7 +45,15 @@ const setRightComponent = (component) => {
     rightComponent.value = component
 }
 
-provide('setRightComponent', setRightComponent)
+const clearRightComponent = () => {
+    rightComponent.value = null
+}
+
+provide('rightComponent', {
+    setRightComponent,
+    clearRightComponent
+})
+
 
 
 </script>

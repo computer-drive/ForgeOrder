@@ -102,7 +102,7 @@ import 'mdui/components/dialog.js';
 import 'mdui/components/segmented-button-group.js';
 import 'mdui/components/segmented-button.js';
 
-import { inject, h, onMounted, ref } from 'vue'
+import { inject, h, onMounted, ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 import '@mdui/icons/add.js';
@@ -112,7 +112,7 @@ import request from '@/utils/request.js'
 
 const router = useRouter()
 
-const setRightComponent = inject('setRightComponent')
+const { setRightComponent, clearRightComponent } = inject('rightComponent')
 
 const dishes = ref([])
 const categories = ref([])
@@ -161,6 +161,11 @@ const showDetail = (category_name, dish_id) => {
 const goEdit = () => {
     router.push(`/shop/dishes/${currentDish.value.id}`)
 }
+
+onBeforeUnmount(() => {
+    clearRightComponent()
+})
+
 
 
 
