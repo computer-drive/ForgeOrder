@@ -202,6 +202,16 @@ class _Dishes:
         return result_, categories
 
 
+    def get(self, dish_id: int):
+        '''
+        获取菜品信息。
+        '''
+        result = self.conn.execute(self.sql_parse.get("dishes.get"), (dish_id,)).fetchone()
+
+        if not result:
+            raise NotFoundException(str(dish_id))
+        
+        return result
                 
     
 

@@ -2,6 +2,8 @@ import extensions
 from flask import Blueprint, jsonify, request
 from libs.utils import make_response
 from ..db import get_meta_database
+from .exceptions import ArgumentException
+from libs.db.exceptions import NotFoundException
 
 shop_bp = Blueprint("shop", __name__)
 
@@ -36,3 +38,32 @@ def get_all_dishes():
             "categories": categories
         }
     ))
+
+@shop_bp.route("/api/shop/dishes/get", methods=["POST"])
+def get_dish():
+    dish_id = request.get_json().get("id", None)
+
+    if dish_id is None:
+        raise ArgumentException(["id"])
+    
+    meta_db = get_meta_database()
+
+    try:
+        dish = meta_db.dishes.get(dish_id)
+
+    except NotFoundException as e:
+        return jsonify(make_response(
+            3001,
+            None
+        ))
+
+    return jsonify(make_response(
+        0,
+        dict(dish)
+    ))
+
+    
+
+
+
+    

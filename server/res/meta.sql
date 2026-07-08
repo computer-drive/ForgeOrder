@@ -81,6 +81,9 @@ ORDER BY id DESC
 SELECT * FROM dish_choices
 ORDER BY id DESC
 
+-- command: dishes.get
+SELECT * FROM dishes WHERE id = ?
+
 
 
 
