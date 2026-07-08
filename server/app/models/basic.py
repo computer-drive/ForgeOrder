@@ -1,10 +1,13 @@
 
 import os
-from flask import Blueprint, jsonify,  render_template, current_app, send_from_directory, request
-from extensions import *
-import extensions 
-from core.utils import make_response, get_client_ip
+
+from flask import (Blueprint, current_app, jsonify, render_template, request,
+                   send_from_directory)
+
+import extensions
 from const import *
+from core.utils import get_client_ip, make_response
+from extensions import *
 
 basic_bp = Blueprint("script", __name__)
 

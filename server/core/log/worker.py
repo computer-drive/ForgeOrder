@@ -1,7 +1,10 @@
-import threading
 import queue
-from .log_db import LogDatabase
+import threading
+
 from const import *
+
+from .log_db import LogDatabase
+
 
 def worker(q: queue.Queue, db_name: str):
     buffer_count = 0

@@ -1,7 +1,9 @@
+import datetime
+import os
+
 from ..db.database import Database
 from ..db.sql_parse import SqlParse
-import os
-import datetime
+
 
 class LogDatabase(Database):
     def __init__(self, db_name: str):

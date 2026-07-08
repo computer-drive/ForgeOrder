@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+
 class OrderChoiceType(TypedDict):
     choice_id: int
     choice_name: str

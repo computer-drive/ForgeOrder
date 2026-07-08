@@ -1,10 +1,12 @@
 import datetime
-import sqlite3
-from core.db.database import Database
-from core.db.sql_parse import SqlParse
-import os
-from core.db.exceptions import NotFoundException
 import json
+import os
+import sqlite3
+
+from core.db.database import Database
+from core.db.exceptions import NotFoundException
+from core.db.sql_parse import SqlParse
+
 
 class _DishesCategory:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):

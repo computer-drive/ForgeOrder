@@ -1,14 +1,15 @@
-import extensions
-from core.log.logger import setup_logger
 import logging
-from core.utils import create_server_info_by_exception
-from core.config import Config
-from app.models.exceptions import *
-from core.auth import AuthManager
 import os
+
+import extensions
 from app.init_app import setup_app
-from core.utils import get_local_ip
+from app.models.exceptions import *
 from const import *
+from core.auth import AuthManager
+from core.config import Config
+from core.log.logger import setup_logger
+from core.utils import create_server_info_by_exception, get_local_ip
+
 
 def init():
     # 加载配置文件

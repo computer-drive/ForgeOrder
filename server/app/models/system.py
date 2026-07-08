@@ -1,8 +1,10 @@
-from flask import Blueprint, jsonify, request
-from core.utils import make_response
-from const import *
 import os
+
+from flask import Blueprint, jsonify, request
+
 import extensions
+from const import *
+from core.utils import make_response
 
 system_bp = Blueprint("system", __name__)
 

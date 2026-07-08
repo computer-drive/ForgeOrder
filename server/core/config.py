@@ -1,6 +1,8 @@
-from email.policy import default
 import json
+from email.policy import default
+
 from const import CONFIG
+
 
 class Config:
     def __init__(self, config_file: str):

@@ -1,10 +1,13 @@
-from flask import Blueprint, request, jsonify
-from core.utils import make_response, verify_args, get_client_ip
 import json
+
+from flask import Blueprint, jsonify, request
+from werkzeug.security import check_password_hash
+
+import extensions
+from core.utils import get_client_ip, make_response, verify_args
+
 from ..db import get_main_database
 from .exceptions import *
-from werkzeug.security import check_password_hash
-import extensions
 
 accounts_bp = Blueprint("accounts", __name__)
 

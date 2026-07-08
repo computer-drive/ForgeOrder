@@ -1,10 +1,12 @@
-from core.utils import pad_string
+import datetime
+import os
 import sqlite3
+
 from core.db.database import Database
 from core.db.sql_parse import SqlParse
-import os
-import datetime
+from core.utils import pad_string
 from typehints.main_db import *
+
 
 class _Users:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):

@@ -1,9 +1,12 @@
-import logging
-from const import *
-from .log_db import LogDatabase
-import queue
 import datetime
+import logging
+import queue
+
+from const import *
+
+from .log_db import LogDatabase
 from .worker import create_worker
+
 
 class Logger(logging.Logger):
     def __init__(self, name: str):

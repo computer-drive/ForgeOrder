@@ -1,9 +1,10 @@
 # 全局对象，供所有脚本使用
-from core.log.logger import Logger
-from threading import Thread
 from queue import Queue
-from core.config import Config
+from threading import Thread
+
 from core.auth import AuthManager
+from core.config import Config
+from core.log.logger import Logger
 
 logger : Logger 
 db_logger_thread : Thread

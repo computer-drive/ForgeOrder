@@ -1,12 +1,15 @@
-from flask import Flask, jsonify, render_template, request, current_app
-from core.utils import make_response
-from .models.exceptions import ArgumentException
-from .db import close_databases
-import extensions
-import traceback
 import json
+import traceback
+
+from flask import Flask, current_app, jsonify, render_template, request
+
+import extensions
 from const import *
-from core.utils import get_client_ip
+from core.utils import get_client_ip, make_response
+
+from .db import close_databases
+from .models.exceptions import ArgumentException
+
 
 # @app.errorhandler(405)
 def method_not_allowed(e):
