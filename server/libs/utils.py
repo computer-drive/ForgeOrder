@@ -1,7 +1,7 @@
 import traceback
 from typing import Literal
 from typehints.utils import Args
-from flask import request
+from flask import request, jsonify
 import os
 import socket 
 
@@ -43,10 +43,10 @@ def verify_args(args: dict, args_format: list[Args]):
     return args_invalid
       
 def make_response(status: int, data: dict | list | int | str | bool | None):
-    return {
+    return jsonify({
         "status": status,
         "data": data
-    }
+    })
 
 def get_client_ip():
     if os.environ["ENV"] == "dev":

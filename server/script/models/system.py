@@ -8,11 +8,11 @@ system_bp = Blueprint("system", __name__)
 
 @system_bp.route("/api/system/getSystemInfo")
 def get_system_info():
-    return jsonify(make_response(
+    return make_response(
         0,
         {
             "version": VERSION,
             "ip_address": extensions.local_ip,
             "env": os.environ["ENV"]
         }
-    ))
+    )

@@ -10,31 +10,31 @@ from libs.utils import get_client_ip
 
 # @app.errorhandler(405)
 def method_not_allowed(e):
-        return jsonify(make_response(
+        return make_response(
             1002,
             405,
-        )), 405
+        ), 405
     
 # @app.errorhandler(404)
 def not_found(e):
-        return jsonify(make_response(
+        return make_response(
             1003,
             404,
-        )), 404
+        ), 404
 
 # @app.errorhandler(500)
 def internal_server_error(e):
-        return jsonify(make_response(
+        return make_response(
             9001,
             500,
-        )), 500
+        ), 500
     
 # @app.errorhandler(ArgumentException)
 def argument_exception(e):
-        return jsonify(make_response(
+        return make_response(
             1001,
             e.args_,
-        )), 400
+        ), 400
     
 # @app.teardown_appcontext
 def teardown_appcontext(error):
@@ -106,10 +106,10 @@ def before_request():
     if token is not None and token.startswith("Bearer "):
         token = token.split(" ")[1]
     else:
-        return jsonify(make_response(
+        return make_response(
             2003,
             None
-        )) , 401
+        ), 401
     
     status, result = extensions.auth_manager.verify(token)
     
@@ -119,39 +119,39 @@ def before_request():
             case None:
                 # token无效
                 extensions.logger.debug("无效的Token", "BEFORE_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     2003,
                     None
-                )) , 401
+                ) , 401
             case "expire":
                 extensions.logger.debug("Token过期", "BEFORE_REQUEST", "DebugMsg")
                 # token过期
-                return jsonify(make_response(
+                return make_response(
                     2004,
                     None
-                )) , 401
+                ) , 401
             case "logout":
                 extensions.logger.debug("Token的用户已退出登录", "BEFORE_REQUEST", "DebugMsg")
                 # 用户退出登录
-                return jsonify(make_response(
+                return make_response(
                     2003,
                     None
-                )) , 401
+                ) , 401
             case "old_device":
                 extensions.logger.debug("Token的用户在其他设备登录", "BEFORE_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     2005,
                     None
-                )) , 401
+                ) , 401
     else:
         # token有效，判断ip是否对应
         if result["device_ip"] != get_client_ip(): # type: ignore
             # ip不一致
             extensions.logger.debug(f"token的ip：{result['device_ip']}， 当前ip：{get_client_ip()}，不一致！", "BEFORE_REQUEST", "DebugMsg") # type: ignore
-            return jsonify(make_response(
+            return make_response(
                 2003,
                 None
-            )) , 401
+            ) , 401
         
         # token正确，更新到期时间
         extensions.logger.debug("Token有效！", "BEFORE_REQUEST", "DebugMsg")
