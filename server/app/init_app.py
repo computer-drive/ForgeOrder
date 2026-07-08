@@ -185,7 +185,7 @@ def before_request():
 def setup_app():
     app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
 
-    from script import blueprints
+    from app import blueprints
     for bp in blueprints:
         app.register_blueprint(bp)
 
