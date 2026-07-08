@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, render_template, request, current_app
-from libs.utils import make_response
+from core.utils import make_response
 from .models.exceptions import ArgumentException
 from .db import close_databases
 import extensions
 import traceback
 import json
 from const import *
-from libs.utils import get_client_ip
+from core.utils import get_client_ip
 
 # @app.errorhandler(405)
 def method_not_allowed(e):

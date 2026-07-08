@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from libs.utils import make_response
+from core.utils import make_response
 from const import *
 import os
 import extensions

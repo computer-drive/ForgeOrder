@@ -3,7 +3,7 @@ import os
 from flask import Blueprint, jsonify,  render_template, current_app, send_from_directory, request
 from extensions import *
 import extensions 
-from libs.utils import make_response, get_client_ip
+from core.utils import make_response, get_client_ip
 from const import *
 
 basic_bp = Blueprint("script", __name__)

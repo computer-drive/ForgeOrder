@@ -1,9 +1,9 @@
 import extensions
 from flask import Blueprint, jsonify, request
-from libs.utils import make_response
+from core.utils import make_response
 from ..db import get_meta_database
 from .exceptions import ArgumentException
-from libs.db.exceptions import NotFoundException
+from core.db.exceptions import NotFoundException
 
 shop_bp = Blueprint("shop", __name__)
 

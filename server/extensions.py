@@ -1,10 +1,9 @@
 # 全局对象，供所有脚本使用
-# quanb 
-from libs.log.logger import Logger
+from core.log.logger import Logger
 from threading import Thread
 from queue import Queue
-from libs.config import Config
-from libs.auth import AuthManager
+from core.config import Config
+from core.auth import AuthManager
 
 logger : Logger 
 db_logger_thread : Thread

@@ -1,9 +1,9 @@
 import datetime
 import sqlite3
-from libs.db.database import Database
-from libs.db.sql_parse import SqlParse
+from core.db.database import Database
+from core.db.sql_parse import SqlParse
 import os
-from libs.db.exceptions import NotFoundException
+from core.db.exceptions import NotFoundException
 import json
 
 class _DishesCategory:

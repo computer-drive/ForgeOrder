@@ -1,13 +1,13 @@
 import extensions
-from libs.log.logger import setup_logger
+from core.log.logger import setup_logger
 import logging
-from libs.utils import create_server_info_by_exception
-from libs.config import Config
+from core.utils import create_server_info_by_exception
+from core.config import Config
 from script.models.exceptions import *
-from libs.auth import AuthManager
+from core.auth import AuthManager
 import os
 from script.init_app import setup_app
-from libs.utils import get_local_ip
+from core.utils import get_local_ip
 from const import *
 
 def init():
