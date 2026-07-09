@@ -6,7 +6,7 @@ from core.db.database import Database
 from core.db.sql_parse import SqlParse
 from core.utils import pad_string
 from app.db.schema import *
-
+import extensions
 
 class _Users:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
@@ -414,7 +414,7 @@ class MainDatabase(Database):
 
     def _init(self):
         # 获取res
-        res_path = get_res_path()
+        res_path = os.path.join(extensions.root_dir, "res")
         sql_file = os.path.join(res_path, "main.sql")
 
         # 执行sql_parse
