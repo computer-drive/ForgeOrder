@@ -3,6 +3,7 @@ import os
 
 from ..db.database import Database
 from ..db.sql_parse import SqlParse
+from ..utils import get_res_path
 
 
 class LogDatabase(Database):
@@ -17,16 +18,9 @@ class LogDatabase(Database):
 
     def _init(self):
         # 获取当前脚本所在目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        # 向上推，获取res目录
-        res_dir = os.path.join(os.path.dirname(
-            os.path.dirname(current_dir)# libs目录
-        ), # server目录 
-        "res")
-
-        # 初始化加载器
-        self.parser = SqlParse(os.path.join(res_dir, "log.sql"))
+        res_path = get_res_path()
+        sql_file = os.path.join(res_path, "log.sql")
+        self.parser = SqlParse(sql_file)
 
         # 执行wal命令
         self.execute(self.parser.get("wal"))

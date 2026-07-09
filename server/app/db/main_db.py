@@ -4,7 +4,7 @@ import sqlite3
 
 from core.db.database import Database
 from core.db.sql_parse import SqlParse
-from core.utils import pad_string
+from core.utils import pad_string, get_res_path
 from app.db.schema import *
 
 
@@ -414,11 +414,7 @@ class MainDatabase(Database):
 
     def _init(self):
         # 获取res
-        current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
-        res_path = os.path.join(
-            os.path.dirname(current_path), # server 目录
-            "res",
-        )
+        res_path = get_res_path()
         sql_file = os.path.join(res_path, "main.sql")
 
         # 执行sql_parse

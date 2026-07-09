@@ -6,6 +6,7 @@ import sqlite3
 from core.db.database import Database
 from core.db.exceptions import NotFoundException
 from core.db.sql_parse import SqlParse
+from core.utils import get_res_path
 
 
 class _DishesCategory:
@@ -235,14 +236,10 @@ class MetaDatabase(Database):
         初始化数据库。
         '''
         ## 获取meta.sql
-        current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
-        res_path = os.path.join(
-            os.path.dirname(current_path), # server 目录
-            "res",
-        ) 
+        res_path = get_res_path()
+        sql_file = os.path.join(res_path, "meta.sql")
 
-        # 初始化加载器
-        self.sql_parse = SqlParse(os.path.join(res_path, "meta.sql"))
+        self.sql_parse = SqlParse(sql_file)
 
         # 执行init命令
         self.executescript(self.sql_parse.get("init"))

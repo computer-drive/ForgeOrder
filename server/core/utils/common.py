@@ -1,5 +1,8 @@
 import traceback
 from typing import Literal
+import os
+
+import extensions
 
 # def create_server_info_by_exception(e: Exception):
 #     info = ""
@@ -26,4 +29,7 @@ def pad_string(string: str,
         return pad_char * pad_length + string
     else:
         return string + pad_char * pad_length
+    
+def get_res_path():
+    return os.path.join(extensions.root_dir, 'res')
   
