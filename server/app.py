@@ -68,10 +68,16 @@ if __name__ == "__main__":
     
     # 运行服务器
     extensions.server_status = 200
-    app.run(
-        host=extensions.config.get("server.host"), #type: ignore
-        port=extensions.config.get("server.port"), #type: ignore
-    )
+    if os.environ["ENV"] == "product":
+        extensions.logger.debug("生产环境运行！", "MAIN", "DebugMsg")
+
+        from waitress import serve
+        serve(app, host=extensions.config.get("server.host"), port=extensions.config.get("server.port"))
+    else:
+        app.run(
+            host=extensions.config.get("server.host"), #type: ignore
+            port=extensions.config.get("server.port"), #type: ignore
+        )
 
     # 关闭服务器
     extensions.server_status = 299
