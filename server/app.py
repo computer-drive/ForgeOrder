@@ -25,7 +25,9 @@ def init():
 
     # 初始化日志记录器
     try:
-        logger, thread, queue = setup_logger(__name__, extensions.config.get("log.database")) #type: ignore
+        logger, thread, queue = setup_logger(__name__,
+                extensions.config.get("log.database"), # type: ignore
+                extensions.config.get("log.level")) #type: ignore
     
     
         extensions.logger = logger

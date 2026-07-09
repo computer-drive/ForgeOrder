@@ -98,15 +98,33 @@ class Formatter(logging.Formatter):
 
 
 
-def setup_logger(name: str, db_name: str):
+def setup_logger(name: str, db_name: str, level: str = "info"):
     logger = Logger(name)
 
     formatter = Formatter(LOG.FORMAT)
+
+    level_int = logging.INFO
+    match level:
+        case "debug":
+            level_int = logging.DEBUG
+        case "info":
+            level_int = logging.INFO
+        case "warning":
+            level_int = logging.WARNING
+        case "error":
+            level_int = logging.ERROR
+        case "critical":
+            level_int = logging.CRITICAL
+        case _:
+            level_int = logging.INFO
     
+    logger.setLevel(level_int)
+
     # 控制台日志记录器
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(level_int)
     logger.addHandler(stream_handler)
 
     # 数据库日志记录器
@@ -115,6 +133,7 @@ def setup_logger(name: str, db_name: str):
 
     db_handler = DatabaseHandler(queue)
     db_handler.setFormatter(formatter)
+    db_handler.setLevel(level_int)
     logger.addHandler(db_handler)
 
     return logger, thread, queue

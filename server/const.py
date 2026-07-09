@@ -11,8 +11,10 @@ class CONFIG:
     DEFAULT = {
         "server.host": "0.0.0.0",
         "server.port": 5000,
+
         "log.level": "info",
         "log.database": "data/log.db",
+        "log.debug_ignore": [],
 
         "main_db": "data/main.db",
         "meta_db": "data/meta.db",
