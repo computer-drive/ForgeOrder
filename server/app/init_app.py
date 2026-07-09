@@ -7,7 +7,7 @@ import extensions
 from const import *
 from core.utils import get_client_ip, make_response
 
-from .db import close_databases
+from .db.db import close_databases
 from .models.exceptions import ArgumentException
 
 

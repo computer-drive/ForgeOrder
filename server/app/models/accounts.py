@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 import extensions
 from core.utils import get_client_ip, make_response, verify_args
 
-from ..db import get_main_database
+from ..db.db import get_main_database
 from .exceptions import *
 
 accounts_bp = Blueprint("accounts", __name__)
