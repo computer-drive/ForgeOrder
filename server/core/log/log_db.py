@@ -1,9 +1,11 @@
 import datetime
 import os
 
+# import extensions
+
 from ..db.database import Database
 from ..db.sql_parse import SqlParse
-from ..utils import get_res_path
+# from ..utils import get_res_path
 
 
 class LogDatabase(Database):
@@ -18,7 +20,8 @@ class LogDatabase(Database):
 
     def _init(self):
         # 获取当前脚本所在目录
-        res_path = get_res_path()
+        import extensions
+        res_path = os.path.join(extensions.root_dir, "res")
         sql_file = os.path.join(res_path, "log.sql")
         self.parser = SqlParse(sql_file)
 

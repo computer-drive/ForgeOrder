@@ -30,6 +30,3 @@ def pad_string(string: str,
     else:
         return string + pad_char * pad_length
     
-def get_res_path():
-    return os.path.join(extensions.root_dir, 'res')
-  

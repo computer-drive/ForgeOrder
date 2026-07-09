@@ -1,6 +1,6 @@
 from .server import verify_args, make_response, get_client_ip, get_local_ip
 # from .common import pad_string, create_server_info_by_exception
-from .common import pad_string, get_res_path
+from .common import pad_string
 
 
 __all__ = [
@@ -9,7 +9,7 @@ __all__ = [
     "get_client_ip",
     "get_local_ip",
     "pad_string",
-    "get_res_path",
+    # "get_res_path",
     # "create_server_info_by_exception"
 ]
 

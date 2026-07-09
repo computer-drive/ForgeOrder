@@ -6,7 +6,7 @@ import sqlite3
 from core.db.database import Database
 from core.db.exceptions import NotFoundException
 from core.db.sql_parse import SqlParse
-from core.utils import get_res_path
+# from core.utils import get_res_path
 
 
 class _DishesCategory:
