@@ -18,9 +18,11 @@ class Logger(logging.Logger):
 
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False)
+        elif msg is None:
+            msg = ''
         else:
             msg = str(msg)
-            
+
         super().log(level, msg, extra=extra)
 
     def info(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
@@ -76,6 +78,9 @@ class Formatter(logging.Formatter):
         
         record.color = ""
         record.reset = "\033[0m"
+
+        if record.msg != '':
+            record.msg = f": {record.msg}"
         
         match record.levelname:
             case "DEBUG":
