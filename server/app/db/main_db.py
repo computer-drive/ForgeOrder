@@ -5,7 +5,7 @@ import sqlite3
 from core.db.database import Database
 from core.db.sql_parse import SqlParse
 from core.utils import pad_string
-from typehints.main_db import *
+from app.db.schema import *
 
 
 class _Users:
