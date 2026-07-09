@@ -1,6 +1,8 @@
 import logging
 import os
 
+from core.error_handler.excepthook import install
+from core.utils import get_local_ip
 import extensions
 from app.init_app import setup_app
 from app.models.exceptions import *
@@ -9,8 +11,8 @@ from core.auth import AuthManager
 from core.config import Config
 from core.log.logger import setup_logger
 # from core.utils import create_server_info_by_exception, get_local_ip
-from core.utils import get_local_ip
 
+install()
 
 def init():
 
@@ -44,7 +46,7 @@ def init():
     
     extensions.local_ip = get_local_ip()
 
-    extensions.server_status = 101
+    # extensions.server_status = 101
 
 def shutdown():
     # 关闭数据库日志记录器线程
