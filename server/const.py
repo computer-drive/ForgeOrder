@@ -12,16 +12,18 @@ class CONFIG:
         "server.host": "0.0.0.0",
         "server.port": 5000,
         "log.level": "info",
-        "log.database": "log.db",
+        "log.database": "data/log.db",
 
-        "main_db": "main.db",
-        "meta_db": "meta.db",
+        "main_db": "data/main.db",
+        "meta_db": "data/meta.db",
 
         "auth.secret_key": "development_key",
         "auth.available_time": 60, # 60分钟
 
         "server.env": "dev",
     }
+
+    CONFIG_PATH = "data/config.json"
 
 class ROUTES:
     # 未登录状态也可访问的路由

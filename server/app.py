@@ -13,8 +13,13 @@ from core.utils import get_local_ip
 
 
 def init():
+
+    # 初始化路径
+    if not os.path.exists("data"):
+        os.makedirs("data")
+                
     # 加载配置文件
-    extensions.config = Config("config.json")
+    extensions.config = Config(CONFIG.CONFIG_PATH)
 
     # 初始化日志记录器
     try:
