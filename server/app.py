@@ -8,7 +8,8 @@ from const import *
 from core.auth import AuthManager
 from core.config import Config
 from core.log.logger import setup_logger
-from core.utils import create_server_info_by_exception, get_local_ip
+# from core.utils import create_server_info_by_exception, get_local_ip
+from core.utils import get_local_ip
 
 
 def init():
@@ -31,9 +32,9 @@ def init():
 
     
     except Exception as e:
-        extensions.server_status = 300
-        extensions.server_info = create_server_info_by_exception(e)
-        print(extensions.server_info)
+        # extensions.server_status = 300
+        # extensions.server_info = create_server_info_by_exception(e)
+        # print(extensions.server_info)
         return
     
     extensions.local_ip = get_local_ip()
@@ -63,11 +64,11 @@ if __name__ == "__main__":
 
     # 初始化flask
     app = setup_app()
-    extensions.server_status = 100
+    # extensions.server_status = 100
 
     
     # 运行服务器
-    extensions.server_status = 200
+    # extensions.server_status = 200
     if os.environ["ENV"] == "product":
         extensions.logger.debug("生产环境运行！", "MAIN", "DebugMsg")
 

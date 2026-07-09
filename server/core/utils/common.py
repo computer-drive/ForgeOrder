@@ -1,13 +1,13 @@
 import traceback
 from typing import Literal
 
-def create_server_info_by_exception(e: Exception):
-    info = ""
-    for line in traceback.format_exception(type(e), e, e.__traceback__):
-        info += line
-        info += "\n"
+# def create_server_info_by_exception(e: Exception):
+#     info = ""
+#     for line in traceback.format_exception(type(e), e, e.__traceback__):
+#         info += line
+#         info += "\n"
     
-    return info
+#     return info
 
 def pad_string(string: str,
                length: int,

@@ -12,8 +12,8 @@ db_logger_queue : Queue
 
 auth_manager : AuthManager
 
-server_status : int = -1
-server_info: str = ""
+# server_status : int = -1
+# server_info: str = ""
 
 config : Config
 

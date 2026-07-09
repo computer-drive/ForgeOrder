@@ -63,25 +63,25 @@ def teardown_appcontext(error):
 def before_request():
 
     # 服务器状态检查
-    if extensions.server_status == 300:
-        return render_template(
-            "info.html",
-            title = "启动服务器时出错",
-            info = extensions.server_info,
-        )
+    # if extensions.server_status == 300:
+    #     return render_template(
+    #         "info.html",
+    #         title = "启动服务器时出错",
+    #         info = extensions.server_info,
+    #     )
     
-    elif extensions.server_status == 400:
-        return render_template(
-            "info.html",
-            title = "运行时出错",
-            info = extensions.server_info,
-        )
+    # elif extensions.server_status == 400:
+    #     return render_template(
+    #         "info.html",
+    #         title = "运行时出错",
+    #         info = extensions.server_info,
+    #     )
     
-    elif extensions.server_status == 299:
-        return render_template(
-            "info.html",
-            title = "服务器已关闭",
-        )
+    # elif extensions.server_status == 299:
+    #     return render_template(
+    #         "info.html",
+    #         title = "服务器已关闭",
+    #     )
     
     
     
