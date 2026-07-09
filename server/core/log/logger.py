@@ -13,6 +13,19 @@ class Logger(logging.Logger):
     def __init__(self, name: str):
         super().__init__(name)
 
+    def setLevel(self, level: int | str) -> None:
+
+        if level == logging.DEBUG:
+            import extensions
+            self.debug_ignore: list = extensions.config.get("log.debug_ignore")
+        else:
+            self.debug_ignore = []
+
+        return super().setLevel(level)
+    
+
+
+
     def log(self, msg: str | dict | list , level: int, class_name: str, method: str): # type:ignore
         extra = {"class_name": class_name, "method": method}
 
@@ -38,7 +51,11 @@ class Logger(logging.Logger):
         self.log(msg, logging.CRITICAL, class_name, method)
 
     def debug(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
-        self.log(msg, logging.DEBUG, class_name, method)
+        # print(class_name, self.debug_ignore)
+        if class_name in self.debug_ignore:
+            return
+        else:
+            self.log(msg, logging.DEBUG, class_name, method)
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, queue: queue.Queue):
