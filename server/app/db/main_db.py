@@ -1,10 +1,12 @@
-from libs.utils import pad_string
-import sqlite3
-from libs.db.database import Database
-from libs.db.sql_parse import SqlParse
-import os
 import datetime
-from typehints.main_db import *
+import os
+import sqlite3
+
+from core.db.database import Database
+from core.db.sql_parse import SqlParse
+from core.utils import pad_string
+from app.db.schema import *
+import extensions
 
 class _Users:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
@@ -412,11 +414,7 @@ class MainDatabase(Database):
 
     def _init(self):
         # 获取res
-        current_path = os.path.abspath(os.path.dirname(__file__)) # script目录
-        res_path = os.path.join(
-            os.path.dirname(current_path), # server 目录
-            "res",
-        )
+        res_path = os.path.join(extensions.root_dir, "res")
         sql_file = os.path.join(res_path, "main.sql")
 
         # 执行sql_parse

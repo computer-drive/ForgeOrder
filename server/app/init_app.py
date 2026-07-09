@@ -1,40 +1,44 @@
-from flask import Flask, jsonify, render_template, request, current_app
-from libs.utils import make_response
-from .models.exceptions import ArgumentException
-from .db import close_databases
-import extensions
-import traceback
 import json
+import traceback
+import os
+
+from flask import Flask, current_app, jsonify, render_template, request
+
+import extensions
 from const import *
-from libs.utils import get_client_ip
+from core.utils import get_client_ip, make_response
+
+from .db.db import close_databases
+from .models.exceptions import ArgumentException
+
 
 # @app.errorhandler(405)
 def method_not_allowed(e):
-        return jsonify(make_response(
+        return make_response(
             1002,
             405,
-        )), 405
+        ), 405
     
 # @app.errorhandler(404)
 def not_found(e):
-        return jsonify(make_response(
+        return make_response(
             1003,
             404,
-        )), 404
+        ), 404
 
 # @app.errorhandler(500)
 def internal_server_error(e):
-        return jsonify(make_response(
+        return make_response(
             9001,
             500,
-        )), 500
+        ), 500
     
 # @app.errorhandler(ArgumentException)
 def argument_exception(e):
-        return jsonify(make_response(
+        return make_response(
             1001,
             e.args_,
-        )), 400
+        ), 400
     
 # @app.teardown_appcontext
 def teardown_appcontext(error):
@@ -60,25 +64,25 @@ def teardown_appcontext(error):
 def before_request():
 
     # 服务器状态检查
-    if extensions.server_status == 300:
-        return render_template(
-            "info.html",
-            title = "启动服务器时出错",
-            info = extensions.server_info,
-        )
+    # if extensions.server_status == 300:
+    #     return render_template(
+    #         "info.html",
+    #         title = "启动服务器时出错",
+    #         info = extensions.server_info,
+    #     )
     
-    elif extensions.server_status == 400:
-        return render_template(
-            "info.html",
-            title = "运行时出错",
-            info = extensions.server_info,
-        )
+    # elif extensions.server_status == 400:
+    #     return render_template(
+    #         "info.html",
+    #         title = "运行时出错",
+    #         info = extensions.server_info,
+    #     )
     
-    elif extensions.server_status == 299:
-        return render_template(
-            "info.html",
-            title = "服务器已关闭",
-        )
+    # elif extensions.server_status == 299:
+    #     return render_template(
+    #         "info.html",
+    #         title = "服务器已关闭",
+    #     )
     
     
     
@@ -106,10 +110,10 @@ def before_request():
     if token is not None and token.startswith("Bearer "):
         token = token.split(" ")[1]
     else:
-        return jsonify(make_response(
+        return make_response(
             2003,
             None
-        )) , 401
+        ), 401
     
     status, result = extensions.auth_manager.verify(token)
     
@@ -119,39 +123,39 @@ def before_request():
             case None:
                 # token无效
                 extensions.logger.debug("无效的Token", "BEFORE_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     2003,
                     None
-                )) , 401
+                ) , 401
             case "expire":
                 extensions.logger.debug("Token过期", "BEFORE_REQUEST", "DebugMsg")
                 # token过期
-                return jsonify(make_response(
+                return make_response(
                     2004,
                     None
-                )) , 401
+                ) , 401
             case "logout":
                 extensions.logger.debug("Token的用户已退出登录", "BEFORE_REQUEST", "DebugMsg")
                 # 用户退出登录
-                return jsonify(make_response(
+                return make_response(
                     2003,
                     None
-                )) , 401
+                ) , 401
             case "old_device":
                 extensions.logger.debug("Token的用户在其他设备登录", "BEFORE_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     2005,
                     None
-                )) , 401
+                ) , 401
     else:
         # token有效，判断ip是否对应
         if result["device_ip"] != get_client_ip(): # type: ignore
             # ip不一致
             extensions.logger.debug(f"token的ip：{result['device_ip']}， 当前ip：{get_client_ip()}，不一致！", "BEFORE_REQUEST", "DebugMsg") # type: ignore
-            return jsonify(make_response(
+            return make_response(
                 2003,
                 None
-            )) , 401
+            ) , 401
         
         # token正确，更新到期时间
         extensions.logger.debug("Token有效！", "BEFORE_REQUEST", "DebugMsg")
@@ -183,9 +187,9 @@ def before_request():
 
 
 def setup_app():
-    app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
+    app = Flask(__name__, static_folder=os.path.join(extensions.root_dir, "static"), template_folder="res", static_url_path="/")
 
-    from script import blueprints
+    from app import blueprints
     for bp in blueprints:
         app.register_blueprint(bp)
 

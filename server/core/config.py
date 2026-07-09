@@ -1,6 +1,7 @@
-from email.policy import default
 import json
+import os
 from const import CONFIG
+
 
 class Config:
     def __init__(self, config_file: str):
@@ -11,6 +12,13 @@ class Config:
 
 
     def load(self):
+        if not os.path.exists(self.config_file):
+            with open(self.config_file, 'w', encoding="utf-8") as f:
+                json.dump({}, f, indent=4, ensure_ascii=False)
+            
+            self.config = {}
+            return
+
         with open(self.config_file, "r", encoding="utf-8") as f:
             self.config = json.load(f)
 

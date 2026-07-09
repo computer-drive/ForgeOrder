@@ -1,33 +1,61 @@
-import logging
-from const import *
-from .log_db import LogDatabase
-import queue
 import datetime
+import logging
+import queue
+import json
+
+from const import *
+
+from .log_db import LogDatabase
 from .worker import create_worker
+
 
 class Logger(logging.Logger):
     def __init__(self, name: str):
         super().__init__(name)
 
-    def log(self, msg: str, level: int, class_name: str, method: str): # type:ignore
+    def setLevel(self, level: int | str) -> None:
+
+        if level == logging.DEBUG:
+            import extensions
+            self.debug_ignore: list = extensions.config.get("log.debug_ignore")
+        else:
+            self.debug_ignore = []
+
+        return super().setLevel(level)
+    
+
+
+
+    def log(self, msg: str | dict | list , level: int, class_name: str, method: str): # type:ignore
         extra = {"class_name": class_name, "method": method}
+
+        if isinstance(msg, (dict, list)):
+            msg = json.dumps(msg, ensure_ascii=False)
+        elif msg is None:
+            msg = ''
+        else:
+            msg = str(msg)
 
         super().log(level, msg, extra=extra)
 
-    def info(self, msg: str, class_name: str, method: str):  # type:ignore
+    def info(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.INFO, class_name, method)
 
-    def warning(self, msg: str, class_name: str, method: str):  # type:ignore
+    def warning(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.WARNING, class_name, method)
 
-    def error(self, msg: str, class_name: str, method: str):  # type:ignore
+    def error(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.ERROR, class_name, method)
 
-    def critical(self, msg: str, class_name: str, method: str):  # type:ignore
+    def critical(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.CRITICAL, class_name, method)
 
-    def debug(self, msg: str, class_name: str, method: str):  # type:ignore
-        self.log(msg, logging.DEBUG, class_name, method)
+    def debug(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
+        # print(class_name, self.debug_ignore)
+        if class_name in self.debug_ignore:
+            return
+        else:
+            self.log(msg, logging.DEBUG, class_name, method)
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, queue: queue.Queue):
@@ -67,6 +95,9 @@ class Formatter(logging.Formatter):
         
         record.color = ""
         record.reset = "\033[0m"
+
+        if record.msg != '':
+            record.msg = f": {record.msg}"
         
         match record.levelname:
             case "DEBUG":
@@ -84,15 +115,33 @@ class Formatter(logging.Formatter):
 
 
 
-def setup_logger(name: str, db_name: str):
+def setup_logger(name: str, db_name: str, level: str = "info"):
     logger = Logger(name)
 
     formatter = Formatter(LOG.FORMAT)
+
+    level_int = logging.INFO
+    match level:
+        case "debug":
+            level_int = logging.DEBUG
+        case "info":
+            level_int = logging.INFO
+        case "warning":
+            level_int = logging.WARNING
+        case "error":
+            level_int = logging.ERROR
+        case "critical":
+            level_int = logging.CRITICAL
+        case _:
+            level_int = logging.INFO
     
+    logger.setLevel(level_int)
+
     # 控制台日志记录器
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(level_int)
     logger.addHandler(stream_handler)
 
     # 数据库日志记录器
@@ -101,6 +150,7 @@ def setup_logger(name: str, db_name: str):
 
     db_handler = DatabaseHandler(queue)
     db_handler.setFormatter(formatter)
+    db_handler.setLevel(level_int)
     logger.addHandler(db_handler)
 
     return logger, thread, queue

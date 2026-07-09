@@ -1,5 +1,6 @@
 from .exceptions import *
 
+
 class SqlParse:
     def __init__(self, sql_file_path: str):
         self.sql_file_path = sql_file_path

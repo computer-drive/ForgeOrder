@@ -1,9 +1,8 @@
 import hashlib
-from operator import is_
-from typehints.auth import UserInfo
 import time
+from core.auth.schema import UserInfo
 
-    
+
 class AuthManager:
     def __init__(self, secret_key, available_time: int):
         # available_time: 单位分钟，有效期限

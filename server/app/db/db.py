@@ -1,7 +1,10 @@
 from flask import g
+
+import extensions
+
 from .main_db import MainDatabase
 from .meta_db import MetaDatabase
-import extensions
+
 
 def get_main_database():
     if "main_database" not in g:

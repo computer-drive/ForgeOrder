@@ -1,10 +1,13 @@
-from flask import Blueprint, request, jsonify
-from libs.utils import make_response, verify_args, get_client_ip
 import json
-from ..db import get_main_database
-from .exceptions import *
+
+from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash
+
 import extensions
+from core.utils import get_client_ip, make_response, verify_args
+
+from ..db.db import get_main_database
+from .exceptions import *
 
 accounts_bp = Blueprint("accounts", __name__)
 
@@ -49,10 +52,10 @@ def login():
     # 检查用户是否存在
     if account is None:
         
-        return jsonify(make_response(
+        return make_response(
             3001,
             None
-        ))
+        )
     
     # 检查密码是否正确
     if check_password_hash(account["password"], password):
@@ -84,47 +87,47 @@ def login():
                     }), "ACCOUNTS", "UserLogin"
                 )
 
-                return jsonify(make_response(
+                return make_response(
                     0,
                     {
                         "user_info": dict(account),
                         "token": token
                     }
-                ))
+                )
             
             elif result[0] == 0:
                 # 失败，重复登录
                 extensions.logger.debug(f"生成失败，重复登录。请求ip:{ip}, token中的ip:{result[1]}", "LOGIN_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     3003,
                     {
                         "user_info": dict(account),
                         "token": result[1]["token"]
                     }
-                ))
+                )
             else:
                 # 失败，设备重复登录
                 extensions.logger.debug(f"生成失败，有新设备登录。请求ip:{ip}, token中的ip:{result[1]}", "LOGIN_REQUEST", "DebugMsg")
-                return jsonify(make_response(
+                return make_response(
                     3004,
                     {
                         "old_device_ip": result[1]
                     }
-                ))
+                )
 
         
 
         
         else:
-            return jsonify(make_response(
+            return make_response(
                 3002,
                 None
-            ))
+            )
     else:
-        return jsonify(make_response(
+        return make_response(
             3001,
             None
-        ))
+        )
         
 @accounts_bp.route("/api/auth/logout", methods=["POST"])
 def logout():
@@ -145,16 +148,16 @@ def logout():
         }), "ACCOUNTS", "UserLogout"
     )
 
-    return jsonify(make_response(
+    return make_response(
         0,
         None
-    ))
+    )
     
 
 
 @accounts_bp.route("/api/auth/test")
 def test_api():
-    return jsonify(make_response(
+    return make_response(
         0,
         "Test Pass"
-    ))
+    )
