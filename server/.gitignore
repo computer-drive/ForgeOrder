@@ -4,4 +4,4 @@
 *.db-shm
 
 static/*
-config.json
+data/*
