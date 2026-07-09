@@ -1,10 +1,14 @@
-from core.log.logger import Logger
-import traceback
-from .error_report import generate_error_report
+from concurrent.futures import thread
 import datetime
 import sys
+import threading
+import traceback
 
-def excepthook(type, value, tb: traceback.TracebackType):
+from core.log.logger import Logger
+from .error_report import generate_error_report
+
+
+def excepthook(type, value, tb, is_threading: bool = False):
     import extensions
 
     if hasattr(extensions, 'logger') and isinstance(extensions.logger, Logger):
@@ -23,13 +27,13 @@ def excepthook(type, value, tb: traceback.TracebackType):
 
     generate_error_report(
         error_type="critical",
-        error_title="Uncaught Exception",
+        error_title=f"{'Threaded ' if is_threading else ''}{'Uncaught Exception' if is_threading else 'Uncaught Exception'}",
         errpr_description=str(value),
         error_detail=traceback.format_exception(type, value, tb),
         time=datetime.datetime.now(),
     )
 
-    sys.exit(1)
-
 def install():
     sys.excepthook = excepthook
+
+    threading.excepthook = lambda type, value, tb: excepthook(type, value, tb, is_threading=True)
