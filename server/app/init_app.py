@@ -1,5 +1,6 @@
 import json
 import traceback
+import os
 
 from flask import Flask, current_app, jsonify, render_template, request
 
@@ -186,7 +187,7 @@ def before_request():
 
 
 def setup_app():
-    app = Flask(__name__, static_folder="static", template_folder="res", static_url_path="/")
+    app = Flask(__name__, static_folder=os.path.join(extensions.root_dir, "static"), template_folder="res", static_url_path="/")
 
     from app import blueprints
     for bp in blueprints:
