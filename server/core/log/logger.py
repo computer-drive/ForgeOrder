@@ -1,6 +1,7 @@
 import datetime
 import logging
 import queue
+import json
 
 from const import *
 
@@ -12,24 +13,29 @@ class Logger(logging.Logger):
     def __init__(self, name: str):
         super().__init__(name)
 
-    def log(self, msg: str, level: int, class_name: str, method: str): # type:ignore
+    def log(self, msg: str | dict | list , level: int, class_name: str, method: str): # type:ignore
         extra = {"class_name": class_name, "method": method}
 
+        if isinstance(msg, (dict, list)):
+            msg = json.dumps(msg, ensure_ascii=False)
+        else:
+            msg = str(msg)
+            
         super().log(level, msg, extra=extra)
 
-    def info(self, msg: str, class_name: str, method: str):  # type:ignore
+    def info(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.INFO, class_name, method)
 
-    def warning(self, msg: str, class_name: str, method: str):  # type:ignore
+    def warning(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.WARNING, class_name, method)
 
-    def error(self, msg: str, class_name: str, method: str):  # type:ignore
+    def error(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.ERROR, class_name, method)
 
-    def critical(self, msg: str, class_name: str, method: str):  # type:ignore
+    def critical(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.CRITICAL, class_name, method)
 
-    def debug(self, msg: str, class_name: str, method: str):  # type:ignore
+    def debug(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
         self.log(msg, logging.DEBUG, class_name, method)
 
 class DatabaseHandler(logging.Handler):
