@@ -73,7 +73,15 @@ if __name__ == "__main__":
         extensions.logger.debug("生产环境运行！", "MAIN", "DebugMsg")
 
         from waitress import serve
-        serve(app, host=extensions.config.get("server.host"), port=extensions.config.get("server.port"))
+
+        host = extensions.config.get("server.host")
+        port = extensions.config.get("server.port")
+
+        extensions.logger.info({
+            "host": host,
+            "port": port,
+        }, "MAIN", "StartServer")
+        serve(app, host=host, port=port)
     else:
         app.run(
             host=extensions.config.get("server.host"), #type: ignore
@@ -81,9 +89,12 @@ if __name__ == "__main__":
         )
 
     # 关闭服务器
-    extensions.server_status = 299
+    # extensions.server_status = 299
 
+    extensions.logger.info(None, "MAIN", "ServerStopped")
     shutdown()
+
+
 
 
 
