@@ -1,8 +1,6 @@
 import hashlib
 import time
-from operator import is_
-
-from typehints.auth import UserInfo
+from core.auth.schema import UserInfo
 
 
 class AuthManager:
