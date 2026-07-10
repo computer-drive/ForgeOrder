@@ -9,7 +9,7 @@ from const import *
 from core.utils import get_client_ip, make_response
 from extensions import *
 
-basic_bp = Blueprint("script", __name__)
+basic_bp = Blueprint("basic", __name__)
 
 
 
