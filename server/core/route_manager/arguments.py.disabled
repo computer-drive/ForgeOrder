@@ -1,3 +1,5 @@
+from flask import Blueprint
+
 from const import ARGUMENTS_MANAGER
 from .schema import RouteArgs, ArgRule
 from .exceptions import *
@@ -21,9 +23,19 @@ class ArgumentsManager:
         for route in routes:
             self.register_route(route['route'], route['args'])
 
+    def register_blueprint(self, bp: Blueprint):
+        routes = getattr(bp, 'route_args', None)
+
+        if routes:
+            self.register_routes(routes)
+        else:
+            # 没有route_args属性，不注册
+            pass
+
+
     def verify_args(self, path: str, args: dict):
         if path not in self.routes:
-            return ARGUMENTS_MANAGER.RESULT.NO_ARGS
+            return ARGUMENTS_MANAGER.RESULT.NO_ARGS, {}
         
         args_rule = self.routes[path]
 
