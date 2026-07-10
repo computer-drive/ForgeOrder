@@ -1,96 +1,26 @@
-import json
-import traceback
-import os
+from flask import request, g
 
-from flask import Flask, current_app, jsonify, render_template, request
-
-import extensions
 from const import *
-from core.utils import get_client_ip, make_response
+import extensions
+from core.utils.server import make_response
 
-from .db.db import close_databases
-from .models.exceptions import ArgumentException
-
-
-# @app.errorhandler(405)
-def method_not_allowed(e):
-        return make_response(
-            1002,
-            405,
-        ), 405
-    
-# @app.errorhandler(404)
-def not_found(e):
-        return make_response(
-            1003,
-            404,
-        ), 404
-
-# @app.errorhandler(500)
-def internal_server_error(e):
-        return make_response(
-            9001,
-            500,
-        ), 500
-    
-# @app.errorhandler(ArgumentException)
-def argument_exception(e):
-        return make_response(
-            1001,
-            e.args_,
-        ), 400
-    
-# @app.teardown_appcontext
-def teardown_appcontext(error):
-        close_databases()
-        if error is not None:
-            logs = {
-                    "error": {
-                        "emsg": str(error),
-                        "type": type(error).__name__,
-                    },
-                    "traceback": None
-                    
-                }
-            if isinstance(error, Exception):
-                logs["traceback"] = traceback.format_exception(type(error), error, error.__traceback__) # type: ignore
-
-            extensions.logger.error(json.dumps(
-                logs
-            ), "FLASK_APP", "RequestError")
-
-        return current_app
-
-def before_request():
-
-    # 服务器状态检查
-    # if extensions.server_status == 300:
-    #     return render_template(
-    #         "info.html",
-    #         title = "启动服务器时出错",
-    #         info = extensions.server_info,
-    #     )
-    
-    # elif extensions.server_status == 400:
-    #     return render_template(
-    #         "info.html",
-    #         title = "运行时出错",
-    #         info = extensions.server_info,
-    #     )
-    
-    # elif extensions.server_status == 299:
-    #     return render_template(
-    #         "info.html",
-    #         title = "服务器已关闭",
-    #     )
-    
-    
-    
+def _handle_auth():
     # 判断是否以/api/开头，以及是否在白名单内
     if  request.path.startswith("/api/"):
-        # 未登录状态也可访问的路由
-        if request.path in ROUTES.UNLOGGEDIN_ROUTES:
-            # print(1)
+        check_result, route_data = extensions.route_manager.verify_auth(request.path)
+        
+        if not check_result:
+            # 没有在RouteMangaer中注册这个路由
+            extensions.logger.warning(
+                request.path,
+                "BEFORE_REQUEST",
+                "RouteNotRegistered"
+            )
+            return None
+        
+
+        if not route_data["auth"]:
+            # 无需登录
             return None
         else:
             # 需要登录的api请求，进一步判断token
@@ -164,7 +94,7 @@ def before_request():
         extensions.logger.debug(f"更新Token的有效时间为：{result['expire']}", "BEFORE_REQUEST", "DebugMsg") # type: ignore
         
         # token 有效，判断是否为管理员页面
-        if request.path in ROUTES.ADMIN_ROUTES :
+        if route_data["is_admin"]:
             # 管理员页面，判断用户是否有权限
             extensions.logger.debug(f"访问管理员页面（用户的管理员状态：{result['user']['is_admin']}）", "BEFORE_REQUEST", "DebugMsg") # type: ignore
 
@@ -183,23 +113,34 @@ def before_request():
             # 非管理员页面，继续请求
             return None
 
+def _handle_args():
+    body = request.get_json()
 
+    result, data = extensions.route_manager.verify_args(request.path, body)
 
-
-def setup_app():
-    app = Flask(__name__, static_folder=os.path.join(extensions.root_dir, "static"), template_folder="res", static_url_path="/")
-
-    from app import blueprints
-    for bp in blueprints:
-        app.register_blueprint(bp)
-
-    app.errorhandler(405)(method_not_allowed)
-    app.errorhandler(404)(not_found)
-    app.errorhandler(500)(internal_server_error)
-    app.errorhandler(ArgumentException)(argument_exception)
-    app.teardown_appcontext(teardown_appcontext) # type: ignore
-    app.before_request(before_request) # type: ignore
+    if result in [ARGUMENTS_MANAGER.RESULT.PASS, ARGUMENTS_MANAGER.RESULT.NO_ARGS]:
+        # 成功
+        g.args = data
+        return None
     
-    return app
 
-    
+    else:
+        # 失败
+        return make_response(
+            1001,
+            data
+        )
+
+def before_request():
+    # 请求前的逻辑
+    handlers = [
+        _handle_auth,
+        _handle_args,
+    ]
+
+    for handler in handlers:
+        result = handler()
+        if result is not None:
+            return result
+        
+    return None
