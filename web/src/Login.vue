@@ -2,7 +2,7 @@
   <div>
     
     <TopBar title="登录" :showHome="false" />
-    <TopProgressBar ref="topProgressbar"/>
+    <TopProgressBar v-model="isLoading"/>
 
     <div class="container">
         <div class="mdui-prose">
@@ -68,7 +68,7 @@ import { useRouter } from 'vue-router'
 import '@mdui/icons/account-circle.js';
 import '@mdui/icons/password.js';
 
-const topProgressbar = ref(null)
+const isLoading = ref(false)
 
 const username = ref('')
 const password = ref('')
@@ -85,7 +85,7 @@ let errorMsg = history.state.msg
 
 
 onMounted(() => {
-    topProgressbar.value.hide()
+    isLoading.value = false
 
     // window.history.replaceState()
 
@@ -100,7 +100,7 @@ onMounted(() => {
 })
 
 const handleSubmit = async (coverLogin = false) => {
-    topProgressbar.value.show()
+    isLoading.value = true
     usernameInput.value.disabled = true
     passwordInput.value.disabled = true
     usernameInput.value.setCustomValidity('')
@@ -122,7 +122,7 @@ const handleSubmit = async (coverLogin = false) => {
     }
 
     if (isError) {
-        topProgressbar.value.hide()
+        isLoading.value = false
         usernameInput.value.disabled = false
         passwordInput.value.disabled = false
         loginButton.value.disabled = false
@@ -162,7 +162,7 @@ const handleSubmit = async (coverLogin = false) => {
             {
               text: '否',
               onClick: () => {
-                topProgressbar.value.hide()
+                isLoading.value = false
                 usernameInput.value.disabled = false
                 passwordInput.value.disabled = false
                 loginButton.value.disabled = false
@@ -197,7 +197,7 @@ const handleSubmit = async (coverLogin = false) => {
     } 
     finally {
       if (result !== null && result.status !== 3004) {
-            topProgressbar.value.hide()
+            isLoading.value = false
             usernameInput.value.disabled = false
             passwordInput.value.disabled = false
             loginButton.value.disabled = false

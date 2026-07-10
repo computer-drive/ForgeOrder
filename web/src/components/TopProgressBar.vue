@@ -1,24 +1,32 @@
 <template>
-    <mdui-linear-progress v-if="isShow" class="top-progress-bar"></mdui-linear-progress>
+    <mdui-linear-progress v-if="modelValue" class="top-progress-bar"></mdui-linear-progress>
 </template>
 
 <script setup>
     import 'mdui/components/linear-progress.js'
     import { ref } from 'vue'
 
-    const isShow = ref(false)
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            default: false
+        }
+    })  
+
+    const emit = defineEmits(['update:modelValue'])
 
     const show = () => {
-        isShow.value = true
+        emit('update:modelValue', true)
     }
     const hide = () => {
-        isShow.value = false
+        emit('update:modelValue', false)
     }
 
     defineExpose({
         show,
         hide
     })
+
 </script>
 
 <style>

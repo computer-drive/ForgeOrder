@@ -1,7 +1,7 @@
 <template>
     <TopBar title="我的" :showHome="false">
     </TopBar>
-    <TopProgressBar ref="topProgressBar"></TopProgressBar>
+    <TopProgressBar v-model="isLoading"/>
 
     <TipCard variant="filled" background-color="#BB1614" color="#fff" v-if="isDevelopment">
         <mdui-icon-warning style="flex-shrink: 0"></mdui-icon-warning>
@@ -115,7 +115,7 @@
     const ipAddress = ref('192.168.1.5')
     const version = ref('1.0.0')
 
-    const topProgressBar = ref(null)
+    const isLoading = ref(false)
 
     const handleLogout = async () => {
         dialog({
@@ -125,15 +125,15 @@
                 {
                     text: '取消',
                     onClick: () => {
-                        topProgressBar.value.hide()
+                        isLoading.value = false
                     }
                 },
                 {
                     text: '确定',
                     onClick: async () => {
-                        topProgressBar.value.show()
+                        isLoading.value = true
                         await logout()
-                        topProgressBar.value.hide()
+                        isLoading.value = false
                         snackbar({
                             message: '退出登录成功',
                         })
