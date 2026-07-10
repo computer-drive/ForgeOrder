@@ -1,18 +1,94 @@
 <template>
+    <TopProgressBar v-model="isLoading"/>
+
     <div class="container mdui-prose">
         <h1>编辑“{{ dishData.name }}”</h1>
         <div style="margin-bottom: 24px; font-size: 18px">在下方更改菜品信息，点击右上角的“保存”按钮以应用更改。    </div>
 
-        <div class="setting-title">基本信息</div>
-        <mdui-text-field label="菜品名称" class="setting-item" variant="outlined"></mdui-text-field>
+        <div>
 
-        <mdui-text-field label="菜品描述" class="setting-item" autosize min-rows="1" max-rows="3" variant="outlined"></mdui-text-field>
+            <div class="setting-item">
+                <div class="setting-item-key">菜品名称</div>
+                <div class="setting-item-value">
+                    
+                    <mdui-text-field 
+                    variant="outlined" ></mdui-text-field>
+            
+                </div>
+            </div>
 
-        <mdui-text-field label="价格" class="setting-item" variant="outlined" readonly>
-            <mdui-button-icon slot="end-icon" @click="priceInputDialog.open = true">
-                <mdui-icon-edit></mdui-icon-edit>
-            </mdui-button-icon>
-        </mdui-text-field>
+            <div class="setting-item">
+                菜品描述
+                <mdui-text-field 
+                    class="setting-item-value"
+                    autosize
+                    min-rows="1"
+                    max-rows="3"
+                    variant="outlined"></mdui-text-field>
+            </div>
+
+            <div class="setting-item">
+                菜品价格
+                <mdui-text-field 
+                    class="setting-item-value"
+                    variant="outlined" 
+                    readonly 
+                    @click="openPriceInputDialog" 
+                    :value="price"
+                    > 
+                    <div slot="icon">￥</div>
+                </mdui-text-field>
+            </div>
+
+            <div class="setting-item">
+                启用此菜品
+                <mdui-switch></mdui-switch>
+            </div>
+
+            <div class="setting-item">
+                分类
+                <mdui-select value="1" variant="outlined" class="setting-item-value">
+                    <mdui-menu-item value="1">Item 1</mdui-menu-item>
+                    <mdui-menu-item value="2">Item 2</mdui-menu-item>
+                    <mdui-icon-arrow-drop-down slot="end-icon"></mdui-icon-arrow-drop-down>
+                </mdui-select>
+            </div>
+
+            <div class="setting-item">
+                选项
+                <mdui-button-icon>
+                    <mdui-icon-add></mdui-icon-add>
+                </mdui-button-icon>
+            </div>    
+
+            <mdui-list>
+                    <mdui-list-item nonclickable rounded class="choices-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">    
+                            <div style="flex-shrink: 0;">是否可以   </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 6px">
+                                
+                                <div style="display:flex; flex-wrap: wrap; gap: 6px;">
+                                    <mdui-chip style="padding:0px">不辣</mdui-chip>
+                                    <mdui-chip >不辣</mdui-chip>
+                                    <mdui-chip >不辣</mdui-chip>
+                                    <mdui-chip >不辣</mdui-chip>
+                                </div>
+
+                                <mdui-button-icon variant="filled">
+                                    <mdui-icon-add></mdui-icon-add>
+                                </mdui-button-icon>
+
+                            </div>
+                        </div>
+                        
+
+                    </mdui-list-item>
+
+             </mdui-list>    
+
+
+        </div>
     </div>
 
     <mdui-dialog ref="priceInputDialog" class="price-input-dialog" close-on-overlay-click>
@@ -54,15 +130,30 @@
 </template> 
 
 <script setup>
-    import { ref } from 'vue'
+    import '@/assets/shop.dish_edit.css'
 
-    import 'mdui/components/text-field.js';
-    import 'mdui/components/dialog.js';
+    import { ref, inject, h, onMounted, onBeforeUnmount } from 'vue'
 
-    import '@mdui/icons/edit.js';
-    import '@mdui/icons/backspace.js';
-    import '@mdui/icons/clear.js';
-    import '@mdui/icons/keyboard-return.js';
+    import 'mdui/components/text-field.js'
+    import 'mdui/components/dialog.js'
+    import 'mdui/components/list.js'
+    import 'mdui/components/list-item.js'
+    import 'mdui/components/list-subheader.js'
+    import 'mdui/components/switch.js'
+    import 'mdui/components/select.js'
+    import 'mdui/components/menu-item.js'
+    import 'mdui/components/button.js'
+    import 'mdui/components/chip.js'
+
+    import '@mdui/icons/edit.js'
+    import '@mdui/icons/backspace.js'
+    import '@mdui/icons/clear.js'
+    import '@mdui/icons/keyboard-return.js'
+    import '@mdui/icons/arrow-drop-down.js'
+    import '@mdui/icons/add.js'
+    import '@mdui/icons/save.js'
+
+    import TopProgressBar from '@/components/TopProgressBar.vue'
 
     defineProps({
         id: {
@@ -75,11 +166,22 @@
         }
     })
 
+    const { setRightComponent, clearRightComponent } = inject('rightComponent')
+
+    const isLoading = ref(false)
+
     const dishData = ref({})
     const price = ref(0)
 
     const priceInputDialog = ref(null)
     const currentText = ref('0')
+
+
+    const openPriceInputDialog = () => {
+        currentText.value = price.value.toString()
+        priceInputDialog.value.open = true
+        
+    }
 
     const inputText = (text) => {
         if (currentText.value == '0') {
@@ -120,86 +222,30 @@
     const handleSubmit = () => {
         priceInputDialog.value.open = false
         price.value = Number(currentText.value)
-        currentText.value = '0'
+        // currentText.value = '0'
     }
 
+    const handleSave = () => {
+        // 保存菜品数据
+    }
+
+
+    onMounted(() => {
+        // 设置居右的保存按钮组件
+        setRightComponent(h('mdui-button-icon', {
+            onClick: handleSave
+        }, [
+            h('mdui-icon-save')
+        ]))
+
+        // 获取菜品数据
+        isLoading.value = true
+
+
+    })
+
+    onBeforeUnmount(() => {
+        clearRightComponent()
+    })
+
    </script>
-
-<style>
-.setting-item {
-    margin-bottom: 24px;
-}
-
-.setting-title {
-    font-size: 30px;
-     margin-top: 16px;
-      margin-bottom: 16px
-}
-
-
-
-.panel .has-default {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-}
-
-
-
-.price-content {
-    border-radius: var(--mdui-shape-corner-extra-large);
-    background-color: rgb(var(--mdui-color-primary-container));
-    font-size: 28px;
-    color : rgb(var(--mdui-color-on-primary-container));
-    padding-top: 16px;
-    padding-bottom: 16px;
-    padding-left: 24px;
-    padding-right: 24px;
-    text-align: right;
-    margin-bottom: 16px;
-}
-
-.price-input-container {
-    /* display: flex; */
-    justify-content: center;
-    align-items: center;
-}
-
-.price-input {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    /* grid-auto-rows: 70px; */
-    /* gap: 8px */
-    place-items: center;
-    grid-template-rows: 80px 80px;
-
-}
-
-.price-num-button {
-    font-size: 22px;
-    height: 100%;
-    width: 100%;
-}
-
-.price-big-button {
-    font-size: 22px;
-    grid-row: 3 / 5;
-    grid-column: 4;
-    height: 160px;
-    text-align: center;
-    writing-mode: vertical-lr;
-    line-height: 20px; 
-    letter-spacing: 5px;
-    /* width: 60px; */
-    /* border-radius: var(--mdui-shape-corner-extra-large); */
-}
-
- mdui-dialog.price-input-dialog::part(panel) {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  min-width: 100vw;
-  border-radius: var(--mdui-shape-corner-extra-large) var(--mdui-shape-corner-extra-large) 0 0;
-}
-
-</style>
