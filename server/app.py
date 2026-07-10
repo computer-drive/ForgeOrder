@@ -10,6 +10,7 @@ from const import *
 from core.auth import AuthManager
 from core.config import Config
 from core.log.logger import setup_logger
+from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
 
 install()
@@ -48,7 +49,8 @@ def init():
     
     extensions.local_ip = get_local_ip()
 
-    # extensions.server_status = 101
+    # 初始化ArgumentsManager
+    extensions.route_manager = RouteManager()
 
 def shutdown():
     # 关闭数据库日志记录器线程
