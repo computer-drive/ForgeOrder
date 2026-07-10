@@ -1,7 +1,7 @@
 import queue
 import threading
 
-from const import *
+from .schema import BUFFER_SIZE
 
 from .log_db import LogDatabase
 
@@ -24,7 +24,7 @@ def worker(q: queue.Queue, db_name: str):
 
         buffer_count += 1
 
-        if buffer_count >= LOG.BUFFER_SIZE:
+        if buffer_count >= BUFFER_SIZE:
             log_db.commit()
             buffer_count = 0
 
