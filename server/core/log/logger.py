@@ -3,7 +3,7 @@ import logging
 import queue
 import json
 
-from const import *
+from .schema import *
 
 from .log_db import LogDatabase
 from .worker import create_worker
@@ -118,7 +118,7 @@ class Formatter(logging.Formatter):
 def setup_logger(name: str, db_name: str, level: str = "info"):
     logger = Logger(name)
 
-    formatter = Formatter(LOG.FORMAT)
+    formatter = Formatter(FORMAT)
 
     level_int = logging.INFO
     match level:
