@@ -25,28 +25,24 @@ def init():
     extensions.config = Config(CONFIG.CONFIG_PATH)
 
     # 初始化日志记录器
-    try:
-        logger, thread, queue = setup_logger(__name__,
+
+    logger, thread, queue = setup_logger(__name__,
                 extensions.config.get("log.database"), # type: ignore
                 extensions.config.get("log.level")) #type: ignore
     
     
-        extensions.logger = logger
-        extensions.db_logger_thread = thread
-        extensions.db_logger_queue = queue
+    extensions.logger = logger
+    extensions.db_logger_thread = thread
+    extensions.db_logger_queue = queue
 
-        extensions.auth_manager = AuthManager(
+    # 初始化认证管理器
+    extensions.auth_manager = AuthManager(
             extensions.config.get("auth.secret_key"),
             int(extensions.config.get("auth.available_time")),
         )
 
-    
-    except Exception as e:
-        # extensions.server_status = 300
-        # extensions.server_info = create_server_info_by_exception(e)
-        # print(extensions.server_info)
-        return
-    
+
+    # 取本地ip
     extensions.local_ip = get_local_ip()
 
     # 初始化ArgumentsManager
