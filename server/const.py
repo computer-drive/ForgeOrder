@@ -38,3 +38,17 @@ class ROUTES:
     ADMIN_ROUTES = [
         "/api/shop/setBusinessState",
     ]
+
+class ARGUMENTS_MANAGER:
+    # 与core.utils.routes下的ArgumentsManager有关
+
+    class RESULT:
+        # ArgumentsManager.verify_args的返回值
+        PASS = 0 # 验证成功
+        FAILED = 1 # 验证失败
+        NO_ARGS = 2 # 未注册（无参数）
+
+    class ERROR:
+        NOT_FOUND = "NOT_FOUND" # 未找到参数
+        TYPING_ERROR = "TYPING_ERROR" # 类型错误
+       

@@ -1,0 +1,129 @@
+from const import ARGUMENTS_MANAGER
+from .schema import RouteArgs, ArgRule
+from .exceptions import *
+
+class ArgumentsManager:
+    def __init__(self):
+        self.routes = {}
+
+    def register_route(self, path: str, args: list[ArgRule]):
+        if path in self.routes:
+            raise RouteAlreadyRegisteredError(path)
+        
+        args_ = {}
+
+        for arg in args:
+            args_[arg['name']] = arg
+
+        self.routes[path] = args_
+
+    def register_routes(self, routes: list[RouteArgs]):
+        for route in routes:
+            self.register_route(route['route'], route['args'])
+
+    def verify_args(self, path: str, args: dict):
+        if path not in self.routes:
+            return ARGUMENTS_MANAGER.RESULT.NO_ARGS
+        
+        args_rule = self.routes[path]
+
+        args_final = {}
+    
+        error_info = []
+
+        for arg_rule in args_rule.values():
+            # 判断是否是必须项
+            if arg_rule["required"]:
+                # 判断是否存在
+                if arg_rule["name"] not in args:
+                    error_info.append({
+                        ARGUMENTS_MANAGER.ERROR.NOT_FOUND: arg_rule["name"]
+                    })
+                    continue
+                
+                
+            else:
+                # print(arg_rule)
+                # 非必须项，判断们是否存在，如果不存在就使用默认值
+                if arg_rule["name"] not in args:
+
+                    args_final[arg_rule["name"]] = arg_rule["default"]
+                    continue
+
+            # 判断类型是否正确（不考虑默认值情况，相信调用者会正确传递类型）
+            if not isinstance(args[arg_rule["name"]], arg_rule["type"]):
+                error_info.append({
+                    ARGUMENTS_MANAGER.ERROR.TYPING_ERROR: arg_rule["name"]
+                })
+
+            # 参数正确，添加到args_final
+            args_final[arg_rule["name"]] = args[arg_rule["name"]]
+            
+        if error_info:
+            return ARGUMENTS_MANAGER.RESULT.FAILED, error_info
+        else:
+            return ARGUMENTS_MANAGER.RESULT.PASS, args_final
+                
+
+
+if __name__ == "__main__":
+    am = ArgumentsManager()
+
+    am.register_routes([
+    {
+        "route": "/api/auth/login",
+        "args": [
+            {
+                "name": "username",
+                "type": str,
+                "required": True
+            },
+            {
+                "name": "password",
+                "type": str,
+                "required": True
+            },
+            {
+                "name": "cover",
+                "type": bool,
+                "required": False,
+                "default": False
+            }
+        ]
+    }
+])
+    
+    # 正确示范1
+    print(am.verify_args("/api/auth/login", {
+        "username": "str",
+        "password": "str",
+        "cover": True
+    }))
+
+    # 正确示范2（无cover用默认值）
+    print(am.verify_args("/api/auth/login", {
+        "username": "strstr",
+        "password": "str"
+    }))
+
+    # 错误示范1（非必须项类型错误）
+    print(am.verify_args("/api/auth/login", {
+        "username": "str",
+        "password": "str",
+        "cover": "str"
+    }))
+
+    # 错误示范2（必须项 类型错误）
+    print(am.verify_args("/api/auth/login", {
+        "username": "str",
+        "password": 123
+    }))
+
+    # 错误示范3（缺失必须项）
+    print(am.verify_args("/api/auth/login", {
+        "password": "str"
+    }))
+
+
+
+
