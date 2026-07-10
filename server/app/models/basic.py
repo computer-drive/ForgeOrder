@@ -1,15 +1,10 @@
 
 import os
 
-from flask import (Blueprint, current_app, jsonify, render_template, request,
-                   send_from_directory)
+from flask import (Blueprint, current_app, send_from_directory)
+from core.app_bp import AppBlueprint
 
-import extensions
-from const import *
-from core.utils import get_client_ip, make_response
-from extensions import *
-
-basic_bp = Blueprint("basic", __name__)
+basic_bp = AppBlueprint("basic", __name__)
 
 
 

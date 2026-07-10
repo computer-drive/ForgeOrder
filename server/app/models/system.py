@@ -1,12 +1,15 @@
 import os
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint
 
 import extensions
 from const import *
 from core.utils import make_response
+from core.app_bp import AppBlueprint
 
-system_bp = Blueprint("system", __name__)
+
+
+system_bp = AppBlueprint("system", __name__)
 
 @system_bp.route("/api/system/getSystemInfo")
 def get_system_info():

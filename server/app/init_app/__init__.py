@@ -4,6 +4,7 @@ from flask import Flask
 
 from .before_request import before_request
 from .errorhandler import *
+import extensions
 
 def setup_app():
     app = Flask(__name__, static_folder=os.path.join(extensions.root_dir, "static"), template_folder="res", static_url_path="/")
@@ -11,6 +12,9 @@ def setup_app():
     from app import blueprints
     for bp in blueprints:
         app.register_blueprint(bp)
+
+        for route in bp.routes_:
+            extensions.route_manager.register(route["path"], route["auth"], route["is_admin"], route["arguments"])
 
 
             

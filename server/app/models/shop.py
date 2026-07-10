@@ -3,11 +3,12 @@ from flask import Blueprint, jsonify, request
 import extensions
 from core.db.exceptions import NotFoundException
 from core.utils import make_response
+from core.app_bp import AppBlueprint
 
 from ..db.db import get_meta_database
 # from .exceptions import ArgumentException
 
-shop_bp = Blueprint("shop", __name__)
+shop_bp = AppBlueprint("shop", __name__)
 
 @shop_bp.route("/api/shop/getBusinessState")
 def get_business_state():

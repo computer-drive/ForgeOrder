@@ -1,47 +1,48 @@
 import json
 
-from flask import Blueprint, jsonify, request
+from flask import  request, g
 from werkzeug.security import check_password_hash
 
 import extensions
-from core.utils import get_client_ip, make_response, verify_args
+from core.app_bp import AppBlueprint
+from core.utils import get_client_ip, make_response
 
 from ..db.db import get_main_database
 from .exceptions import *
 
-accounts_bp = Blueprint("accounts", __name__)
+accounts_bp = AppBlueprint("accounts", __name__)
 
-@accounts_bp.route("/api/auth/login", methods=["POST"])
+ 
+@accounts_bp.post("/api/auth/login",              
+    arguments = [   
+            {
+                "name": "username",
+                "type": str,
+                "required": True
+            },
+            {
+                "name": "password",
+                "type": str,
+                "required": True
+            },
+            {
+                "name": "cover",
+                "type": bool,
+                "required": False,
+                "default": False
+            }
+    ],
+    auth=False,
+    is_admin=False
+)
 def login():
-    username = request.get_json().get("username", None)
-    password = request.get_json().get("password", None)
-    cover = request.get_json().get("cover", False)
+    username = g.args["username"]
+    password = g.args["password"]
+    cover = g.args["cover"]
 
     ip = get_client_ip()
 
-    args_invalid = verify_args({
-        'username': username,
-        'password': password,
-        'cover': cover
-    }, [
-        {
-            "arg_name": "username",
-            "arg_type": str,
-            "required": True
-        },
-        {
-            "arg_name": "password",
-            "arg_type": str,
-            "required": True
-        },
-        {
-            "arg_name": "cover",
-            "arg_type": bool,
-            "required": False
-        }
-    ])
-    if args_invalid != []:
-        raise ArgumentException(args_invalid)
+    
     
     # 连接数据库
     main_db = get_main_database()

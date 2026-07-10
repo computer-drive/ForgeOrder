@@ -3,10 +3,10 @@ from .route_manager import RouteManager
 from .route_manager.schema import ArgRule
 
 class AppBlueprint(Blueprint):
-    def __init__(self, name: str, import_name: str, route_manager: RouteManager):
+    def __init__(self, name: str, import_name: str):
         super().__init__(name, import_name)
 
-        self.route_manager = route_manager
+        self.routes_ = []
 
     def route(self, rule: str,
             arguments: list[ArgRule] | None = None,
@@ -18,7 +18,13 @@ class AppBlueprint(Blueprint):
         flask_route = super().route(rule, **options)
         
         def wrapper(f):
-            self.route_manager.register(rule, auth, is_admin, arguments)
+            self.routes_.append({
+                "path": rule,
+                "auth": auth,
+                "is_admin": is_admin,
+                "arguments": arguments
+            })
+
             return flask_route(f)
         return wrapper
     
