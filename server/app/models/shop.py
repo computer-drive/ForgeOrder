@@ -5,7 +5,7 @@ from core.db.exceptions import NotFoundException
 from core.utils import make_response
 
 from ..db.db import get_meta_database
-from .exceptions import ArgumentException
+# from .exceptions import ArgumentException
 
 shop_bp = Blueprint("shop", __name__)
 
