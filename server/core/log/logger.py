@@ -13,17 +13,24 @@ class Logger(logging.Logger):
     def __init__(self, name: str):
         super().__init__(name)
 
+        self.ignore_class_name = []
+        self.ignore_method = []
+        self.debug_ignore = []
+
     def setLevel(self, level: int | str) -> None:
+
 
         if level == logging.DEBUG:
             import extensions
             self.debug_ignore: list = extensions.config.get("log.debug_ignore")
-        else:
-            self.debug_ignore = []
 
         return super().setLevel(level)
     
-
+    def setIgnoreClassName(self, class_name: str) -> None:
+        self.ignore_class_name.append(class_name)
+    
+    def setIgnoreMethod(self, method: str) -> None:
+        self.ignore_method.append(method)
 
 
     def log(self, msg: str | dict | list , level: int, class_name: str, method: str): # type:ignore
@@ -35,6 +42,9 @@ class Logger(logging.Logger):
             msg = ''
         else:
             msg = str(msg)
+
+        if class_name in self.ignore_class_name or method in self.ignore_method:
+            return
 
         super().log(level, msg, extra=extra)
 

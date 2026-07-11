@@ -12,6 +12,7 @@ from core.config import Config
 from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
+from app.init_app.schema import CLIENT_ERROR
 
 install()
 
@@ -24,6 +25,7 @@ def init():
     # 加载配置文件
     extensions.config = Config(CONFIG.CONFIG_PATH)
 
+    
     # 初始化日志记录器
 
     logger, thread, queue = setup_logger(__name__,
@@ -34,6 +36,11 @@ def init():
     extensions.logger = logger
     extensions.db_logger_thread = thread
     extensions.db_logger_queue = queue
+
+    # 处理log.ignore_client_error
+    if extensions.config.get("log.ignore_client_error"):
+        for error in CLIENT_ERROR:
+            extensions.logger.setIgnoreMethod(error)
 
     # 初始化认证管理器
     extensions.auth_manager = AuthManager(

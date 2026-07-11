@@ -2,7 +2,7 @@ from flask import request, g
 
 from const import *
 import extensions
-from core.utils.server import make_response
+from core.utils.server import make_response, get_client_ip
 
 def _handle_auth():
     # 判断是否以/api/开头，以及是否在白名单内
@@ -52,27 +52,42 @@ def _handle_auth():
         match result:
             case None:
                 # token无效
-                extensions.logger.debug("无效的Token", "BEFORE_REQUEST", "DebugMsg")
+                extensions.logger.info({
+                    "ip": get_client_ip(),
+                    "error": "InvalidToken"
+                }, "BEFORE_REQUEST", "AuthError")
+
                 return make_response(
                     2003,
                     None
                 ) , 401
             case "expire":
-                extensions.logger.debug("Token过期", "BEFORE_REQUEST", "DebugMsg")
+                extensions.logger.info({
+                    "ip": get_client_ip(),
+                    "error": "TokenExpire"
+                }, "BEFORE_REQUEST", "AuthError")
+                
                 # token过期
                 return make_response(
                     2004,
                     None
                 ) , 401
             case "logout":
-                extensions.logger.debug("Token的用户已退出登录", "BEFORE_REQUEST", "DebugMsg")
+                extensions.logger.info({
+                    "ip": get_client_ip(),
+                    "error": "TokenLogout"
+                }, "BEFORE_REQUEST", "AuthError")
                 # 用户退出登录
                 return make_response(
                     2003,
                     None
                 ) , 401
             case "old_device":
-                extensions.logger.debug("Token的用户在其他设备登录", "BEFORE_REQUEST", "DebugMsg")
+                extensions.logger.info({
+                    "ip": get_client_ip(),
+                    "error": "OldDevice"
+                }, "BEFORE_REQUEST", "AuthError")
+
                 return make_response(
                     2005,
                     None
@@ -81,7 +96,12 @@ def _handle_auth():
         # token有效，判断ip是否对应
         if result["device_ip"] != get_client_ip(): # type: ignore
             # ip不一致
-            extensions.logger.debug(f"token的ip：{result['device_ip']}， 当前ip：{get_client_ip()}，不一致！", "BEFORE_REQUEST", "DebugMsg") # type: ignore
+            extensions.logger.info({
+                "ip": get_client_ip(),
+                "token_ip": result["device_ip"],
+                "error": "IPNotMatch"
+            }, "BEFORE_REQUEST", "AuthError") # type: ignore
+            
             return make_response(
                 2003,
                 None
@@ -103,7 +123,14 @@ def _handle_auth():
                 return None
 
             else:
-                # 非管理员页面，返回错误
+                extensions.logger.warning(
+                    {
+                        "path": request.path,
+                        "user_id": result["user"]["id"],
+                        "ip": get_client_ip(),
+                    }, "BEFORE_REQUEST", "NonAdminUserAccess"
+                )
+                # 非管理员用户，返回错误
                 return jsonify(make_response( # type: ignore
                 2002,
                 None

@@ -12,6 +12,7 @@ class CONFIG:
         "log.level": "info",
         "log.database": "data/log.db",
         "log.debug_ignore": [],
+        "log.ignore_client_error": False,
 
         "main_db": "data/main.db",
         "meta_db": "data/meta.db",
