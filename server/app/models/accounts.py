@@ -130,7 +130,7 @@ def login():
             None
         )
         
-@accounts_bp.route("/api/auth/logout", methods=["POST"])
+@accounts_bp.post("/api/auth/logout", auth=True)
 def logout():
     token = request.headers.get("Authorization")
 
@@ -156,7 +156,7 @@ def logout():
     
 
 
-@accounts_bp.route("/api/auth/test")
+@accounts_bp.route("/api/auth/test", auth=True)
 def test_api():
     return make_response(
         0,

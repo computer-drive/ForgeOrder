@@ -11,7 +11,7 @@ from core.app_bp import AppBlueprint
 
 system_bp = AppBlueprint("system", __name__)
 
-@system_bp.route("/api/system/getSystemInfo")
+@system_bp.route("/api/system/getSystemInfo", auth=True)
 def get_system_info():
     return make_response(
         0,

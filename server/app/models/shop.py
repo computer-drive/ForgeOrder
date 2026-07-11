@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify, request
+from ast import arg
+
+from flask import g, request
 
 import extensions
 from core.db.exceptions import NotFoundException
@@ -10,16 +12,25 @@ from ..db.db import get_meta_database
 
 shop_bp = AppBlueprint("shop", __name__)
 
-@shop_bp.route("/api/shop/getBusinessState")
+@shop_bp.get("/api/shop/getBusinessState" , auth=True)
 def get_business_state():
     return make_response(
         0,
         extensions.is_business
     )
 
-@shop_bp.route("/api/shop/setBusinessState", methods=["POST"])
+@shop_bp.post("/api/shop/setBusinessState",
+            auth=True,
+            is_admin=True,
+            arguments=[
+                {
+                   "name": "is_business",
+                   "type": bool,
+                   "required": True
+                }
+            ])
 def set_business_state():
-    is_business = request.get_json().get("is_business", False)
+    is_business = g.args["is_business"]
     
     extensions.is_business = is_business
 
@@ -28,7 +39,7 @@ def set_business_state():
         None
     )
 
-@shop_bp.route("/api/shop/dishes/getAll")
+@shop_bp.get("/api/shop/dishes/getAll" , auth=True)
 def get_all_dishes():
     meta_db = get_meta_database()
 
@@ -42,13 +53,18 @@ def get_all_dishes():
         }
     )
 
-@shop_bp.route("/api/shop/dishes/get", methods=["POST"])
+@shop_bp.post("/api/shop/dishes/get" , auth=True,
+              arguments=[
+                  {
+                      "name": "id",
+                      "type": int,
+                      "required": True
+                  }
+              ])
 def get_dish():
-    dish_id = request.get_json().get("id", None)
+    dish_id = g.args["id"]
 
-    if dish_id is None:
-        raise ArgumentException(["id"])
-    
+
     meta_db = get_meta_database()
 
     try:
