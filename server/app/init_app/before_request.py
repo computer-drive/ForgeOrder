@@ -1,6 +1,6 @@
 from flask import request, g
 
-from const import *
+from core.route_manager.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
 
@@ -141,11 +141,15 @@ def _handle_auth():
             return None
 
 def _handle_args():
+    if not extensions.route_manager.has_args(request.path):
+        extensions.logger.debug("请求路径 %s，无需验证参数" % request.path, "BEFORE_REQUEST.ARGS", "DebugMsg")
+        return None
+    
+    
     body = request.get_json()
-
     result, data = extensions.route_manager.verify_args(request.path, body)
 
-    if result in [ARGUMENTS_MANAGER.RESULT.PASS, ARGUMENTS_MANAGER.RESULT.NO_ARGS]:
+    if result in [ARGUMENTS.RESULT.PASS, ARGUMENTS.RESULT.NO_ARGS]:
         # 成功
         g.args = data
         return None
