@@ -32,6 +32,12 @@ class RouteManager:
             "args": args_
         }
 
+    def has_args(self, path: str):
+        if path in self.routes and self.routes[path]["args"]:
+            return True
+        else:
+            return False
+
     def verify_args(self, path: str, args: dict):
         if path not in self.routes:
             return ARGUMENTS.RESULT.NO_ARGS, {}
@@ -70,9 +76,9 @@ class RouteManager:
             args_final[arg_rule["name"]] = args[arg_rule["name"]]
 
         if error_info:
-            return ARGUMENTS.RESULT.ERROR, error_info
+            return ARGUMENTS.RESULT.FAIL, error_info
         else:
-            return ARGUMENTS.RESULT.SUCCESS, args_final
+            return ARGUMENTS.RESULT.PASS, args_final
        
 
     def verify_auth(self, path: str):
