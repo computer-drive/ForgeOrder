@@ -22,7 +22,7 @@ def setup_app():
     app.errorhandler(405)(method_not_allowed)
     app.errorhandler(404)(not_found)
     app.errorhandler(500)(internal_server_error)
-    # app.errorhandler(ArgumentException)(argument_exception)
+    app.errorhandler(415)(unsupported_media_type)
     app.teardown_appcontext(teardown_appcontext) # type: ignore
     app.before_request(before_request) # type: ignore
     
