@@ -1,5 +1,5 @@
-from enum import Enum, auto
-from os import name
+# from enum import Enum, auto
+# from os import nam/e
 from typing import TypedDict, Required, NotRequired, Any
 
 class ArgRule(TypedDict):
@@ -17,13 +17,13 @@ class RouteArgs(TypedDict):
 
 
 class ARGUMENTS:
-    class RESULT(Enum):
-        PASS = auto()
-        FAIL = auto()
-        NO_ARGS = auto()
+    class RESULT:
+        PASS = "PASS"
+        FAIL = "FAIL"
+        NO_ARGS = "NO_ARGS"
 
-    class ERROR(Enum):
-        TYPING_ERROR = auto()
-        NOT_FOUND = auto()
+    class ERROR:
+        TYPING_ERROR = "TYPING_ERROR"
+        NOT_FOUND = "NOT_FOUND"
 
 
