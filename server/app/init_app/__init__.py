@@ -9,6 +9,8 @@ import extensions
 def setup_app():
     app = Flask(__name__, static_folder=os.path.join(extensions.root_dir, "static"), template_folder="res", static_url_path="/")
 
+    app.json.ensure_ascii = False
+
     from app import blueprints
     for bp in blueprints:
         app.register_blueprint(bp)
