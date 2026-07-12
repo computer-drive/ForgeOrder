@@ -53,6 +53,18 @@ def get_all_dishes():
         }
     )
 
+@shop_bp.get("/api/shop/dishes/getAllCategories" , auth=True)
+def get_all_categories():
+    meta_db = get_meta_database()
+
+    categories = meta_db.category.get_all()
+    categories = [dict(category) for category in categories]
+
+    return make_response(
+        0,
+        categories
+    )
+
 @shop_bp.post("/api/shop/dishes/get" , auth=True,
               arguments=[
                   {
