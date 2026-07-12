@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container mdui-prose">
+    <div class="page-container mdui-prose" ref="pageContainer">
         <div style="text-align: center;">   
 
             <mdui-icon-error class="icon"></mdui-icon-error>
@@ -8,12 +8,16 @@
 
             <p style="font-size: 16px">{{ message }}</p>
             
-            <div class="button-container" v-if="detail">
+            <div class="button-container" v-if="detail && showHome">
                 <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" >详细信息</mdui-button>
                 <mdui-button style="margin-top: 12px" @click="backHome">返回首页</mdui-button>
             </div>
 
-            <mdui-button style="margin-top: 12px" @click="backHome" v-else>返回首页</mdui-button>
+            <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" v-else-if="detail">详细信息</mdui-button>
+
+
+
+            <mdui-button style="margin-top: 12px" @click="backHome" v-if="showHome">返回首页</mdui-button>
 
             
         </div>
@@ -26,6 +30,7 @@
     import { dialog } from 'mdui/functions/dialog.js'
     import { snackbar } from 'mdui/functions/snackbar.js';
     import { useRouter } from 'vue-router';
+    import { onMounted, ref } from 'vue';
 
     const router = useRouter();
     const props = defineProps({
@@ -41,7 +46,21 @@
             type: String,
             default: null
         },
+        hasTopbar: {
+            type: Boolean,
+            default: false
+        },
+        showHome: {
+            type: Boolean,
+            default: true
+        }
     })
+
+    const pageContainer = ref(null)
+
+    const title = ref(props.title)
+    const message = ref(props.message)
+    const detail = ref(props.detail)
 
     const backHome = () => {
         router.push("/");
@@ -50,7 +69,7 @@
     const showDetail = () => {
         dialog({
             headline: '详细信息',
-            description: props.detail,
+            description: detail.value,
             actions: [
                 {
                     text: '复制到剪切板',
@@ -75,6 +94,24 @@
             ]
         })
     }
+
+    onMounted(() => {
+        if (props.hasTopbar) {
+            // pageContainer.value.style['padding-top'] = '64px'
+            pageContainer.value.style['height'] = 'calc(100vh - 80px)'
+        }
+    })
+
+    const setInfo = (title_, message_, detail_) => {
+        title.value = title_
+        message.value = message_
+        detail.value = detail_
+    }
+
+    defineExpose({
+        setInfo
+    })
+    
     
 
 </script>

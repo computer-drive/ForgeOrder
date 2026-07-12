@@ -6,7 +6,8 @@
     :money_input="true"
     @confirm="dishData.price = $event"
      ></NumberKeyboardDialog>
-    <div class="container mdui-prose">
+
+    <div class="container mdui-prose" v-if="!isError">
         <h2>编辑“{{ dishData.name }}”</h2>  
         <div style="margin-bottom: 24px; font-size: 18px">在下方更改菜品信息，点击右上角的“保存”按钮以应用更改。    </div>
 
@@ -114,6 +115,11 @@
 
         </div>
     </div>
+    
+    <div v-else>
+        <Error :hasTopbar="true" ref="errorPage" :showHome="false">
+        </Error>
+    </div>
 
     
 </template> 
@@ -121,7 +127,7 @@
 <script setup>
     import '@/assets/shop.dish_edit.css'
 
-    import { ref, inject, h, onMounted, onBeforeUnmount } from 'vue'
+    import { ref, inject, h, onMounted, onBeforeUnmount, nextTick } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 
     import 'mdui/components/text-field.js'
@@ -147,8 +153,8 @@
     import '@mdui/icons/delete.js'
 
     import TopProgressBar from '@/components/TopProgressBar.vue'
-    
     import NumberKeyboardDialog from '@/components/NumberKeyboardDialog.vue'
+    import Error from '@/Error.vue'
     
     import request from '@/utils/request.js'
 
@@ -169,8 +175,10 @@
     const { setRightComponent, clearRightComponent } = inject('rightComponent')
 
     const isLoading = ref(false)
+    const isError= ref(false)
 
     const priceInputDialog = ref(null)
+    const errorPage = ref(null)
 
     const categoryInput = ref(null)
     const nameInput = ref(null)
@@ -284,11 +292,6 @@
                 originDishData = {...res.data.data}
 
                 dishData.value.price /= 100 // 转换为元
-                
-
-                
-
-                // console.log(dishData.value)
             }
 
             // 获取分类信息
@@ -302,7 +305,19 @@
 
 
         } catch (error) {
-            console.log(error)
+            isError.value = true;
+
+            clearRightComponent()
+
+            await nextTick()
+
+            // console.log(error.message)
+            errorPage.value.setInfo(
+                "加载失败",
+                "无法获取菜品信息",
+                error.message
+            )
+
         } finally {
             isLoading.value = false
         }
