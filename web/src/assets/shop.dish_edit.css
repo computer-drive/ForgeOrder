@@ -15,9 +15,10 @@
 
 
 
-.choices-item {
+.mdui-prose .choices-item {
     border: 1px solid rgb(var(--mdui-color-outline));
     padding: 0px;
+    margin-bottom: 12px ;
 }
 
 mdui-list-item.choices-item::part(container) {
