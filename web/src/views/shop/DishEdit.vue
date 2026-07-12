@@ -1,6 +1,11 @@
 <template>
     <TopProgressBar v-model="isLoading"/>
 
+    <NumberKeyboardDialog
+     ref="priceInputDialog" 
+    :money_input="true"
+    @confirm="dishData.price = $event"
+     ></NumberKeyboardDialog>
     <div class="container mdui-prose">
         <h1>编辑“{{ dishData.name }}”</h1>
         <div style="margin-bottom: 24px; font-size: 18px">在下方更改菜品信息，点击右上角的“保存”按钮以应用更改。    </div>
@@ -33,8 +38,9 @@
                     class="setting-item-value"
                     variant="outlined" 
                     readonly 
-                    @click="openPriceInputDialog" 
-                    :value="price"
+                    @click="priceInputDialog.open(dishData.price)"
+
+                    v-model="dishData.price"
                     > 
                     <div slot="icon">￥</div>
                 </mdui-text-field>
@@ -91,42 +97,7 @@
         </div>
     </div>
 
-    <mdui-dialog ref="priceInputDialog" class="price-input-dialog" close-on-overlay-click>
-        <div class="price-input-"></div>
-        <div class="price-input-content">
-            <div class="price-content">
-                {{ currentText }}
-            </div>
-            <div class="price-input-container">
-                <div class="price-input">
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('1')">1</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('2')">2</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('3')">3</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="backspaceText">
-                        <mdui-icon-backspace></mdui-icon-backspace>
-                    </mdui-button>
-
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('4')">4</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('5')">5</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('6')">6</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="clearText">
-                        <mdui-icon-clear></mdui-icon-clear>
-                    </mdui-button>
-
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('7')">7</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('8')">8</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('9')">9</mdui-button>
-                    <mdui-button class="price-big-button" variant="filled" @click="handleSubmit">
-                        <mdui-icon-keyboard-return></mdui-icon-keyboard-return>
-                    </mdui-button>
-
-                    <mdui-button variant="text" class="price-num-button" style="visibility: hidden;">9</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('0')">0</mdui-button>
-                    <mdui-button variant="text" class="price-num-button" @click="inputText('.')">.</mdui-button>
-                </div>
-            </div>
-        </div>
-    </mdui-dialog>
+    
 </template> 
 
 <script setup>
