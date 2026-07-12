@@ -210,14 +210,21 @@ class _Dishes:
         '''
         获取菜品信息。
         '''
-        result = self.conn.execute(self.sql_parse.get("dishes.get"), (dish_id,)).fetchone()
+        dish_data = self.conn.execute(self.sql_parse.get("dishes.get"), (dish_id,)).fetchone()
 
-        if not result:
+        if not dish_data:
             raise NotFoundException(str(dish_id))
         
+        result = dict(dish_data)
+
+        choices = self.conn.execute(self.sql_parse.get("dish_choices.get"), (dish_id,)).fetchall()
+        
+        result["choices"] = {}
+        for choice in choices:
+            result["choices"][choice["name"]] = json.loads(choice["options"])
+        
         return result
-                
-    
+            
 
 class MetaDatabase(Database):
     def __init__(self, db_name: str) -> None:
