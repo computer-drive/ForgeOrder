@@ -33,6 +33,19 @@ const routes = [
         path: '/develop',
         name: 'Develop',
         component: () => import("./Develop.vue"),
+    },
+    {
+        path: '/error',
+        name: 'Error',
+        component: () => import("./Error.vue"),
+        meta : {
+            noAuth: true
+        },
+        props: route => ({
+            title: route.query?.title || '错误',
+            message: route.query?.message || '未知错误',
+            detail: route.query?.detail || null
+        })
     }
 ]
 

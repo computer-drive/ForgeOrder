@@ -27,9 +27,7 @@ request.interceptors.response.use(
     error => {
         // 处理401错误
         if (error.response.status === 401) {
-            // 清除本地的token
-            localStorage.removeItem("token")
-
+            
             // 识别status
             const status = error.response.data.status
 
@@ -56,6 +54,26 @@ request.interceptors.response.use(
                         msg: msg
                     }
                 })
+                // 清除本地的token
+                localStorage.removeItem("token")
+            } else {
+                // 对于权限不足的api，应不跳转到登录页
+            }
+        } else if (error.response.status === 400) {
+            const status = error.response.data?.status || -1
+            if (status == 1001) {
+                let detail = JSON.stringify(error.response.data?.data)
+                
+                // console.log(error.response.data?.data)
+                router.push({
+                    name: 'Error',
+                    query: {
+                        title: '请求错误',
+                        message: '请求错误，此问题通常不是由您的操作引起的。请复制详细信息并联系开发者。',
+                        detail: detail
+                    }
+                })
+
             }
         }
 
