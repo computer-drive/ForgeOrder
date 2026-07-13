@@ -1,9 +1,8 @@
-from ast import arg
 
 from flask import g, request
 
 import extensions
-from core.db.exceptions import NotFoundException
+from core.db.exceptions import ColumnNotFoundException, NotFoundException
 from core.utils import make_response
 from core.app_bp import AppBlueprint
 
@@ -86,12 +85,61 @@ def get_dish():
         return make_response(
             3001,
             None
-        )
+        ), 404
+
 
     return make_response(
         0,
         dict(dish)
     )
+
+@shop_bp.post("/api/shop/dishes/update", auth=True, is_admin=True,
+              arguments=[{
+                "name": "dish_id",
+                "type": int,
+                "required": True
+              },
+              {
+                  "name": "changed_items",
+                  "type": dict,
+                  "required": True
+              },
+              {
+                  "name": "changed_choices",
+                  "type": list,
+                  "required": True
+              }])
+def update_dish():
+    dish_id: int = g.args["dish_id"]
+    changed_items : dict = g.args["changed_items"]
+    changed_choices : list = g.args["changed_choices"]
+
+    meta_db = get_meta_database()
+
+    if len(changed_items.values()) == 0 and len(changed_choices) == 0:
+        return make_response(
+            3001,
+            None
+        ), 400
+
+    extensions.logger.debug([dish_id, changed_items, changed_choices], "UPDATE_DISH_REQUEST", "DebugMsg")
+
+    try:
+        meta_db.dishes.update(dish_id, changed_items, changed_choices)
+        
+        return make_response(
+            0,
+            None
+        ), 200
+
+    except ColumnNotFoundException:
+        return make_response(
+            3002,
+            None
+        ), 404
+
+
+    
 
     
 
