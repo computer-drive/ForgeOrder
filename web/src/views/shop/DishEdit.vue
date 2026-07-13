@@ -308,9 +308,9 @@
             }
             
         } finally {
-        button.loading = false
+            button.loading = false
         }
-
+    
     }
 
 
@@ -463,6 +463,13 @@
                         const index = dishData.value.choices[name].indexOf(option)
                         dishData.value.choices[name].splice(index, 1)
 
+                        // 删除项目
+                        choicesChanging.push({
+                            type: "delete_option",
+                            name: name,
+                            option: option,
+                        })
+
                         if (dishData.value.choices[name].length == 0) {
                             // 选项中没有项目了，删除选项
                             delete dishData.value.choices[name]
@@ -471,23 +478,7 @@
                             type: "delete_choice",
                             name: name,
                             option: option,
-                        })
-                        }
-                         else {
-                            // 选项中还有项目，不删除选项
-                            
-                            // 判断之前有没有添加项目的操作
-                            if (choicesChanging.find(choice => choice.name == name && choice.type == "new_option")) {
-                                // 之前有添加项目的操作，删除之前的操作记录
-                                choicesChanging.splice(choicesChanging.findIndex(choice => choice.name == name && choice.type == "new_option"), 1)
-                            } else {
-                                // 之前没有添加项目的操作，添加项目的操作记录
-                                choicesChanging.push({
-                                    type: "delete_option",
-                                    name: name,
-                                    option: option,
-                                })
-                            }
+                            })
                         }
                     },
                 },
