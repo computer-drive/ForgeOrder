@@ -49,31 +49,33 @@ class RouteManager:
         error_info = []
         
         for arg_rule in args_rule.values():
-            # 判断是否是必须项
-            if arg_rule["required"]:
-                # 判断是否存在
-                if arg_rule["name"] not in args:
-                    error_info.append({
-                        ARGUMENTS.ERROR.NOT_FOUND: arg_rule["name"]
-                    })
-                    continue
-                
-                else:
-                    # print(arg_rule)
-                    # 非必须项，判断们是否存在，如果不存在就使用默认值
-                    if arg_rule["name"] not in args:
-                        args_final[arg_rule["name"]] = arg_rule["default"]
-                    else:
-                        args_final[arg_rule["name"]] = args[arg_rule["name"]]
+            arg_name = arg_rule["name"]
 
-            # 判断类型是否正确（不考虑默认值情况，相信调用者会正确传递类型）
-            if not isinstance(args[arg_rule["name"]], arg_rule["type"]):
+            if arg_name in args:
+                # 参数存在
+                value = args[arg_name]
+            
+            elif arg_rule["required"]:
+                # 必填参数缺失
                 error_info.append({
-                    ARGUMENTS.ERROR.TYPING_ERROR: arg_rule["name"]
+                    ARGUMENTS.ERROR.NOT_FOUND: arg_name
                 })
+                continue
+            
+            else:
+                # 参数不存在，使用默认值
+                value = arg_rule["default"]
 
-            # 参数正确，添加到args_final
-            args_final[arg_rule["name"]] = args[arg_rule["name"]]
+            # 类型检查（不考虑默认值情况，相信调用者会正确传递类型）
+            if not isinstance(value, arg_rule["type"]):
+                error_info.append({
+                    ARGUMENTS.ERROR.TYPING_ERROR: arg_name
+                })
+                continue
+
+            # 添加到最终的
+            args_final[arg_name] = value
+            
 
         if error_info:
             return ARGUMENTS.RESULT.FAIL, error_info
