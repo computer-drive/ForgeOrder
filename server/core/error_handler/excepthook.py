@@ -46,8 +46,8 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
         time=datetime.datetime.now(),
     )
 
-def thread_excepthook(type, value, tb, thread: threading.Thread):
-    excepthook(type, value, tb, thread)
+def thread_excepthook(args):
+    excepthook(args.exc_type, args.exc_value, args.exc_traceback, args.thread)
 
 def install():
     sys.excepthook = excepthook
