@@ -142,8 +142,9 @@
     import 'mdui/components/chip.js'
 
     import { prompt } from 'mdui/functions/prompt.js'
-    import { dialog } from 'mdui/functions/dialog.js';
-    import { snackbar } from 'mdui/functions/snackbar.js';
+    import { dialog } from 'mdui/functions/dialog.js'
+    import { alert } from 'mdui/functions/alert.js'
+    import { snackbar } from 'mdui/functions/snackbar.js'
 
     import '@mdui/icons/edit.js'
     
@@ -193,7 +194,7 @@
 
 
     // 右上角的按钮
-    const handleSave = (event) => {
+    const handleSave = async (event) => {
         // 通过事件对象获取按钮元素
         const button = event?.currentTarget
     
@@ -258,11 +259,57 @@
             changed.category = dishData_.category
         }
 
+        console.log(changed, choicesChanging)
 
-        
-    
+        try {
+            const dishId = route.params.id
+            // console.log(dishId)
+
+            const res = await request.post(`/shop/dishes/update`, {
+                dish_id: Number(dishId),
+                changed_items: changed,
+                changed_choices: choicesChanging,
+            })
+
+            
+
+            if (res.data.status == 0) {
+                // 刷新菜品数据
+                snackbar({
+                    message: '修改成功'
+                })
+                router.push("/shop/dishes")
+            } else {
+                alert({
+                    headline: '修改失败',
+                    description: '' + res.data.data,
+                    confirmText: '确定'
+                })
+            }
+             
+        } catch (error) {
+            if (error.response.status === 401 && error.response.data?.status == 2002) {
+                alert({
+                headline: '修改失败',
+                description: '权限不足，仅管理员用户可修改菜品数据',
+                confirmText: '确定'
+            })
+
+            } else if (error.response.status == 400 && error.response.data?.status == 3001) {
+                snackbar({
+                    message: '未更改任何内容。'
+                })
+            } else {
+                alert({
+                headline: '修改失败',
+                description: '网络错误：' + error,
+                confirmText: '确定'
+            })
+            }
+            
+        } finally {
         button.loading = false
-
+        }
 
     }
 
