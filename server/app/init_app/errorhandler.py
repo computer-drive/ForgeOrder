@@ -47,7 +47,7 @@ def teardown_appcontext(error):
         if error is not None:
             logs = {
                     "error": {
-                        "emsg": str(error),
+                        "msg": str(error),
                         "type": type(error).__name__,
                     },
                     "traceback": None
