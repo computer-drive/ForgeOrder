@@ -10,7 +10,7 @@ import os
 def generate_error_report(
     error_type: Literal["error", "critical"],
     error_title: str,
-    errpr_description: str,
+    error_description: str,
     error_detail: str,
     time: datetime.datetime,
 ):
@@ -22,7 +22,7 @@ def generate_error_report(
         "error_info": {
             "type": error_type,
             "title": error_title,
-            "description": errpr_description,
+            "description": error_description,
             "detail": error_detail,
             "time": time.isoformat(),
         },

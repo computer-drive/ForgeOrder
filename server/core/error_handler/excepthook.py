@@ -41,7 +41,7 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
     generate_error_report(
         error_type="critical",
         error_title=f"{'Threaded ' if thread else ''}{'Uncaught Exception' if thread else 'Uncaught Exception'}",
-        errpr_description=str(value),
+        error_description=str(value),
         error_detail=traceback.format_exception(type, value, tb),
         time=datetime.datetime.now(),
     )
