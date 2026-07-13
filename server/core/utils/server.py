@@ -22,9 +22,10 @@ def make_response(status: int, data: dict | list | int | str | bool | None):
     })
 
 def get_client_ip():
-    if os.environ["ENV"] == "dev":
-        # print(1)
-        return request.headers["X-Real-IP"]
+    env = os.environ.get("ENV", "product")
+    if env == "dev":
+        # 开发环境优先使用 X-Real-IP 头
+        return request.headers.get("X-Real-IP", request.remote_addr)
     else:
         return request.remote_addr
     
