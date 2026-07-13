@@ -71,7 +71,7 @@ VALUES (?, ?, ?);
 
 -- command: dishes.get_all
 SELECT * FROM dishes
-ORDER BY id DESC
+ORDER BY id ASC
 
 -- command: dish_stats.get_all
 SELECT * FROM dish_stats
@@ -86,6 +86,24 @@ SELECT * FROM dishes WHERE id = ?
 
 -- command: dish_choices.get
 SELECT * FROM dish_choices WHERE dish_id = ?
+
+-- command: dishes.update
+UPDATE dishes SET {settings} WHERE id = ? {value}
+
+-- command: dish_choices.new
+INSERT INTO dish_choices (dish_id, name, options)
+VALUES (?, ?, ?)
+
+-- command: dish_choices.delete
+DELETE FROM dish_choices WHERE dish_id = ? AND name = ?
+
+
+-- command: dish_choices.get_choice
+SELECT * FROM dish_choices WHERE dish_id = ? AND name = ?
+
+
+-- command: dish_choices.update
+UPDATE dish_choices SET options = ? WHERE dish_id = ? AND name = ?
 
 
 

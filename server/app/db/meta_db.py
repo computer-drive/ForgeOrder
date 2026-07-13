@@ -1,12 +1,14 @@
 import datetime
 import json
 import os
+from re import M
 import sqlite3
 
 from core.db.database import Database
-from core.db.exceptions import NotFoundException
+from core.db.exceptions import ColumnNotFoundException, NotFoundException
 from core.db.sql_parse import SqlParse
 import extensions
+
 # from core.utils import get_res_path
 
 
@@ -224,8 +226,134 @@ class _Dishes:
             result["choices"][choice["name"]] = json.loads(choice["options"])
         
         return result
+
+    def _update_dishes(self, dish_id: int, changed_items):
+        '''
+        更新菜品信息。
+        '''
+        # 获取所有列
+        
+        columns = list(self.parent_database.get_all_columns("dishes"))
+
+            
+        for key in changed_items.keys():
+            if key not in columns:
+                raise ColumnNotFoundException("dishes", key)
+        
+        
+        query_keys = ""
+        for key, value in changed_items.items():
+            query_keys += f"{key} = ?,"
+
+        query_keys = query_keys.rstrip(",")
+
+        # query_sql_values = ("VALUES (" + "?," * (len(changed_items.values()) + 1)).rstrip(",") + ")" 
+        query_sql_values = ''
+        
+        # print(self.sql_parse.get("dishes.update").format(settings = query_keys,
+                                                    #    value = query_sql_values))
+        
+        cursor = self.conn.execute(
+            self.sql_parse.get("dishes.update").format(settings = query_keys,
+                                                       value = query_sql_values),
+            list(changed_items.values()) + [dish_id])
+        
+        # 判断是否更新成功
+        if cursor.rowcount == 0:
+            raise NotFoundException(str(dish_id))
+        
+        # 提交事务
+        self.conn.commit()
+
+    def _update_dish_choices(self, dish_id: int, changed_choices: list[dict]):
+        '''
+        更新菜品选择。
+        '''
+
+        PAIR = {
+        "new_option": "delete_option",
+        "delete_option": "new_option",
+        "new_choice": "delete_choice",
+        "delete_choice": "new_choice",
+    }
+
+        remain = {}
+
+        for item in changed_choices:
+            t = item["type"]
+
+            if t in ("new_option", "delete_option"):
+                key = ("option", item["name"], item["option"])
+            else:
+                key = ("choice", item["name"])
+
+            if key not in remain:
+                remain[key] = item
+                continue
+
+            prev = remain[key]
+
+            if PAIR.get(prev["type"]) == t:
+                # 配对成功，删除
+                del remain[key]
+            else:
+                remain[key] = item
+
+        unique_choices = list(remain.values())
+        
+
+        # 执行数据库命令，更新菜品选择
+        for action in unique_choices:
+            if action["type"] == "new_choice":
+                # 新增选择
+                self.conn.execute(self.sql_parse.get("dish_choices.new"),
+                                  (dish_id, action["name"], json.dumps([]), ))
+            
+            elif action["type"] == "delete_choice":
+                # 删除选择
+                self.conn.execute(self.sql_parse.get("dish_choices.delete"),
+                                  (dish_id, action["name"], ))
+                
+                # print("删除项目：", action["name"])
+
+            
+            elif action["type"] == "new_option" or action["type"] == "delete_option":
+                
+                # 获取选项
+                # print(type(dish_id))
+                choices = self.conn.execute(self.sql_parse.get("dish_choices.get_choice"),
+                                          (dish_id, action["name"], )).fetchone()
+                
+                if not choices:
+                    raise NotFoundException(str((dish_id, action["name"], )))
+                
+                options = json.loads(choices["options"])
+
+                if action["type"] == "new_option":
+                    options.append(action["option"])
+                else:
+                    options.remove(action["option"])
+
+                self.conn.execute(self.sql_parse.get("dish_choices.update"),
+                                  (json.dumps(options), dish_id, action["name"], ))
+                
+                # print("删除项目：", action["option"])
+                
+            
+        self.conn.commit()
             
 
+
+    def update(self, dish_id: int, changed_items: dict, changed_choices: list):
+        if changed_items:
+            self._update_dishes(dish_id, changed_items)
+        
+        if changed_choices:
+            self._update_dish_choices(dish_id, changed_choices)
+        
+        
+
+        
 class MetaDatabase(Database):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
@@ -285,5 +413,17 @@ if __name__ == "__main__":
 
     
 
+if __name__ == "__main__":
+    str = [
+    {
+        "type": "new_option",
+        "name": "口味",
+        "option": "123"
+    }
+]
+    
+    meta_db = MetaDatabase("data/meta.db")
+
+    meta_db.dishes._update_dish_choices(1, str)
 
 

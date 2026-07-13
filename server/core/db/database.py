@@ -1,6 +1,7 @@
 import datetime
 import sqlite3
 
+from .schema import SQL
 
 def adapt_datetime(dt: datetime.datetime) -> str:
     return dt.isoformat()
@@ -18,8 +19,11 @@ class Database:
 
         self.conn : sqlite3.Connection = None #type: ignore
 
+
     def connect(self):
         self.conn = sqlite3.connect(self.db_name)
+
+        self.conn.row_factory = sqlite3.Row #type: ignore
 
     def close(self):
         self.commit()
@@ -42,5 +46,16 @@ class Database:
     
     def fetchone(self):
         return self.conn.cursor().fetchone()
+    
+    def get_all_columns(self, table_name: str):
+        cursor =  self.conn.execute(
+            SQL.GET_ALL_COLUMNS.format(table_name=table_name)).fetchall()
+        
+        result = []
+
+        for row in cursor:
+            result.append(row["name"])
+        
+        return result
 
     

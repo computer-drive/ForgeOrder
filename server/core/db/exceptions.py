@@ -17,3 +17,10 @@ class NotFoundException(Exception):
         super().__init__(name)
 
         self.name = name
+
+class ColumnNotFoundException(Exception):
+    def __init__(self, table: str,name: str):
+        super().__init__(f"Column not found in {table}: {name}")
+
+        self.name = name
+        self.table = table
