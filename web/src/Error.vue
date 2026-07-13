@@ -8,12 +8,11 @@
 
             <p style="font-size: 16px">{{ message }}</p>
             
-            <div class="button-container" v-if="detail && showHome">
+            <div v-if="detail">
                 <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" >详细信息</mdui-button>
-                <mdui-button style="margin-top: 12px" @click="backHome">返回首页</mdui-button>
             </div>
 
-            <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" v-else-if="detail">详细信息</mdui-button>
+            <!-- <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" v-else-if="detail">详细信息</mdui-button> -->
 
 
 
