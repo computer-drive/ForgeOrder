@@ -131,10 +131,10 @@ def _handle_auth():
                     }, "BEFORE_REQUEST", "NonAdminUserAccess"
                 )
                 # 非管理员用户，返回错误
-                return jsonify(make_response( # type: ignore
+                return make_response( # type: ignore
                 2002,
                 None
-            )), 401
+            ), 401
         
         else:
             # 非管理员页面，继续请求
@@ -160,7 +160,7 @@ def _handle_args():
         return make_response(
             1001,
             data
-        )
+        ), 400
 
 def before_request():
     # 请求前的逻辑
