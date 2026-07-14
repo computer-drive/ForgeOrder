@@ -132,11 +132,20 @@ def update_dish():
             None
         ), 200
 
-    except ColumnNotFoundError:
+    except ColumnNotFoundError as e:
+        return make_response(
+            3999,
+            [e.table, e.name]
+        ), 404
+    
+    except NotFoundError:
         return make_response(
             3002,
             None
         ), 404
+
+    
+    
 
 @shop_bp.post("/api/shop/dishes/delete", auth=True, is_admin=True,
               arguments=[{
