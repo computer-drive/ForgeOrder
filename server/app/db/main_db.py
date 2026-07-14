@@ -381,6 +381,8 @@ class _Orders:
 
             order_items_.append(item_)
 
+        self.conn.commit()
+
             
             
 
