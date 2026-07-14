@@ -134,7 +134,11 @@ def login():
 def logout():
     token = request.headers.get("Authorization")
 
-
+    if not token:
+        return make_response(
+            1001,
+            None
+        )
     token = token.split(" ")[1] #type: ignore
     
     
