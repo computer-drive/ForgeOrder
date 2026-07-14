@@ -5,7 +5,7 @@ from re import M
 import sqlite3
 
 from core.db.database import Database
-from core.db.exceptions import ColumnNotFoundException, NotFoundException
+from core.db.exceptions import ColumnNotFoundError, NotFoundError
 from core.db.sql_parse import SqlParse
 import extensions
 
@@ -108,7 +108,7 @@ class _Dishes:
         # 验证分类是否存在
         category = self.parent_database.category.get_from_id(category_id)
         if not category:
-            raise NotFoundException(str(category_id))
+            raise NotFoundError(str(category_id))
         category = dict(category)
 
         
@@ -215,7 +215,7 @@ class _Dishes:
         dish_data = self.conn.execute(self.sql_parse.get("dishes.get"), (dish_id,)).fetchone()
 
         if not dish_data:
-            raise NotFoundException(str(dish_id))
+            raise NotFoundError(str(dish_id))
         
         result = dict(dish_data)
 
@@ -238,7 +238,7 @@ class _Dishes:
             
         for key in changed_items.keys():
             if key not in columns:
-                raise ColumnNotFoundException("dishes", key)
+                raise ColumnNotFoundError("dishes", key)
         
         
         query_keys = ""
@@ -260,7 +260,7 @@ class _Dishes:
         
         # 判断是否更新成功
         if cursor.rowcount == 0:
-            raise NotFoundException(str(dish_id))
+            raise NotFoundError(str(dish_id))
         
         # 提交事务
         self.conn.commit()
@@ -325,7 +325,7 @@ class _Dishes:
                                           (dish_id, action["name"], )).fetchone()
                 
                 if not choices:
-                    raise NotFoundException(str((dish_id, action["name"], )))
+                    raise NotFoundError(str((dish_id, action["name"], )))
                 
                 options = json.loads(choices["options"])
 
@@ -351,7 +351,24 @@ class _Dishes:
         if changed_choices:
             self._update_dish_choices(dish_id, changed_choices)
         
+    
+    def delete(self, dish_id: int):
+        cursor = self.conn.execute(self.sql_parse.get("dishes.delete1"),
+                              (dish_id,))
+            
+        if cursor.rowcount == 0:
+            raise NotFoundError(str(dish_id))
         
+        self.conn.execute(self.sql_parse.get("dishes.delete2"),
+                              (dish_id, ))
+        
+        self.conn.execute(self.sql_parse.get("dishes.delete3"),
+                              (dish_id, ))
+
+        self.conn.commit()
+
+        return True        
+
 
         
 class MetaDatabase(Database):
@@ -413,17 +430,7 @@ if __name__ == "__main__":
 
     
 
-if __name__ == "__main__":
-    str = [
-    {
-        "type": "new_option",
-        "name": "口味",
-        "option": "123"
-    }
-]
-    
-    meta_db = MetaDatabase("data/meta.db")
 
-    meta_db.dishes._update_dish_choices(1, str)
+    
 
 

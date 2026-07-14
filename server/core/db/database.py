@@ -2,6 +2,7 @@ import datetime
 import sqlite3
 
 from .schema import SQL
+from .exceptions import ExecuteError
 
 def adapt_datetime(dt: datetime.datetime) -> str:
     return dt.isoformat()
@@ -33,10 +34,17 @@ class Database:
         self.conn = None #type: ignore
 
     def execute(self, sql: str, params: tuple = None): # type: ignore
-        self.conn.execute(sql, params or ())
+        try:
+            self.conn.execute(sql, params or ())
+        except sqlite3.OperationalError as e:
+            raise ExecuteError(sql, e)
+
 
     def executescript(self, sql: str):
-        self.conn.executescript(sql)
+        try:
+            self.conn.executescript(sql)
+        except sqlite3.OperationalError as e:
+            raise ExecuteError(sql, e)
 
     def commit(self):
         self.conn.commit()

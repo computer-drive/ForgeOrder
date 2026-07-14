@@ -207,7 +207,17 @@
         "no_data": "无数据",
         "choices": "选项信息",
 
-        "edit_action": "编辑"
+        "edit_action": "编辑",
+        "delete_action": "删除"
+      },
+      "delete_dialog": {
+        "title": "删除菜品",
+        "description": "确定要删除菜品“{name}”吗？"
+      },
+      "snackbar": {
+        "delete_success": "删除成功。",
+        "not_found": "未找到菜品。",
+        "unknown": "未知错误。"
       }
     },
     "dish_edit": {

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     category INTEGER NOT NULL,
     is_available INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL,
+    is_deleted INTEGER NOT NULL DEFAULT 0,
 
     FOREIGN KEY (category) REFERENCES dishes_category (id)
 );
@@ -70,7 +71,7 @@ VALUES (?, ?, ?);
 
 
 -- command: dishes.get_all
-SELECT * FROM dishes
+SELECT * FROM dishes WHERE is_deleted = 0
 ORDER BY id ASC
 
 -- command: dish_stats.get_all
@@ -78,7 +79,7 @@ SELECT * FROM dish_stats
 ORDER BY id DESC
 
 -- command: dish_choices.get_all
-SELECT * FROM dish_choices
+SELECT * FROM dish_choices 
 ORDER BY id DESC
 
 -- command: dishes.get
@@ -104,6 +105,15 @@ SELECT * FROM dish_choices WHERE dish_id = ? AND name = ?
 
 -- command: dish_choices.update
 UPDATE dish_choices SET options = ? WHERE dish_id = ? AND name = ?
+
+-- command: dishes.delete1
+UPDATE dishes SET is_deleted = 1 WHERE id = ?; -- 将dishesb表的内容更新为is_deleted
+
+-- command: dishes.delete2
+DELETE FROM dish_stats WHERE id = ?; -- 删除dish_stats表的项
+
+-- command: dishes.delete3
+DELETE FROM dish_choices WHERE dish_id = ?; -- 删除dish_choices表的项
 
 
 

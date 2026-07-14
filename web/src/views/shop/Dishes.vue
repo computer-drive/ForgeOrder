@@ -82,6 +82,12 @@
 
         </div>
 
+        <mdui-button slot="action" variant="tonal" @click="deleteDish">
+            {{ $t('shop.all_dishes.detail.delete_action') }}
+            <mdui-icon-delete slot="icon" ></mdui-icon-delete>
+        </mdui-button>
+
+
         <mdui-button slot="action" variant="tonal" @click="goEdit">
             {{ $t('shop.all_dishes.detail.edit_action') }}
             <mdui-icon-edit slot="icon" ></mdui-icon-edit>
@@ -95,20 +101,25 @@
 <script setup>
 import TopProgressBar from '@/components/TopProgressBar.vue'
 
-import 'mdui/components/list.js';
-import 'mdui/components/list-item.js';
-import 'mdui/components/list-subheader.js';
-import 'mdui/components/dialog.js';
-import 'mdui/components/segmented-button-group.js';
-import 'mdui/components/segmented-button.js';
+import 'mdui/components/list.js'
+import 'mdui/components/list-item.js'
+import 'mdui/components/list-subheader.js'
+import 'mdui/components/dialog.js'
+import 'mdui/components/segmented-button-group.js'
+import 'mdui/components/segmented-button.js'
+import { dialog } from 'mdui/functions/dialog.js'
 
 import { inject, h, onMounted, ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
-import '@mdui/icons/add.js';
-import '@mdui/icons/edit.js';
+import '@mdui/icons/add.js'
+import '@mdui/icons/edit.js'
+import '@mdui/icons/delete.js'
+
 
 import request from '@/utils/request.js'
+import { t } from '@/locales/index.js'
+import { snackbar } from 'mdui'
 
 const router = useRouter()
 
@@ -125,7 +136,7 @@ const dishDetail = ref(null)
 
 const addDish = () => {}
 
-onMounted(() => {
+onMounted( async() => {
 
     setRightComponent(h('mdui-button-icon', {
         onClick: addDish
@@ -133,7 +144,16 @@ onMounted(() => {
         h('mdui-icon-add')
     ]))
 
-    request.get("/shop/dishes/getAll").then(res => {
+    getDishes()
+    
+
+    
+})
+
+const getDishes = async () => {
+    isLoading.value = true
+
+    const res = await request.get("/shop/dishes/getAll")
         // console.log(res)
         if (res.status == 200) {
             // console.log(res.data.data)
@@ -141,11 +161,9 @@ onMounted(() => {
             categories.value = res.data.data.categories
             // console.log(dishes.value, categories.value)
         }
-        isLoading.value = false 
-    })
-
     
-})
+    isLoading.value = false 
+}
 
 const showDetail = (category_name, dish_id) => {
     currentDish.value = { 
@@ -164,6 +182,58 @@ const goEdit = () => {
         router.push(`/shop/dishes/${currentDish.value.id}`)
     })
     
+}
+
+const deleteDish = () => {
+    dishDetail.value.open = false;
+    dishDetail.value.addEventListener('closed', () => {
+        dialog({
+            headline: t('shop.all_dishes.delete_dialog.title'),
+            description: t('shop.all_dishes.delete_dialog.description', { name: currentDish.value.name }),
+            actions: [
+                {
+                    'text': t('common.text.cancel')
+                },
+                {
+                    'text': t('common.text.confirm'),
+                    onClick: async() => {
+                        try{
+                            const res = await request.post('/shop/dishes/delete', {
+                                dish_id: currentDish.value.id
+                            })
+
+                            if (res.data.status == 0) {
+                                snackbar({
+                                    "message": t("shop.all_dishes.snackbar.delete_success")
+                                })
+                                
+                                getDishes()
+                                
+                                
+
+                                // router.push(`/shop/dishes`)
+                                
+                            } else if (res.data.status == 3001) {
+                                snackbar({
+                                    "message": t("shop.all_dishes.snackbar.not_found")
+                                })
+                            } else {
+                                console.log(res.data)
+                                snackbar({
+                                    "message": t("shop.all_dishes.snackbar.unknown")
+                                })
+                            }
+                        } catch (error) {
+                            console.log(error)
+                            snackbar({
+                                "message": t("shop.all_dishes.snackbar.unknown")
+                            })
+                        }
+                    }
+                },  
+            ]
+        })
+    }, {once: true})
 }
 
 onBeforeUnmount(() => {

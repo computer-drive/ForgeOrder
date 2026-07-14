@@ -17,7 +17,7 @@ class SqlParse:
 
         # 判断文件是否为空
         if not lines:   
-            raise EmptyFileException(self.sql_file_path)
+            raise EmptyFileError(self.sql_file_path)
         
         # 初始化当前命令名称与SQL语句
         current_name = ""
@@ -58,7 +58,7 @@ class SqlParse:
 
     def get(self, name: str):
         if name not in self.queries:
-            raise CommandNotFoundException(name)
+            raise CommandNotFoundError(name)
         
         return self.queries[name]
 

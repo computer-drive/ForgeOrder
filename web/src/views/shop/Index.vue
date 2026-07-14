@@ -5,7 +5,8 @@
                 <mdui-icon-arrow-back></mdui-icon-arrow-back>
             </mdui-button-icon>
         </template>
-
+        <div style="flex-grow: 1"></div>
+        
         <template #right>
             <slot name="customRight">
                 <component :is="rightComponent" />
