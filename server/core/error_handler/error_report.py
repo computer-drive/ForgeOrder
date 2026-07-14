@@ -19,14 +19,21 @@ def generate_error_report(
     error_file = os.path.join(f"data/error_reports/{datetime.datetime.now().strftime("%Y-%m-%d")}.json")
 
     os.makedirs("data/error_reports", exist_ok=True)
+    
+    try:
+        with open(error_file, 'r', encoding='utf-8') as f:
 
-    with open(error_file, 'r', encoding='utf-8') as f:
-
-        try:
+        
             data = json.load(f)
             
-        except json.JSONDecodeError:
+    except json.JSONDecodeError:
             data = []
+
+    except FileNotFoundError:
+            data = []
+
+
+
 
     
     error_report = {
