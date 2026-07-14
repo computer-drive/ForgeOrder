@@ -1,7 +1,7 @@
 <template>
   <div>
     
-    <TopBar title="登录" :showHome="false" />
+    <TopBar :title="$t('login.topbar.text')" :showHome="false" />
     <TopProgressBar v-model="isLoading"/>
 
     <div class="container">
@@ -13,13 +13,13 @@
             <!-- <div style="font-size: 24px; margin-bottom: 16px; margin-top: 16px; margin-left: 12">登录至ForgeOrder</div>
             <div style="margin-bottom: 16px;">输入用户名、密码以登录至ForgeOrder。</div> -->
 
-            <h1>登录</h1>
-            <div style="margin-bottom: 24px; font-size: 18px">输入用户名、密码以登录至ForgeOrder。</div>
+            <h1>{{ $t('login.main.title') }}</h1>
+            <div style="margin-bottom: 24px; font-size: 18px">{{ $t('login.main.description') }}</div>
             
             <form @submit.prevent="handleSubmit(false)">
               <mdui-text-field 
               autofocus="true"
-              label="用户名" 
+              :label="$t('login.input.username.label')"
               variant="outlined" 
               style="margin-bottom: 24px;" 
               v-model="username"
@@ -28,7 +28,7 @@
               </mdui-text-field>
 
               <mdui-text-field 
-              label="密码" 
+              :label="$t('login.input.password.label')" 
               variant="outlined" 
               style="margin-bottom: 24px;" 
               type="password" 
@@ -40,7 +40,7 @@
 
 
               <div style="text-align: right; padding-right: 8px" >
-                <mdui-button type="submit" ref="loginButton">登录</mdui-button>
+                <mdui-button type="submit" ref="loginButton">{{ $t('login.button.submit.text') }}</mdui-button>
               </div>
               
             </form>
@@ -56,6 +56,7 @@
 import TopBar from './components/TopBar.vue'
 import TopProgressBar from './components/TopProgressBar.vue';
 import { useAuth } from './composables/auth.js'
+import { t } from '@/locales/index.js'
 
 import 'mdui/components/text-field.js';
 import { alert } from 'mdui/functions/alert.js';
@@ -92,9 +93,9 @@ onMounted(() => {
     if (errorMsg) {
       history.replaceState({}, document.title)
       alert({
-        headline: '登录状态失效',
+        headline: t('login.alert.session_expired.title'),
         description: errorMsg,
-        confirmText: '确定',
+        confirmText: t('common.text.confirm'),
       })
     }
 })
@@ -112,13 +113,13 @@ const handleSubmit = async (coverLogin = false) => {
     // 验证表单数据是否有效
     if (username.value === '') {
         isError = true
-        usernameInput.value.setCustomValidity('用户名不能为空')
+        usernameInput.value.setCustomValidity(t('login.input.username.required'))
 
     }
 
     if (password.value === '') {
         isError = true
-        passwordInput.value.setCustomValidity('密码不能为空')
+        passwordInput.value.setCustomValidity(t('login.input.password.required'))
     }
 
     if (isError) {
@@ -142,25 +143,25 @@ const handleSubmit = async (coverLogin = false) => {
         
       } else if (result.status == 3001) {
         // 用户名或密码错误
-        passwordInput.value.setCustomValidity('用户名或密码错误')
+        passwordInput.value.setCustomValidity(t('login.error.invalid_credentials'))
       } else if (result.status == 3002) {
         // 服务器错误
-        passwordInput.value.setCustomValidity('该用户未启用')
+        passwordInput.value.setCustomValidity(t('login.error.is_disabled'))
       } else if (result.status == 3003) {
         // 重复登录
         snackbar({
-          message: '重复登录',
+          message: t('login.error.repeat_login'),
         })
         router.push("/")
 
       } else if (result.status == 3004) {
   
         dialog({
-          headline: '新设备登录',
-          description: `已有一个设备（${result.data.old_device_ip}）登录，是否覆盖它的登录？`,
+          headline: t('login.dialog.new_device.title'),
+          description: t("login.dialog.new_device.description", {ip: result.data.old_device_ip}),
           actions: [
             {
-              text: '否',
+              text: t('common.text.cancel'),
               onClick: () => {
                 isLoading.value = false
                 usernameInput.value.disabled = false
@@ -169,7 +170,7 @@ const handleSubmit = async (coverLogin = false) => {
               }
             },
             {
-              text: '是',
+              text: t('common.text.confirm'),
               onClick: () => {
                 handleSubmit(true)
               }
@@ -181,7 +182,7 @@ const handleSubmit = async (coverLogin = false) => {
         // 其他错误
         console.error(result)
         alert({
-          headline: '登录失败',
+          headline: t("login.dialog.error.title"),
           description: `未知错误（${result.status}）：${result.data}`,
           confirmText: '确定'
         })
@@ -190,7 +191,7 @@ const handleSubmit = async (coverLogin = false) => {
     
     catch(error) {
       alert({
-        headline: '登录失败',
+        headline: t("login.dialog.error.title"),
         description: `网络错误：${error.message}`,
         confirmText: '确定'
       })

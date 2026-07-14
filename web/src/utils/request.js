@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { t } from '@/locales/index.js'
 
 const request = axios.create({
     baseURL: '/api',
@@ -34,16 +35,15 @@ request.interceptors.response.use(
             let msg = ''
             if (status == 2002) {
                 // 对于权限不足的api，应不跳转到登录页
-                msg = '权限不足'
+                msg = t('Ulogin.error.no_permission')
             } else if (status == 2003) {
-                msg = 'Token无效，请重新登录。'
+                msg = t('Ulogin.error.invalid_token')
             } else if (status == 2004) {
-                
-                msg = 'Token过期，请重新登录。'
+                msg = t('Ulogin.error.expired_token')
             } else if (status == 2005) {
-                msg = '有新的设备覆盖了你的登录状态，请重新登录。'
+                msg = t('Ulogin.error.old_device')
             } else {
-                msg = '未知错误，请重新登录。'
+                msg = t('Ulogin.error.unknown', { status: status })
             }
 
             // 跳转登录页
@@ -68,8 +68,8 @@ request.interceptors.response.use(
                 router.push({
                     name: 'Error',
                     query: {
-                        title: '请求错误',
-                        message: '请求错误，此问题通常不是由您的操作引起的。请复制详细信息并联系开发者。',
+                        title: t('Urequest.error.headline'),
+                        message: t('Urequest.error.description'), 
                         detail: detail
                     }
                 })

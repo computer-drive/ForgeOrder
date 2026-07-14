@@ -23,7 +23,7 @@ export function useAuth() {
             if (res.status == 200) {
                 if (res.data.status == 0 || res.data.status == 3003) {
                     // 登录成功
-                    console.log("登录成功")
+                    // console.log("登录成功")
                     token.value = res.data.data.token
 
                     userInfo.value = res.data.data.user_info
@@ -41,8 +41,8 @@ export function useAuth() {
 
                 
             // 登录失败
-            console.log("登录失败")
-            console.log(res.data)
+            // console.log("登录失败")
+            // console.log(res.data)
             return res.data
             
 
@@ -71,7 +71,7 @@ export function useAuth() {
                 return res.data
             } 
         } catch (error) {
-            console.log(error)
+            // console.log(error)
             return {
                 status: -1,
                 data: error

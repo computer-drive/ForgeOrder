@@ -2,19 +2,19 @@
 
     <mdui-navigation-bar label-visibility="selected" ref="bottomBar">
         <mdui-navigation-bar-item @click="goHome" value="home">
-          主页
+          {{ $t('Cbottom_bar.text.main') }}
          <mdui-icon-home--outlined slot="icon"></mdui-icon-home--outlined>
          <mdui-icon-home slot="active-icon"></mdui-icon-home>
         </mdui-navigation-bar-item>
 
         <mdui-navigation-bar-item @click="goOrders" value="orders">
-          订单
+          {{  $t('Cbottom_bar.text.orders') }}
           <mdui-icon-list-alt slot="icon"></mdui-icon-list-alt>
         </mdui-navigation-bar-item>
 
 
         <mdui-navigation-bar-item @click="goMe" value="me">
-          我的
+          {{ $t('Cbottom_bar.text.me') }}
           <mdui-icon-account-circle--outlined slot="icon"></mdui-icon-account-circle--outlined>
           <mdui-icon-account-circle slot="active-icon"></mdui-icon-account-circle>
         </mdui-navigation-bar-item>

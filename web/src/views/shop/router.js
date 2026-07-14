@@ -12,15 +12,15 @@ export default {
         {
             path: '/shop/dishes',
             component: Dishes,
-            meta: {
-                title: '菜品'
+            meta: { // 显示为TopbBar的标题，定义在TopBar组件的代码
+                title: '$shop.title.dishes'
             }
         },
         {
             path: '/shop/dishes/:id',
             component: DishEdit,
             meta: {
-                title: '编辑菜品'
+                title: '$shop.title.edit_dish'
             },
             props: true
         },
@@ -28,7 +28,7 @@ export default {
             path: '/shop/dishes/new',
             component: DishEdit,
             meta: {
-                title: '新增菜品'
+                title: '$shop.title.add_dish'
             },
             props: {
                 isNew: true

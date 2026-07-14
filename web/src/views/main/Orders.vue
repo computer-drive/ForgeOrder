@@ -1,7 +1,7 @@
 <template>
-    <TopBar title="订单" :showHome="false">
+    <TopBar :title="$t('orders.topbar.text')" :showHome="false">
         <template #right >
-            <mdui-text-field variant="outlined" placeholder="搜索" style="width: auto; height: 100%">
+            <mdui-text-field variant="outlined" :placeholder="$t('orders.topbar.search.text')" style="width: auto; height: 100%">
             </mdui-text-field>
             <mdui-button-icon >
                 <mdui-icon-search></mdui-icon-search>
@@ -10,7 +10,7 @@
     </TopBar>
 
     <div class="container mdui-prose" >
-        <h2>今日订单</h2>
+        <h2>{{$t('orders.main.today')}}</h2>
 
         <div v-for="i in 10" :key="i">
             <OrderCard 
@@ -31,7 +31,7 @@
 
         <mdui-fab size="normal" style="position: fixed; bottom: 100px; right: 20px;" @click="router.push('/order/new')" extended>
             <mdui-icon-edit slot="icon"></mdui-icon-edit>
-            添加订单
+            {{$t('orders.main.add')}}
         </mdui-fab>
 
     </div>

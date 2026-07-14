@@ -1,0 +1,265 @@
+{
+  "common": {
+    "text": {
+      "confirm": "确定",
+      "cancel": "取消",
+      "cny_char": "￥"
+    }
+  },
+
+  "login": {
+    "topbar": {
+      "text": "登录"
+    },
+    "main": {
+      "title": "登录",
+      "description": "输入用户名、密码以登录。"
+    },
+    "input": {
+      "username": {
+        "label": "用户名",
+        "required": "用户名不能为空。"
+      },
+      "password": {
+        "label": "密码",
+        "required": "密码不能为空。"
+      }
+    },
+    "button": {
+      "submit": {
+        "text": "登录"
+      }
+    },
+    "alert": {
+      "session_expired": {
+        "title": "登录状态失效"
+      }
+    },
+    "error": {
+      "invalid_credentials": "用户名或密码错误。",
+      "is_disabled": "该用户未启用。",
+      "repeat_login": "重复登录。"
+    },
+    "dialog": {
+      "new_device": {
+        "title": "新设备登录",
+        "description": "该用户已在{ip}上登录，覆盖它的登录状态？"
+      },
+      "error": {
+        "title": "登录失败",
+        "unknown": {
+          "description": "未知错误：{error}。"
+        },
+        "network": {
+          "description": "网络错误：{error}。"
+        }
+      }
+    }
+  },
+
+  "home": {
+    "topbar": { // topbar信息
+      "text": "首页",
+      "menu": {
+        "shop": "店铺设置",
+        "business_end": "结束营业",
+        "business_start": "开始营业",
+        "develop": "开发人员选项",
+        "scan": "扫描",
+        "dashboard": "数据看板"
+      }
+    },
+
+    "main": { // 主要信息
+      "welcome": {
+        "text": "欢迎回来，{user}。"
+      },
+      "not_business": {
+        "text": "店铺已打烊。"
+      }
+    },
+
+    "today": { // “今日订单”栏目
+      "title": "今日订单",
+      "count": {
+        "text": "订单数量"
+      },
+      "amount": {
+        "text": "总金额（元）"
+      },
+      "people": {
+        "text": "接待人数"
+      }
+    },
+
+    "table": { // “餐桌状态”栏目
+      "title": "餐桌状态",
+      "key": "餐桌 {name}",
+      "value": {
+        "free": "空闲"
+      }
+    },
+
+    "actions": { // “操作”栏目
+      "serve": {
+        "text": "出餐"
+      },
+      "dishes": {
+        "text": "菜品"
+      },
+      "order": {
+        "text": "添加订单"
+      }
+    },
+
+    "dialog": {
+      "change_business_state": {
+        "headline": "切换营业状态",
+        "description": "确定切换营业状态吗?",
+        "changing": {
+          "text": "正在切换营业状态"
+        }
+      }
+    }
+
+    
+  },
+
+  "orders": {
+    "topbar": {
+      "text": "订单",
+      "search": {
+        "text": "搜索"
+      }
+    },
+    "main": {
+      "today": "今日订单",
+      "add": "添加订单"
+    }
+  },
+
+  "me": {
+    "topbar": {
+      "text": "我的"
+    },
+    "main":{
+      "dev_warn": "系统运行在“开发环境”上，可能影响性能与数据安全，请勿在生产环境中使用。",
+      "admin": "管理员",
+      "normal": "服务员"
+    },
+    "actions": {
+      "print_queue": "打印队列",
+      "user_settings": "用户与偏好设置",
+      "shop_settings": "店铺设置",
+      "sys_logs": "系统日志",
+      "sys_about": "关于系统",
+      "logout": "退出登录"
+    },
+    "footer": {
+      "text": "IP Address: {ip}",
+      "text2": "Version: {version}({state})"
+    }
+  },
+
+  "error": {
+    "actions": {
+      "back_home": "返回首页",
+      "detail": "详细信息" 
+    },
+    "dialog": {
+      "headline": "详细信息",
+      "actions": {
+        "clickboard": "复制到剪切板"
+      },
+    },
+    "snackbar": {
+      "copy_success": "复制成功",
+      "copy_failed": "复制失败"
+    },
+    "default": {
+      "title": "错误",
+      "message": "发生了未知错误"
+    }
+  },
+
+  "shop": {
+    "title": {
+      "dishes": "菜品",
+      "edit_dish": "编辑菜品",
+      "add_dish": "添加菜品"
+    },
+    "all_dishes": {
+      "title": "所有菜品",
+      "detail": {
+        "basic_title": "基本信息",
+        "dish_id": "菜品ID",
+        "name": "名称",
+        "description": "描述",
+        "price": "价格",
+        "price_value": "{$common.text.cny_char}{price}",
+        "created_at": "创建时间",
+        "available": "是否可用",
+        "available_value": "是",
+        "unavailable_value": "否",
+        "monthly_sales": "月销售量",
+        "total_sales": "总销售量",
+        "updated_at": "更新时间",
+        "no_data": "无数据",
+        "choices": "选项信息",
+
+        "edit_action": "编辑"
+      }
+    },
+    "dish_edit": {
+      "title": "编辑“{name}”",
+      "description": "在下方更改菜品信息，点击右上角的“保存”按钮以应用更改。",
+      "dish_name": "菜品名称",
+      "dish_description": "菜品描述",
+      "dish_price": "菜品价格",
+      "dish_available": "是否可用",
+      "category": "分类",
+      "choices": "选项",
+      "snackbar": {
+        "success": "修改成功。",
+        "no_category": "分类不存在。",
+        "no_change": "未进行任何更改。"
+      },
+      "error_info": {
+        "name": "名称不能为空。",
+        "price": "价格必须为数字。"
+      },
+      "save_error_alert": {
+        "headline": "修改失败",
+        "description_permission": "权限不足，仅管理员用户可修改菜品数据。",
+        "description_network": "网络错误：{error}。"
+      },
+      "load_error": {
+        "title": "加载失败",
+        "message": "无法获取菜品信息。"
+      },
+      "new_choice": {
+        "headline": "添加选项",
+        "description": "请输入新选项的名称：",
+        "error": {
+          "none": "选项名称不能为空。",
+          "exist": "选项已存在。"
+        }
+      },
+      "new_option" :{
+        "headline": "添加“{name}”的项目",
+        "description": "请输入新项目的名称：",
+        "error": {
+          "none": "项目名称不能为空。",
+          "exist": "项目已存在。"
+        }
+      },
+      "delete_option": {
+        "headline": "删除项目“{name}”",
+        "description": "确定删除项目“{name}”吗？",
+        "only_one": "选项{name}将剩余一个项目，删除{option}将删除该选项，确定继续吗？"
+      }
+    }
+  }
+
+  
+}

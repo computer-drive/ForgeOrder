@@ -1,11 +1,11 @@
 <template>
-    <TopBar title="我的" :showHome="false">
+    <TopBar :title="$t('me.topbar.text')" :showHome="false">
     </TopBar>
     <TopProgressBar v-model="isLoading"/>
 
     <TipCard variant="filled" background-color="#BB1614" color="#fff" v-if="isDevelopment">
         <mdui-icon-warning style="flex-shrink: 0"></mdui-icon-warning>
-        系统运行在“开发环境”上，可能影响性能与数据安全，请勿在生产环境中使用。
+        {{$t('me.main.dev_warn')}}
     </TipCard>
 
 
@@ -22,45 +22,45 @@
 
             <div>
                 <div style="font-size: 24px">{{username}}</div>
-                <div>{{isAdmin ? '管理员' : '服务员' }}</div>
+                <div>{{isAdmin ? $t('me.main.admin') : $t('me.main.normal') }}</div>
             </div>
         </div>
         <mdui-divider></mdui-divider>
 
         <mdui-list>
             <mdui-list-item rounded @click="router.push('/printer/queue')">
-                打印队列
+                {{$t('me.actions.print_queue')}}
                 <mdui-icon-print slot="icon"></mdui-icon-print>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
             <mdui-list-item rounded @click="router.push('/me/settings')">
-                用户与偏好设置
+                {{$t('me.actions.user_settings')}}
                 <mdui-icon-app-settings-alt slot="icon"></mdui-icon-app-settings-alt>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
             <mdui-list-item rounded @click="router.push('/shop/settings')">
-                店铺设置
+                {{$t('me.actions.shop_settings')}}
                 <mdui-icon-shopping-cart slot="icon"></mdui-icon-shopping-cart>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
             <mdui-list-item rounded @click="router.push('/system/logs')">
-                系统日志
+                {{$t('me.actions.sys_logs')}}
                 <mdui-icon-receipt slot="icon"></mdui-icon-receipt>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
             <mdui-list-item rounded @click="router.push('/system/about')">
-                关于系统
+                {{$t('me.actions.sys_about')}}
                 <mdui-icon-info slot="icon"></mdui-icon-info>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
 
             <mdui-list-item rounded @click="handleLogout">
-                退出登录
+                {{$t('me.actions.logout')}}
                 <mdui-icon-logout slot="icon"></mdui-icon-logout>
                 <!-- <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right> -->
             </mdui-list-item>
@@ -70,8 +70,8 @@
 
     <div class="footer">
         <div style="font-size: 11px; display: flex; justify-content: center; gap: 12px;">
-            <span>IP Address: {{ ipAddress }}</span>
-            <span>Version: {{ version }} ({{ isDevelopment ? 'develop' : 'product' }})</span>
+            <span>{{$t('me.footer.text', {ip: ipAddress})}}</span>
+            <span>{{$t('me.footer.text2', {version: version, state: isDevelopment ? 'develop' : 'product' })}}</span>
         </div>
     </div>
     

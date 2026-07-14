@@ -1,0 +1,17 @@
+{
+    "login": {
+        "error": {
+            "no_permission": "权限不足",
+            "invalid_token": "无效的登录凭证，请重新登录。",
+            "expired_token": "你的登录状态已过期，请重新登录。",
+            "old_device": "其他设备覆盖了你的登录状态，请重新登录。",
+            "unknown": "未知错误（{status}），请重新登录。"
+        }
+    },
+    "request": {
+        "error": {
+            "headline": "请求错误",
+            "description": "请求错误，此问题通常不是由您的操作引起的。请复制详细信息并联系开发者。"
+        }
+    }
+}

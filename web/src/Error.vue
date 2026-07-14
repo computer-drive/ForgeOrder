@@ -9,14 +9,14 @@
             <p style="font-size: 16px">{{ message }}</p>
             
             <div v-if="detail">
-                <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" >详细信息</mdui-button>
+                <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" >{{$t("error.actions.detail")}}</mdui-button>
             </div>
 
             <!-- <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" v-else-if="detail">详细信息</mdui-button> -->
 
 
 
-            <mdui-button style="margin-top: 12px" @click="backHome" v-if="showHome">返回首页</mdui-button>
+            <mdui-button style="margin-top: 12px" @click="backHome" v-if="showHome">{{$t("error.actions.back_home")}}</mdui-button>
 
             
         </div>
@@ -30,16 +30,17 @@
     import { snackbar } from 'mdui/functions/snackbar.js';
     import { useRouter } from 'vue-router';
     import { onMounted, ref } from 'vue';
+    import { t } from './locales/index.js';
 
     const router = useRouter();
     const props = defineProps({
         title: {
             type: String,
-            default: '错误'
+            default: t("error.default.title")
         },
         message: {
             type: String,
-            default: '发生了未知错误'
+            default: t("error.default.message")
         },
         detail: {
             type: String,
@@ -67,28 +68,31 @@
 
     const showDetail = () => {
         dialog({
-            headline: '详细信息',
+            headline: t("error.dialog.headline"),
             description: detail.value,
             actions: [
                 {
-                    text: '复制到剪切板',
+                    text: t("error.dialog.actions.clickboard"),
                     onClick: async () => {
                         try {
-                            await navigator.clipboard.writeText(props.detail);
+                            await navigator.clipboard.writeText(detail.value);
                             snackbar({
-                                'message': '复制成功',
+                                'message': t("error.snackbar.copy_success"),
                                 placement: 'bottom-end'
                             })
                         } catch (error) {
                             snackbar({
-                                'message': '复制失败'
+                                'message': t("error.snackbar.copy_failed")
                             })
                             console.error(error);
                         } 
                     }
                 },
                 {
-                    text: '确定',
+                    text: t("common.text.confirm"),
+                    onClick: () => {
+                        dialog.close();
+                    }
                 },
             ]
         })
@@ -138,6 +142,3 @@
         gap:20px
     }
 </style>
-
-
-

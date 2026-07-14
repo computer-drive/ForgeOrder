@@ -80,7 +80,7 @@
             // 判断是否是金额输入
                 if (props.money_input) {
                     // 判断小数点后的数字是否超过两位
-                    if (currentText.value.length - currentText.value.indexOf('.') > 2) {
+                    if (currentText.value.indexOf('.') !== -1 && currentText.value.length - currentText.value.indexOf('.') > 2) {
                         return
                     }
                 }

@@ -33,6 +33,7 @@
 
     import { computed } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
+    import { locale } from '@/locales/index.js'
 
 
     const route = useRoute();
@@ -54,13 +55,17 @@
     })
 
     const barTitle  = computed(() => {
+        let title = ''
         if (props.title) {
-            return props.title
+            title = props.title
         } else if (route.meta.title) {
-            return route.meta.title
+            title = route.meta.title
         } else {
-            return 'ForgeOrder'
+            title = 'ForgeOrder'
         }
+        
+        return locale(title)
+    
     })
 
     // 主页按钮 

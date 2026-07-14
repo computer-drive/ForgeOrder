@@ -4,7 +4,7 @@
             <mdui-circular-progress></mdui-circular-progress>
         </div>
         <div v-else>
-            <h2>所有菜品</h2>
+            <h2>{{ $t('shop.all_dishes.title') }}</h2>
 
             <mdui-li>
                 <div v-for="(value, key) in categories" :key="key">
@@ -24,47 +24,47 @@
     <mdui-dialog ref="dishDetail" close-on-overlay-click>
         <span slot="headline">{{ currentDish.name }}</span>
         <div slot="description" class="mdui-prose">
-            <h2 style="font-size: 20px; margin-bottom: 10px; color: black">基本信息</h2>
+            <h2 style="font-size: 20px; margin-bottom: 10px; color: black">{{ $t('shop.all_dishes.detail.basic_title') }}</h2>
 
             <div class="detail-item">
-                <div class="detail-label">菜品ID</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.dish_id') }}</div>
                 {{ currentDish.id }}</div>  
 
             <div class="detail-item">
-                <div class="detail-label">名称</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.name') }}</div>
                 {{ currentDish.name }}</div>
 
             <div class="detail-item">
-                <div class="detail-label">描述</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.description') }}</div>
                 {{ currentDish.description }}</div>
 
             <div class="detail-item">
-                <div class="detail-label">价格</div>
-                ￥ {{ (currentDish.price  / 100).toFixed(2) }}</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.price') }}</div>
+                {{ $t('shop.all_dishes.detail.price_value' , { price: currentDish.price }) }}</div>
 
             <div class="detail-item">
-                <div class="detail-label">创建时间</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.created_at') }}</div>
                 {{ new Date(currentDish.created_at).toLocaleString() }}</div>
             
             <div class="detail-item">
-                <div class="detail-label">是否可用</div>
-                {{ currentDish.available ? "是" : "否" }}</div>     
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.available') }}</div>
+                {{ currentDish.available ? $t('shop.all_dishes.detail.available_value') : $t('shop.all_dishes.detail.unavailable_value') }}</div>     
                     
             <h2 style="font-size: 20px; margin-bottom: 10px; color: black; margin-top: 10px">统计信息</h2>
             
             <div class="detail-item">
-                <div class="detail-label">当月销量</div>
-                {{ currentDish.stat?.monthly_sales || '无数据' }}</div>  
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.monthly_sales') }}</div>
+                {{ currentDish.stat?.monthly_sales || $t('shop.all_dishes.detail.no_data') }}</div>  
 
             <div class="detail-item">
-                <div class="detail-label">总销量</div>
-                {{ currentDish.stat?.total_sales || '无数据' }}</div>  
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.total_sales') }}</div>
+                {{ currentDish.stat?.total_sales || $t('shop.all_dishes.detail.no_data') }}</div>  
 
             <div class="detail-item">
-                <div class="detail-label">更新时间</div>
+                <div class="detail-label">{{ $t('shop.all_dishes.detail.updated_at') }}</div>
                 {{ new Date(currentDish.stat?.updated_at).toLocaleString() }}</div>
 
-            <h2 style="font-size: 20px; margin-bottom: 10px; color: black; margin-top: 10px">选项信息</h2>
+            <h2 style="font-size: 20px; margin-bottom: 10px; color: black; margin-top: 10px" v-if="currentDish.choices">{{ $t('shop.all_dishes.detail.choices') }}</h2>
             
             <div v-for="(value, key) in currentDish.choices" :key="key">
                 <div class="detail-item" style="margin-bottom: 8px;">
@@ -83,10 +83,10 @@
         </div>
 
         <mdui-button slot="action" variant="tonal" @click="goEdit">
-            编辑
+            {{ $t('shop.all_dishes.detail.edit_action') }}
             <mdui-icon-edit slot="icon" ></mdui-icon-edit>
         </mdui-button>
-        <mdui-button slot="action" variant="text" @click="dishDetail.open = false">确定</mdui-button>
+        <mdui-button slot="action" variant="text" @click="dishDetail.open = false">{{ $t('common.text.confirm') }}</mdui-button>
 
     </mdui-dialog>
 
@@ -139,7 +139,7 @@ onMounted(() => {
             // console.log(res.data.data)
             dishes.value = res.data.data.dishes
             categories.value = res.data.data.categories
-            console.log(dishes.value, categories.value)
+            // console.log(dishes.value, categories.value)
         }
         isLoading.value = false 
     })
@@ -155,11 +155,15 @@ const showDetail = (category_name, dish_id) => {
     
     dishDetail.value.open = true;
 
-    console.log(currentDish.value.stat)
+    // console.log(currentDish.value.stat)
 }
 
 const goEdit = () => {
-    router.push(`/shop/dishes/${currentDish.value.id}`)
+    dishDetail.value.open = false;
+    dishDetail.value.addEventListener('closed', () => {
+        router.push(`/shop/dishes/${currentDish.value.id}`)
+    })
+    
 }
 
 onBeforeUnmount(() => {

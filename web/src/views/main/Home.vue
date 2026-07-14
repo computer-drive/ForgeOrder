@@ -1,6 +1,6 @@
 <template>
 
-    <TopBar title="首页">
+    <TopBar :title="$t('home.topbar.text')">
       <template #right>
         <!-- 右上角的按钮 -->
         <mdui-dropdown trigger="click">
@@ -14,19 +14,19 @@
             
           
             <div v-if="isAdmin">
-              <mdui-menu-item @click="router.push('/shop/settings')">店铺设置
+              <mdui-menu-item @click="router.push('/shop/settings')">{{$t('home.topbar.menu.shop')}}
                 <mdui-icon-shopping-cart slot="icon"></mdui-icon-shopping-cart>
               </mdui-menu-item>
 
               <mdui-menu-item @click="changeBusinessState">
-                <span v-if="isBusiness">结束营业</span>
-                <span v-else>开始营业</span>
+                <span v-if="isBusiness">{{$t('home.topbar.menu.business_end')}}</span>
+                <span v-else>{{$t('home.topbar.menu.business_start')}}</span>
                 <mdui-icon-door-back slot="icon"></mdui-icon-door-back>
                 </mdui-menu-item>
               
             </div>
 
-            <mdui-menu-item @click="router.push('/develop')">Develop
+            <mdui-menu-item @click="router.push('/develop')">{{$t('home.topbar.menu.develop')}}
               
             </mdui-menu-item>
             <mdui-divider></mdui-divider>
@@ -41,7 +41,7 @@
 
             <mdui-divider></mdui-divider>
 
-            <mdui-menu-item @click="router.push('/dashboard')">数据看板
+            <mdui-menu-item @click="router.push('/dashboard')">{{$t('home.topbar.menu.dashboard')}}
               <mdui-icon-open-in-new slot="icon"></mdui-icon-open-in-new>
             </mdui-menu-item>
           </mdui-menu>
@@ -54,13 +54,13 @@
     <!-- 主体内容 -->
     <div class="mdui-prose container">
       <!-- <div style="font-size: 24px">欢迎回来，{{ currentUser }}。</div> -->
-      <h2>欢迎回来，{{ currentUser }}。</h2>
+      <h2>{{$t('home.main.welcome.text', {user: currentUser})}}</h2>
     
       <!-- 打样信息 -->
       <div v-if="!isBusiness">
         <TipCard variant="filled" background-color="#BB1614" color="#fff">
           <mdui-icon-warning></mdui-icon-warning>
-            店铺已打样。
+            {{$t('home.main.not_bussiness.text')}}
         </TipCard>
       </div>
 
@@ -69,7 +69,7 @@
         <div style="margin: 8px">
 
           <div style="display: flex">
-            <div style="font-size: 24px; margin-left: 12px;">今日订单</div>
+            <div style="font-size: 24px; margin-left: 12px;">{{$t('home.today.title')}}</div>
             <mdui-button-icon style="margin-left: auto;" @click="refreshOrders" ref="refreshOrdersButton">
               <mdui-icon-refresh></mdui-icon-refresh>
             </mdui-button-icon>
@@ -77,17 +77,17 @@
 
           <div class="stats_content">
             <div class="stats_item">
-              <div class="stats_label">订单数量</div>
+              <div class="stats_label">{{$t('home.today.count.text')}}</div>
               <div class="stats_value">0</div>
             </div>
 
             <div class="stats_item">
-                <div class="stats_label">总金额（元）</div>
+                <div class="stats_label">{{$t('home.today.amount.text')}}</div>
                 <div class="stats_value">0</div>
             </div>
             
             <div class="stats_item">
-                <div class="stats_label">接待人数</div>
+                <div class="stats_label">{{$t('home.today.people.text')}}</div>
                 <div class="stats_value">0</div>
             </div>
 
@@ -102,7 +102,7 @@
         <div style="margin: 14px">
 
           <div style="display: flex">
-            <div style="font-size: 24px; margin-left: 0px;">餐桌状态</div>
+            <div style="font-size: 24px; margin-left: 0px;">{{$t('home.table.title')}}</div>
             <mdui-button-icon style="margin-left: auto;" @click="refreshTables" ref="refreshTablesButton">
               <mdui-icon-refresh></mdui-icon-refresh>
             </mdui-button-icon>
@@ -111,8 +111,8 @@
           <div class="table_scroll">
             <div class="table_content">
               <div v-for="i in 12" :key="i" class="table_item">
-                <div class="table_label">餐桌 {{ i }}</div>
-                <div class="table_value">空闲</div>
+                <div class="table_label">{{$t('home.table.key', {name: i})}}</div>
+                <div class="table_value">{{$t('home.table.value.free')}}</div>
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@
 
             <div style="font-size: 24px; display: block">
               <mdui-icon-done></mdui-icon-done>
-              <div style="font-size: 16px">出餐</div>
+              <div style="font-size: 16px">{{$t('home.actions.serve.text')}}</div>
             </div>
           
           </mdui-button>
@@ -142,7 +142,7 @@
 
             <div style="font-size: 24px; display: block">
               <mdui-icon-list></mdui-icon-list>
-              <div style="font-size: 16px">全部菜品</div>
+              <div style="font-size: 16px">{{$t('home.actions.dishes.text')}}</div>
             </div>
 
           </mdui-button>
@@ -153,7 +153,7 @@
 
             <div style="font-size: 24px; display: block">
               <mdui-icon-add></mdui-icon-add>
-              <div style="font-size: 16px">添加订单</div>
+              <div style="font-size: 16px">{{$t('home.actions.order.text')}}</div>
             </div>
 
           </mdui-button>
@@ -168,9 +168,8 @@
 
     <!-- 切换营业状态对话框-->
     <mdui-dialog
-      headline="切换营业状态"
-      description="确认切换营业状态吗？"
-      close-on-overlay-click
+      :headline="$t('home.dialog.change_business_state.headline')"
+      :description="$t('home.dialog.change_business_state.description')"
       ref="changeBusinessStateDialog"
       style="height: auto;"
     >
@@ -179,8 +178,8 @@
     </div>
 
   
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">取消</mdui-button>
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfrim">确定</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">$t("common.text.cancel")</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfirmButton">$t("common.text.confirm")</mdui-button>
   </mdui-dialog>
 
 
@@ -281,7 +280,7 @@ const changeBusinessState = () => {
 const changeBusinessStateConfirmClick = async () => {
   changeBusinessStateisLoading.value = true;
 
-  changeBusinessStateDialog.value.description = '正在切换营业状态';
+  changeBusinessStateDialog.value.description = $t('home.dialog.change_business_state.changing.text');
   
 
   const response = await request.post('/shop/setBusinessState', {
@@ -289,7 +288,7 @@ const changeBusinessStateConfirmClick = async () => {
   })
 
   if (response.data.status == 0) {
-    console.log("切换营业状态成功")
+    // console.log("切换营业状态成功")
     isBusiness.value = !isBusiness.value;
   }
   

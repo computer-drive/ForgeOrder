@@ -6,60 +6,74 @@
     :money_input="true"
     @confirm="dishData.price = $event"
      ></NumberKeyboardDialog>
+    
+    <div v-if="isLoading"   style="
+    position: fixed;
+    inset: 0;
+    background-color: rgba(230, 230, 230, 0.1);
+    z-index: 2100;
+">
+
+    </div>
 
     <div class="container mdui-prose" v-if="!isError">
-        <h2>编辑“{{ dishData.name }}”</h2>  
-        <div style="margin-bottom: 24px; font-size: 18px">在下方更改菜品信息，点击右上角的“保存”按钮以应用更改。    </div>
+        <h2>{{ $t('shop.dish_edit.title', {name: dishData.name}) }}</h2>  
+        <div style="margin-bottom: 24px; font-size: 18px">{{ $t('shop.dish_edit.description') }}</div>
 
         <div>
 
-            <div class="setting-item" ref="nameInput">
-                <div class="setting-item-key">菜品名称</div>
+            <div class="setting-item">
+                <div class="setting-item-key">{{ $t('shop.dish_edit.dish_name') }}</div>
                 <div class="setting-item-value">
                     
                     <mdui-text-field 
+                    ref="nameInput"
                     v-model="dishData.name"
+                    :disabled="isLoading"
                     variant="outlined" ></mdui-text-field>
             
                 </div>
             </div>
 
             <div class="setting-item">
-                菜品描述
+                <div class="setting-item-key">{{ $t('shop.dish_edit.dish_description') }}</div>
                 <mdui-text-field 
                     class="setting-item-value"
                     autosize
                     min-rows="1"
                     max-rows="3"
                     v-model="dishData.description"
+                    :disabled="isLoading"
                     variant="outlined"></mdui-text-field>
             </div>
 
             <div class="setting-item">
-                菜品价格
+                <div class="setting-item-key">{{ $t('shop.dish_edit.dish_price') }}</div>
                 <mdui-text-field 
+                    ref="priceInput"    
                     class="setting-item-value"
                     variant="outlined" 
-                    readonly 
                     @click="priceInputDialog.open(dishData.price)"
-
+                    :disabled="isLoading"
                     v-model="dishData.price"
+                    
                     > 
                     <div slot="icon">￥</div>
                 </mdui-text-field>
             </div>
 
             <div class="setting-item">
-                启用此菜品
-                <mdui-switch :checked="dishData.is_available" ref="isAvailableSwitch"></mdui-switch>
+                <div class="setting-item-key">{{ $t('shop.dish_edit.dish_available') }}</div>
+                <mdui-switch :checked="dishData.is_available" ref="isAvailableSwitch" :disabled="isLoading"></mdui-switch>
             </div>
 
             <div class="setting-item">
-                分类
+                <div class="setting-item-key">{{ $t('shop.dish_edit.category') }}</div>
                 <mdui-select 
                     ref="categoryInput"
                     variant="outlined" 
                     class="setting-item-value"
+                    :disabled="isLoading"
                     
                 >
                     <mdui-menu-item 
@@ -73,7 +87,7 @@
             </div>
 
             <div class="setting-item">
-                选项
+                <div class="setting-item-key">{{ $t('shop.dish_edit.choices') }}</div>
                 <mdui-button-icon @click="addNewChoices">
                     <mdui-icon-add></mdui-icon-add>
                 </mdui-button-icon>
@@ -156,7 +170,9 @@
     import TopProgressBar from '@/components/TopProgressBar.vue'
     import NumberKeyboardDialog from '@/components/NumberKeyboardDialog.vue'
     import Error from '@/Error.vue'
-    
+
+
+    import { t } from '@/locales/index.js'    
     import request from '@/utils/request.js'
 
     defineProps({
@@ -183,6 +199,7 @@
 
     const categoryInput = ref(null)
     const nameInput = ref(null)
+    const priceInput = ref(null)
     const isAvailableSwitch = ref(null)
     const saveButton = ref(null)
 
@@ -195,11 +212,15 @@
 
     // 右上角的按钮
     const handleSave = async (event) => {
+        isLoading.value = true
+
+        nameInput.value.setCustomValidity('')
+
         // 通过事件对象获取按钮元素
         const button = event?.currentTarget
     
         if (button) {
-            button.loading = true
+            // button.loading = true
         }
         
         // 保存菜品数据
@@ -218,7 +239,7 @@
             }
             if (category == -1) {
                 snackbar({
-                    message: '分类不存在'
+                    message: t("shop.dish_edit.snackbar.no_category")
                 })
                 return
             }
@@ -232,7 +253,10 @@
 
         // 名称
         if (dishData_.name == '') {
-            nameInput.setCustomValidity("名称不能为空")
+            nameInput.value.setCustomValidity(t("shop.dish_edit.error_info.name"))
+            isLoading.value = false
+            return
+
         } else if (dishData_.name !== originDishData.name) {
             changed.name = dishData_.name
         }
@@ -240,11 +264,15 @@
         // 描述
         if (dishData_.description !== originDishData.description) {
             changed.description = dishData_.description
-        }
+        }   
 
         // 价格
         if (dishData_.price <= 0) {
-            priceInputDialog.value.setCustomValidity("价格必须大于0")
+            // console.log("价格错误", priceInput.value.setCustomValidity)
+            priceInput.value.setCustomValidity(t("shop.dish_edit.error_info.price"))
+            isLoading.value = false
+            return 
+
         } else if (dishData_.price !== originDishData.price) {
             changed.price = dishData_.price
         }
@@ -259,7 +287,7 @@
             changed.category = dishData_.category
         }
 
-        console.log(changed, choicesChanging)
+        // console.log(changed, choicesChanging)
 
         try {
             const dishId = route.params.id
@@ -276,39 +304,40 @@
             if (res.data.status == 0) {
                 // 刷新菜品数据
                 snackbar({
-                    message: '修改成功'
+                    message: t("shop.dish_edit.snackbar.success")
                 })
                 router.push("/shop/dishes")
             } else {
                 alert({
-                    headline: '修改失败',
+                    headline: t("shop.dish_edit.error_alert.headline"),
                     description: '' + res.data.data,
-                    confirmText: '确定'
+                    confirmText: t("common.text.confirm")
                 })
             }
              
         } catch (error) {
             if (error.response.status === 401 && error.response.data?.status == 2002) {
                 alert({
-                headline: '修改失败',
-                description: '权限不足，仅管理员用户可修改菜品数据',
-                confirmText: '确定'
+                headline: t("shop.dish_edit.save_error_alert.headline"),
+                description: t("shop.dish_edit.save_error_alert.description_permission"),
+                confirmText: t("common.text.confirm")
             })
 
             } else if (error.response.status == 400 && error.response.data?.status == 3001) {
                 snackbar({
-                    message: '未更改任何内容。'
+                    message: t("shop.dish_edit.snackbar.no_change")
                 })
             } else {
                 alert({
-                headline: '修改失败',
-                description: '网络错误：' + error,
-                confirmText: '确定'
+                headline: t("shop.dish_edit.save_error_alert"),
+                description: t("shop.dish_edit.save_error_alert.message", {error: error.message}),
+                confirmText: t("common.text.confirm")
             })
             }
             
         } finally {
-            button.loading = false
+            // button.loading = false
+            isLoading.value = false
         }
     
     }
@@ -360,8 +389,8 @@
 
             // console.log(error.message)
             errorPage.value.setInfo(
-                "加载失败",
-                "无法获取菜品信息",
+                t("common.text.load_error.title"),
+                t("shop.dish_edit.load_error.message"),
                 error.message
             )
 
@@ -380,18 +409,18 @@
     // 添加选项
     const addNewChoices = () => {
         prompt({
-            headline: '添加选项',
-            description: '请输入新选项的名称',
-            confirmText: '确定',
-            cancelText: '取消',
+            headline: t("shop.dish_edit.new_choice.headline"),
+            description: t("shop.dish_edit.new_choice.description"),
+            confirmText: t("common.text.confirm"),
+            cancelText: t("common.text.cancel"),
             onConfirm: (name) => {
                 if (name == '') {
                     snackbar({
-                        message: '选项名称不能为空'
+                        message: t("shop.dish_edit.new_choice.error.none")
                     })
                 } else if (dishData.value.choices[name]) {
                     snackbar({
-                        message: '选项已存在'
+                        message: t("shop.dish_edit.new_choice.error.exist")
                     })
                 } else {
                     dishData.value.choices[name] = []
@@ -408,18 +437,18 @@
     // 添加选项的选项
     const addNewOption = (name) => {
         prompt({
-            headline: `添加“${name}”的项目`,
-            description: '请输入新项目的名称',
-            confirmText: '确定',
-            cancelText: '取消',
+            headline: t("shop.dish_edit.new_option.headline", {name: name}),
+            description: t("shop.dish_edit.new_option.description"),
+            confirmText: t("common.text.confirm"),
+            cancelText: t("common.text.cancel"),
             onConfirm: (option) => {
                 if (option == '') {
                     snackbar({
-                        message: '项目名称不能为空'
+                        message: t("shop.dish_edit.new_option.error.none")
                     })
                 } else if (dishData.value.choices[name].includes(option)) {
                     snackbar({
-                        message: '项目已存在'
+                        message: t("shop.dish_edit.new_option.error.exist")
                     })
                 } else {
                     dishData.value.choices[name].push(option)
@@ -442,12 +471,12 @@
         // 判断长度是否为一
         if (dishData.value.choices[name].length == 1) {
             // headline和description显示为删除Choices
-            headline = `删除“${name}”`
-            description = `选项${name}将剩余一个项目，删除${option}将删除该选项，确定继续吗？`
+            headline = t("shop.dish_edit.delete_option.headline", {name: name}),
+            description = t("shop.dish_edit.delete_option.only_one", {name: name, option: option})
         } else {
             // headline和description显示为删除项目
-            headline = `删除“${name}”的项目`
-            description = `确定删除项目“${option}”吗？`
+            headline = t("shop.dish_edit.delete_option.headline", {name: name, option: option}),
+            description = t("shop.dish_edit.delete_option.description", {name: name, option: option})
         }
 
         dialog({
@@ -455,10 +484,10 @@
             description: description,
             actions: [
                 {
-                    text: "取消",
+                    text: t("common.text.cancel"),
                 },
                 {
-                    text: "确定",
+                    text: t("common.text.confirm"),
                     onClick: () => {
                         const index = dishData.value.choices[name].indexOf(option)
                         dishData.value.choices[name].splice(index, 1)
