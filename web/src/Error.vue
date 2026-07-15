@@ -90,9 +90,7 @@
                 },
                 {
                     text: t("common.text.confirm"),
-                    onClick: () => {
-                        dialog.close();
-                    }
+                    
                 },
             ]
         })
