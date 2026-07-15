@@ -65,7 +65,10 @@ class _DishesCategory:
         注意：数据库使用了RowFactory，返回一个Row对象或None。
         '''
         cursor = self.conn.execute(self.sql_parse.get("category.get_from_id"), (id,))
-        return cursor.fetchone()
+        if cursor.fetchone():
+            return cursor.fetchone()
+        else:
+            raise NotFoundError(str(id))
     
     def get_from_name(self, name: str) -> sqlite3.Row | None:
         '''
@@ -82,6 +85,29 @@ class _DishesCategory:
         '''
         cursor = self.conn.execute(self.sql_parse.get("category.update"), (name, id))
         self.conn.commit()
+    
+    def delete(self, id: int): 
+        '''
+        删除分类。
+
+        '''
+
+        cursor = self.conn.execute(self.sql_parse.get("category.delete"), (id,))
+
+        if cursor.rowcount == 0:
+            raise NotFoundError(str(id))
+        
+        self.conn.commit()
+
+    def set_name(self, id: int, name: str) -> None:
+        '''
+        设置分类名称。
+        '''
+        cursor = self.conn.execute(self.sql_parse.get("category.set_name"), (name, id))
+        if cursor.rowcount == 0:
+            raise NotFoundError(str(id))
+        self.conn.commit()
+
         
 class _Dishes:
     def __init__(self, parent_database: MetaDatabase, conn: sqlite3.Connection, sql_parse: SqlParse):
@@ -208,7 +234,7 @@ class _Dishes:
         return result_, categories
 
 
-    def get(self, dish_id: int):
+    def get_from_id(self, dish_id: int):
         '''
         获取菜品信息。
         '''
@@ -227,6 +253,14 @@ class _Dishes:
         
         return result
 
+    def gets_from_category(self, category_id: int):
+        '''
+        获取分类下的所有菜品。
+        '''
+        result = self.conn.execute(self.sql_parse.get("dishes.get_from_category"), (category_id,)).fetchall()
+               
+        return [dict(dish) for dish in result]
+    
     def _update_dishes(self, dish_id: int, changed_items):
         '''
         更新菜品信息。
@@ -367,7 +401,15 @@ class _Dishes:
 
         self.conn.commit()
 
-        return True        
+        return True 
+
+    def delete_by_category(self, category_id: int):
+        cursor = self.conn.execute(self.sql_parse.get("dishes.delete_by_category"),
+                              (category_id,))
+            
+        self.conn.commit()
+
+        return True 
 
 
         
@@ -400,6 +442,7 @@ class MetaDatabase(Database):
         
         # 设置RowFactory
         self.conn.row_factory = sqlite3.Row # !: 无需注意SQL注入问题
+
 
 if __name__ == "__main__":
     import random
