@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-from re import M
 import sqlite3
 
 from core.db.database import Database
@@ -65,9 +64,10 @@ class _DishesCategory:
 
         注意：数据库使用了RowFactory，返回一个Row对象或None。
         '''
-        cursor = self.conn.execute(self.sql_parse.get("category.get_from_id"), (id,))
-        if cursor.fetchone():
-            return cursor.fetchone()
+        result = self.conn.execute(self.sql_parse.get("category.get_from_id"), (id,)).fetchone()
+        
+        if result:
+            return result
         else:
             raise NotFoundError(str(id))
     
