@@ -5,6 +5,7 @@ import extensions
 from core.db.exceptions import ColumnNotFoundError, NotFoundError
 from core.utils import make_response
 from core.app_bp import AppBlueprint
+from app.db.exceptions import CategoryNotFoundError
 
 from ..db.db import get_meta_database
 # from .exceptions import ArgumentException
@@ -239,4 +240,76 @@ def edit_category():
         ), 404
 
 
+@shop_bp.post("/api/shop/dishes/new", auth=True, is_admin=True, arguments=[
+    {
+        "name": "name",
+        "type": str,
+        "required": True
+    },
+    {
+        "name": "price",
+        "type": int, # 单位：分
+        "required": True
+    },
+    {
+        "name": "category",
+        "type": int,
+        "required": True
+    },
+    {
+        "name": "description",
+        "type": str,
+        "required": False,
+        "default": ""
+    },
+    {
+        "name": "image",
+        "type": str,
+        "required": False,
+        "default": ""
+    },
+    {
+        "name": "is_available",
+        "type": bool,
+        "required": True,
+    },
+    {
+        "name": "choices",
+        "type": dict,
+        "required": False,
+        "default": {}
+    }
+])
+def new_dish():
+    name: str = g.args["name"]
+    price: int = g.args["price"]
+    category: int = g.args["category"]
+    description: str = g.args["description"]
+    image: str = g.args["image"]
+    is_available: bool = g.args["is_available"]
+    choices: dict = g.args["choices"]
+
+    meta_db = get_meta_database()
+
+    try:
+        dish_id = meta_db.dishes.create(
+            name,
+            price,
+            category,
+            description,
+            image,
+            is_available,
+            choices
+        )
+
+        return make_response(
+            0,
+            dish_id
+        ), 200 # 创建成功
+    
+    except CategoryNotFoundError as e:
+        return make_response(
+            3001,
+            e.category_id
+        ), 404 # 找不到分类（3001）
     
