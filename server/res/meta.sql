@@ -5,7 +5,8 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS dishes_category (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    is_deleted INTEGER NOT NULL DEFAULT 0
 );   
 
 CREATE TABLE IF NOT EXISTS dishes (
@@ -41,19 +42,25 @@ CREATE TABLE IF NOT EXISTS dish_choices (
 -- Category 表操作
 
 -- command: category.get_all
-SELECT * FROM dishes_category
+SELECT * FROM dishes_category WHERE is_deleted = 0
 
 -- command: category.new
 INSERT INTO dishes_category (name) VALUES (?)
 
 -- command: category.get_from_id
-SELECT * FROM dishes_category WHERE id = ?
+SELECT * FROM dishes_category WHERE id = ? AND is_deleted = 0
 
 -- command: category.get_from_name
-SELECT * FROM dishes_category WHERE name = ?
+SELECT * FROM dishes_category WHERE name = ? AND is_deleted = 0
 
 -- command: category.update
 UPDATE dishes_category SET name = ? WHERE id = ?
+
+-- command: category.delete
+UPDATE dishes_category SET is_deleted = 1 WHERE id = ?;
+
+-- command: category.set_name
+UPDATE dishes_category SET name = ? WHERE id = ?;
 
 -- Dish 表操作
 
@@ -70,6 +77,8 @@ INSERT INTO dish_choices (dish_id, name, options)
 VALUES (?, ?, ?);
 
 
+-- get_all菜品
+
 -- command: dishes.get_all
 SELECT * FROM dishes WHERE is_deleted = 0
 ORDER BY id ASC
@@ -82,11 +91,19 @@ ORDER BY id DESC
 SELECT * FROM dish_choices 
 ORDER BY id DESC
 
+-- command: dishes.get_from_category
+SELECT * FROM dishes WHERE is_deleted = 0 AND category = ?
+
+
+-- get菜品
+
 -- command: dishes.get
 SELECT * FROM dishes WHERE id = ?
 
 -- command: dish_choices.get
 SELECT * FROM dish_choices WHERE dish_id = ?
+
+-- 更新菜品
 
 -- command: dishes.update
 UPDATE dishes SET {settings} WHERE id = ? {value}
@@ -107,13 +124,16 @@ SELECT * FROM dish_choices WHERE dish_id = ? AND name = ?
 UPDATE dish_choices SET options = ? WHERE dish_id = ? AND name = ?
 
 -- command: dishes.delete1
-UPDATE dishes SET is_deleted = 1 WHERE id = ?; -- 将dishesb表的内容更新为is_deleted
+UPDATE dishes SET is_deleted = 1 WHERE id = ?; -- 将dishes表的内容更新为is_deleted
 
 -- command: dishes.delete2
 DELETE FROM dish_stats WHERE id = ?; -- 删除dish_stats表的项
 
 -- command: dishes.delete3
 DELETE FROM dish_choices WHERE dish_id = ?; -- 删除dish_choices表的项
+
+-- command: dishes.delete_by_category
+UPDATE dishes SET is_deleted = 1 WHERE category = ?;
 
 
 
