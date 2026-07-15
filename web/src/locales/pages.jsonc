@@ -310,6 +310,13 @@
         "message": "网络错误：{error}。"
       }
     }
+  },
+
+  "system": {
+    "title": {
+      "main": "系统设置",
+      "logs": "系统日志"
+    }
   }
 
   
