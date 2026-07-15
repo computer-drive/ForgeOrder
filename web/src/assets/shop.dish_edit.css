@@ -28,8 +28,3 @@ mdui-list-item.choices-item::part(container) {
     padding-bottom: 6px;
 }
 
-
-mdui-list-item::part(end-icon).end-icon {
-  /* 同时匹配 part 和 class */
-  color: #ff5722 !important;
-}
