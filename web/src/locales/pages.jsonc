@@ -210,15 +210,44 @@
         "edit_action": "编辑",
         "delete_action": "删除"
       },
+
       "delete_dialog": {
         "title": "删除菜品",
         "description": "确定要删除菜品“{name}”吗？"
       },
-      "snackbar": {
-        "delete_success": "删除成功。",
+
+      "snackbar_delete_dish": {
+        "success": "删除成功。",
         "not_found": "未找到菜品。",
-        "unknown": "未知错误。"
+        "unknown": "未知错误。",
+        "permission": "权限不足。仅管理员用户可删除菜品。"
+      },
+      "snackbar_delete_category": {
+        "success": "删除成功。",
+        "not_found": "未找到分类。",
+        "unknown": "未知错误。",
+        "permission": "权限不足。仅管理员用户可删除分类。"
+      },
+
+      "delete_category_dialog": {
+        "title": "删除分类",
+        "description": "确定要删除分类“{name}”吗？",
+        "description_dish": "分类下仍有菜品，删除分类将同时删除该分类下的所有菜品。确定继续吗？"
+      },
+
+      "snackbar_edit_category": {
+        "empty": "分类名称不能为空。",
+        "success": "修改成功。",
+        "not_found": "未找到分类。",
+        "invalid": "非法名称。（分类名不可包含“_disabled”）"
+      },
+
+      "edit_category_dialog": {
+        "headline": "编辑分类“{name}”",
+        "description": "请输入新分类的名称：",
+
       }
+      
     },
     "dish_edit": {
       "title": "编辑“{name}”",
@@ -267,6 +296,18 @@
         "headline": "删除项目“{name}”",
         "description": "确定删除项目“{name}”吗？",
         "only_one": "选项{name}将剩余一个项目，删除{option}将删除该选项，确定继续吗？"
+      }
+    },
+    "new_dish": {
+      "title": "添加菜品",
+      "description": "在下方输入新菜品的名称、描述、价格、是否可用、分类和选项信息。",
+      "snackbar": {
+        "success": "创建成功。",
+        "no_category": "分类不存在。"
+      },
+      "error_alert": {
+        "headline": "创建失败",
+        "message": "网络错误：{error}。"
       }
     }
   }

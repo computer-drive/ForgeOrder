@@ -17,8 +17,14 @@
     </div>
 
     <div class="container mdui-prose" v-if="!isError">
-        <h2>{{ $t('shop.dish_edit.title', {name: dishData.name}) }}</h2>  
-        <div style="margin-bottom: 24px; font-size: 18px">{{ $t('shop.dish_edit.description') }}</div>
+
+        <h2 v-if="!isNew">{{ $t('shop.dish_edit.title', {name: dishData.name}) }}</h2> 
+        <h2 v-else>{{ $t('shop.new_dish.title') }}</h2> 
+
+        <div style="margin-bottom: 24px; font-size: 18px">
+            <span v-if="isNew">{{ $t('shop.new_dish.description') }}</span>
+            <span v-else>{{ $t('shop.dish_edit.description') }}</span>
+        </div>
 
         <div>
 
@@ -175,7 +181,8 @@
     import { t } from '@/locales/index.js'    
     import request from '@/utils/request.js'
 
-    defineProps({
+
+    const props = defineProps({
         id: {
             type: String,
             default: ''
@@ -210,85 +217,7 @@
     
 
 
-    // 右上角的按钮
-    const handleSave = async (event) => {
-        isLoading.value = true
-
-        nameInput.value.setCustomValidity('')
-
-        // 通过事件对象获取按钮元素
-        const button = event?.currentTarget
-    
-        if (button) {
-            // button.loading = true
-        }
-        
-        // 保存菜品数据
-        let dishData_ = {...dishData.value,}
-
-        dishData_.price *= 100 // 转换为分
-        dishData_.is_available = isAvailableSwitch.value.checked
-
-        if (typeof categoryInput.value.value == 'string') {
-            let category = -1 
-            for ( let i = 0; i < categories.value.length; i++) {
-                if (categories.value[i].name == categoryInput.value.value) {
-                    category = i
-                    break
-                }
-            }
-            if (category == -1) {
-                snackbar({
-                    message: t("shop.dish_edit.snackbar.no_category")
-                })
-                return
-            }
-            dishData_.category = category
-        } else {
-            dishData_.category = Number(categoryInput.value.value)
-        }
-
-        // 获取被修改的项
-        let changed = {}
-
-        // 名称
-        if (dishData_.name == '') {
-            nameInput.value.setCustomValidity(t("shop.dish_edit.error_info.name"))
-            isLoading.value = false
-            return
-
-        } else if (dishData_.name !== originDishData.name) {
-            changed.name = dishData_.name
-        }
-
-        // 描述
-        if (dishData_.description !== originDishData.description) {
-            changed.description = dishData_.description
-        }   
-
-        // 价格
-        if (dishData_.price <= 0) {
-            // console.log("价格错误", priceInput.value.setCustomValidity)
-            priceInput.value.setCustomValidity(t("shop.dish_edit.error_info.price"))
-            isLoading.value = false
-            return 
-
-        } else if (dishData_.price !== originDishData.price) {
-            changed.price = dishData_.price
-        }
-
-        // 是否启用
-        if (dishData_.is_available !== originDishData.is_available) {
-            changed.is_available = dishData_.is_available
-        }
-
-        // 分类
-        if (dishData_.category !== originDishData.category) {
-            changed.category = dishData_.category
-        }
-
-        // console.log(changed, choicesChanging)
-
+    const saveChanged = async(changed, choicesChanging) => {
         try {
             const dishId = route.params.id
             // console.log(dishId)
@@ -299,8 +228,7 @@
                 changed_choices: choicesChanging,
             })
 
-            
-
+    
             if (res.data.status == 0) {
                 // 刷新菜品数据
                 snackbar({
@@ -335,29 +263,146 @@
             })
             }
             
-        } finally {
-            // button.loading = false
-            isLoading.value = false
+        } 
+    }
+
+    const saveNew = async(dishData_) => {
+        console.log(dishData_)
+        try {
+            const res = await request.post(`/shop/dishes/new`, dishData_)
+            if (res.data.status == 0) {
+                snackbar({
+                    message: t("shop.new_dish.snackbar.success")
+                })
+                router.push("/shop/dishes")
+            } else if (res.data.data?.status == 3001) {
+                snackbar({
+                    message: t("shop.new_dish.snackbar.no_category")
+                })
+            }
+        } catch(error) {
+            alert({
+                headline: t("shop.new_dish.error_alert.headline"),
+                description: t("shop.new_dish.error_alert.message", {error: error.message}),
+                confirmText: t("common.text.confirm")
+            })
         }
-    
     }
 
 
-    onMounted( async () => {
-        // 设置居右的保存按钮组件
-        setRightComponent(h('mdui-button-icon', {
-            onClick: handleSave,
-            ref: (el) => {saveButton.value = el}
-        }, [
-            h('mdui-icon-save')
-        ]))
-
-        // 获取菜品数据和分类信息
+    const handleSave = async (event) => {
         isLoading.value = true
 
-        const dishId = route.params.id
+        nameInput.value.setCustomValidity('')
+
+        // 通过事件对象获取按钮元素
+        const button = event?.currentTarget
+    
+        if (button) {
+            // button.loading = true
+        }
+        
+        // 保存菜品数据
+        let dishData_ = {...dishData.value,}
+
+        dishData_.price *= 100 // 转换为分
+        dishData_.is_available = isAvailableSwitch.value.checked
+
+        if (typeof categoryInput.value.value == 'string') {
+            let category = -1 
+            for ( let i = 0; i < categories.value.length; i++) {
+                if (categories.value[i].name == categoryInput.value.value) {
+                    category = categories.value[i].id
+                    break
+                }
+            }
+            if (category == -1) {
+                snackbar({
+                    message: t("shop.dish_edit.snackbar.no_category")
+                })
+                isLoading.value = false
+                return
+            }
+
+            dishData_.category = category
+
+        } else {
+            dishData_.category = Number(categoryInput.value.value)
+        }
+
+        // 获取被修改的项
+        let changed = {}
+
+        // 名称
+        // console.log(dishData_.name)
+        if (!dishData_.name) {
+            nameInput.value.setCustomValidity(t("shop.dish_edit.error_info.name"))
+            isLoading.value = false
+            return
+
+        } else if (dishData_.name !== originDishData.name) {
+            changed.name = dishData_.name
+        }
+
+        // 描述
+        if (dishData_.description !== originDishData.description) {
+            changed.description = dishData_.description
+        }   
+
+        // 价格
+        if (!dishData_.price) {
+            priceInput.value.setCustomValidity(t("shop.dish_edit.error_info.price"))
+            isLoading.value = false
+            return 
+        }
+        if (dishData_.price <= 0) {
+            // console.log("价格错误", priceInput.value.setCustomValidity)
+            priceInput.value.setCustomValidity(t("shop.dish_edit.error_info.price"))
+            isLoading.value = false
+            return 
+
+        } else if (dishData_.price !== originDishData.price) {
+            changed.price = dishData_.price
+        }
+
+        // 是否启用
+        if (!dishData_.is_available) {
+            dishData_.is_available = false
+        }
+
+        if (dishData_.is_available !== originDishData.is_available) {
+            changed.is_available = dishData_.is_available
+        }
+
+        // 分类
+        if (dishData_.category !== originDishData.category) {
+            changed.category = dishData_.category
+        }
 
         try {
+            if (props.isNew) {
+                await saveNew(dishData_)
+            } else {
+                await saveChanged(changed, choicesChanging)
+            }
+        } finally {
+            isLoading.value = false
+        }
+
+
+    
+    }
+
+    const getAllCategorires = async () => {
+            const res = await request.get(`/shop/dishes/getAllCategories`)
+                if (res.data.status == 0) {
+                    categories.value = res.data.data
+                    // console.log(categories.value)
+                    // console.log(categories.value[dishData.value.category].name)
+                }
+    }
+
+    const getDish = async(dishId) => {
             // 获取菜品数据
             let res = await request.post(`/shop/dishes/get`, {
                 id: Number(dishId),
@@ -370,36 +415,64 @@
                 dishData.value.price /= 100 // 转换为元
             }
 
-            // 获取分类信息
-            res = await request.get(`/shop/dishes/getAllCategories`)
-            if (res.data.status == 0) {
-                categories.value = res.data.data
-                // console.log(categories.value)
-                // console.log(categories.value[dishData.value.category].name)
-                categoryInput.value.value = categories.value[dishData.value.category].name
+
+    }
+
+
+    onMounted( async () => {
+        // 设置居右的保存按钮组件
+        setRightComponent(h('mdui-button-icon', {
+            onClick: handleSave,
+            ref: (el) => {saveButton.value = el}
+        }, [
+            h('mdui-icon-save')
+        ]))
+
+        
+        // 获取菜品数据和分类信息
+        isLoading.value = true
+
+
+        try {
+            await getAllCategorires()
+
+            if (!props.isNew) {
+                await getDish(route.params.id)
+
+                categoryInput.value.value = categories.value.find(category => category.id == dishData.value.category).name
+            } else {
+                dishData.value = {
+                    'name': '',
+                    'price': 0,
+                    'description': '',
+                    'image': '',
+                    'category': '',
+                    'choices': {},
+                    'is_available': 0
+                }
             }
+            
+            
+            
 
 
-        } catch (error) {
+        } catch(error) {
+            console.error(error)
             isError.value = true;
 
             clearRightComponent()
 
             await nextTick()
 
-            // console.log(error.message)
             errorPage.value.setInfo(
-                t("common.text.load_error.title"),
+                t("shop.dish_edit.load_error.title"),
                 t("shop.dish_edit.load_error.message"),
                 error.message
             )
-
         } finally {
             isLoading.value = false
         }
-
-        
-
+    
     })    
 
     onBeforeUnmount(() => {

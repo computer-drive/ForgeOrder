@@ -8,7 +8,18 @@
 
             <mdui-li>
                 <div v-for="(value, key) in categories" :key="key">
-                    <mdui-list-subheader>{{ categories[key] }}</mdui-list-subheader>
+                    <mdui-list-subheader style="display:flex; align-items: center; justify-content: space-between;">
+                        {{ categories[key] }}
+                        <div style="display:flex; align-items: center; gap: 8px">
+                            <mdui-button-icon @click="editCategory(key, value)">
+                                <mdui-icon-edit></mdui-icon-edit>
+                            </mdui-button-icon>
+                            <mdui-button-icon @click="deleteCategory(key, value)">
+                                <mdui-icon-clear></mdui-icon-clear>
+                            </mdui-button-icon>
+
+                        </div>
+                    </mdui-list-subheader>
                     <div v-for="dish in dishes[value]" :key="dish.id">
                         <mdui-list-item rounded @click="showDetail(value, dish.id)">{{ dish.name }}</mdui-list-item>
                     </div>
@@ -108,6 +119,7 @@ import 'mdui/components/dialog.js'
 import 'mdui/components/segmented-button-group.js'
 import 'mdui/components/segmented-button.js'
 import { dialog } from 'mdui/functions/dialog.js'
+import { prompt } from 'mdui/functions/prompt.js'
 
 import { inject, h, onMounted, ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
@@ -134,7 +146,10 @@ const currentDish = ref({})
 const dishDetail = ref(null)
 
 
-const addDish = () => {}
+const addDish = () => {
+    // router.push({name:'addDish1'})
+    router.push("/shop/dishes/new")
+}
 
 onMounted( async() => {
 
@@ -204,7 +219,7 @@ const deleteDish = () => {
 
                             if (res.data.status == 0) {
                                 snackbar({
-                                    "message": t("shop.all_dishes.snackbar.delete_success")
+                                    "message": t("shop.all_dishes.snackbar_delete_dish.success")
                                 })
                                 
                                 getDishes()
@@ -215,18 +230,24 @@ const deleteDish = () => {
                                 
                             } else if (res.data.status == 3001) {
                                 snackbar({
-                                    "message": t("shop.all_dishes.snackbar.not_found")
+                                    "message": t("shop.all_dishes.snackbar_delete_dish.not_found")
                                 })
-                            } else {
+                
+                            } else if (res.data.status == 2002) {
+                                snackbar({
+                                    "message": t("shop.all_dishes.snackbar_delete_dish.permission")
+                                })
+                            } 
+                            else {
                                 console.log(res.data)
                                 snackbar({
-                                    "message": t("shop.all_dishes.snackbar.unknown")
+                                    "message": t("shop.all_dishes.snackbar_delete_dish.unknown")
                                 })
                             }
                         } catch (error) {
                             console.log(error)
                             snackbar({
-                                "message": t("shop.all_dishes.snackbar.unknown")
+                                "message": t("shop.all_dishes.snackbar_delete_dish.unknown")
                             })
                         }
                     }
@@ -234,6 +255,119 @@ const deleteDish = () => {
             ]
         })
     }, {once: true})
+}
+
+const deleteCategory = (category_id, category_name) => {
+    let description = ''
+
+    console.log(dishes.value[category_name].find(dish => dish.category  == category_id) != undefined)
+    if (dishes.value[category_name].find(dish => dish.category  == category_id) != undefined) {
+        // 分类下有菜品
+        description = t('shop.all_dishes.delete_category_dialog.description_dish', { name: categories.value[category_id] })
+    } else {
+        console.log("1")
+        // 分类下没有菜品
+        description = t('shop.all_dishes.delete_category_dialog.description', { name: categories.value[category_id] })
+    }
+
+    dialog({
+            headline: t('shop.all_dishes.delete_category_dialog.title'),
+            description: description,
+            actions: [
+                {
+                    'text': t('common.text.cancel'),
+                },
+                {
+                    'text': t('common.text.confirm'),
+                    onClick: async() => {
+                        try{
+                            const res = await request.post('/shop/dishes/deleteCategory', {
+                                category_id: Number(category_id)
+                            })
+
+                            if (res.data.status == 0) {
+                                snackbar({
+                                    message: t("shop.all_dishes.snackbar_delete_category.success")
+                                })
+                                getDishes()
+                            } else if (res.data.status == 3001) {
+                                snackbar({
+                                    message: t("shop.all_dishes.snackbar_delete_category.not_found")
+                                })
+                            } else if (res.data.status == 2002) {
+                                snackbar({
+                                    message: t("shop.all_dishes.snackbar_delete_category.permission")
+                                })
+                            } else {
+                                snackbar({
+                                    message: t("shop.all_dishes.snackbar_delete_category.unknown")
+                                })
+                            }
+                        } catch (error) {
+                            console.log(error)
+                            snackbar({
+                                message: t("shop.all_dishes.snackbar_delete_category.unknown")
+                            })
+                        }
+                    } 
+                }
+            ]})
+}
+
+const editCategory = (category_id, category_name) => {
+    prompt({
+        headline: t('shop.all_dishes.edit_category_dialog.headline', { name: category_name }),
+        description: t('shop.all_dishes.edit_category_dialog.description'),
+        confirmText: t('common.text.confirm'),
+        cancelText: t('common.text.cancel'),
+        onConfirm: async (value) => {
+            if (value == '') {
+                snackbar({
+                    message: t("shop.all_dishes.snackbar_edit_category.empty")
+                })
+                return
+            }
+
+            if (value.includes("_disabled")) {
+                snackbar({
+                    message: t("shop.all_dishes.snackbar_edit_category.invalid")
+                })
+                return
+            }
+
+            try{
+                const res = await request.post('/shop/dishes/editCategory', {
+                    category_id: Number(category_id),
+                    category_name: value
+                })
+
+                if (res.data.status == 0) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_edit_category.success")
+                    })
+                    getDishes()
+                } else if (res.data.status == 3001) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_edit_category.not_found")
+                    })
+                } else if (res.data.status == 2002) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_edit_category.permission")
+                    })
+                } else {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_edit_category.unknown")
+                    })
+                }
+            } catch (error) {
+                console.log(error)
+                snackbar({
+                    message: t("shop.all_dishes.snackbar_edit_category.unknown")
+                })
+            }
+
+        }
+    })
 }
 
 onBeforeUnmount(() => {

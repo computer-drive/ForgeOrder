@@ -17,15 +17,8 @@ export default {
             }
         },
         {
-            path: '/shop/dishes/:id',
-            component: DishEdit,
-            meta: {
-                title: '$shop.title.edit_dish'
-            },
-            props: true
-        },
-        {
             path: '/shop/dishes/new',
+            name: 'addDish',
             component: DishEdit,
             meta: {
                 title: '$shop.title.add_dish'
@@ -33,6 +26,15 @@ export default {
             props: {
                 isNew: true
             }
-        }
+        },
+        {
+            path: '/shop/dishes/:id',
+            component: DishEdit,
+            meta: {
+                title: '$shop.title.edit_dish'
+            },
+            props: true
+        },
+        
     ]
 }
