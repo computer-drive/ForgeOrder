@@ -16,7 +16,10 @@ def _handle_auth():
                 "BEFORE_REQUEST",
                 "RouteNotRegistered"
             )
-            return None
+            return make_response(
+                1003,
+                None
+            ), 404
         
 
         if not route_data["auth"]:
