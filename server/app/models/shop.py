@@ -79,7 +79,7 @@ def get_dish():
     meta_db = get_meta_database()
 
     try:
-        dish = meta_db.dishes.get(dish_id)
+        dish = meta_db.dishes.get_from_id(dish_id)
 
     except NotFoundError as e:
         return make_response(
@@ -170,9 +170,73 @@ def delete_dish():
             None
         ), 404
     
+@shop_bp.post("/api/shop/dishes/deleteCategory", auth=True, is_admin=True,
+              arguments=[
+                  {
+                      "name": "category_id",
+                      "type": int,
+                      "required": True
+                  }
+              ])
+def delete_category():
+    category_id: int = g.args["category_id"]
 
+    meta_db = get_meta_database()
+
+    # 删除该分类下的所有菜品
+    meta_db.dishes.delete_by_category(category_id)
+
+    try:
+        meta_db.category.delete(category_id)
+
+        print(category_id)
+
+        name = meta_db.category.get_from_id(category_id)["name"]
+
+        meta_db.category.set_name(category_id, f"{name}_disabled")
+        
+        return make_response(
+            0,
+            None
+        ), 200
+    
+    except NotFoundError:
+        return make_response(
+            3001,
+            None
+        ), 404
     
 
+@shop_bp.post("/api/shop/dishes/editCategory", auth=True, is_admin=True, 
+              arguments=[
+                  {
+                    "name": "category_id",
+                    "type": int,
+                    "required": True
+                },
+                {
+                    "name": "category_name",
+                    "type": str,
+                    "required": True
+                }
+              ])
+def edit_category():
+    category_id: int = g.args["category_id"]
+    category_name: str = g.args["category_name"]
+
+    meta_db = get_meta_database()
+
+    try:
+        meta_db.category.set_name(category_id, category_name)
+        return make_response(
+            0,
+            None
+        ), 200
+    except NotFoundError:
+        return make_response(
+            3001,
+            None
+        ), 404
 
 
     
