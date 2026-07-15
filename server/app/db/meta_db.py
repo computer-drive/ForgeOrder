@@ -8,6 +8,7 @@ from core.db.database import Database
 from core.db.exceptions import ColumnNotFoundError, NotFoundError
 from core.db.sql_parse import SqlParse
 import extensions
+from .exceptions import CategoryNotFoundError
 
 # from core.utils import get_res_path
 
@@ -134,7 +135,8 @@ class _Dishes:
         # 验证分类是否存在
         category = self.parent_database.category.get_from_id(category_id)
         if not category:
-            raise NotFoundError(str(category_id))
+            raise CategoryNotFoundError(category_id)
+        
         category = dict(category)
 
         
