@@ -124,7 +124,7 @@ class _Dishes:
                image: str = "",
                is_available: bool = True,
                choices: dict = {}
-               ) -> None:
+               ):
         '''
         创建一个新菜品。
         '''
@@ -177,6 +177,8 @@ class _Dishes:
         # 提交事务
         self.conn.commit()
 
+        return dish_id
+
 
     def get_all(self):
         '''
@@ -222,7 +224,8 @@ class _Dishes:
 
         # 5、分组
         for dish in dishes:
-            result[dish["category"]].append(dict(dish))
+            # print(dish)
+            result[int(dish["category"])].append(dict(dish))
 
         # 6、将result的key转换为分类名称
 
