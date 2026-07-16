@@ -1,12 +1,13 @@
 import Index from './Index.vue'
 import Dishes from './Dishes.vue'
 import DishEdit from './DishEdit.vue'
+import Tables from './Tables.vue'
 
 export default {
     path: '/shop',
     component: Index,
     meta: {
-        title: 'ShopDefaultPage'
+        title: '$shop.title.main'
     },
     children: [
         {
@@ -35,6 +36,13 @@ export default {
             },
             props: true
         },
+        {
+            path: '/shop/tables',
+            component: Tables,
+            meta: {
+                title: '$shop.title.tables'
+            }
+        }
         
     ]
 }

@@ -14,10 +14,12 @@
         </template>
     </TopBar>
 
+    <Main v-if="route.path == '/shop' || route.path == '/shop/' "/>
     <router-view/>
 </template> 
 
 <script setup>
+import Main from './Main.vue'
 import TopBar from '@/components/TopBar.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, provide } from 'vue'
@@ -31,12 +33,10 @@ const goBack = () => {
         router.push('/')
     } else {
         const backPath = route.path.split('/').slice(0, -1).join('/') || '/'
-        if (backPath == '/shop') {
-            router.push('/')
-        }
-        else {
-            router.push(backPath)
-        }
+        
+        
+        router.push(backPath)
+        
     }
 }
 

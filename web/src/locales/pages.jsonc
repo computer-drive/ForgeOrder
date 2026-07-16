@@ -184,9 +184,12 @@
 
   "shop": {
     "title": {
-      "dishes": "菜品",
+      "dishes": "菜品管理",
+      "tables": "餐桌管理",
       "edit_dish": "编辑菜品",
-      "add_dish": "添加菜品"
+      "add_dish": "添加菜品",
+      "main": "店铺管理",
+      "users": "用户管理"
     },
     "all_dishes": {
       "title": "所有菜品",
