@@ -26,21 +26,23 @@ import TopBar from '@/components/TopBar.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, provide } from 'vue'
 
+import { goBack } from '@/utils/routerHelper.js'
+
 const route = useRoute()
 const router = useRouter()
 
 // 返回按钮 
-const goBack = () => {
-    if (route.matched == 1) {
-        router.push('/')
-    } else {
-        const backPath = route.path.split('/').slice(0, -1).join('/') || '/'
+// const goBack = () => {
+//     if (route.matched == 1) {
+//         router.push('/')
+//     } else {
+//         const backPath = route.path.split('/').slice(0, -1).join('/') || '/'
 
         
-        router.push(backPath)
+//         router.push(backPath)
         
-    }
-}
+//     }
+// }
 
 const rightComponent = ref(null)
 
