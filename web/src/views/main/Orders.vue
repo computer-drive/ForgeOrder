@@ -1,38 +1,41 @@
 <template>
-    <TopBar :title="$t('orders.topbar.text')" :showHome="false">
-        <template #right >
-            <mdui-text-field variant="outlined" :placeholder="$t('orders.topbar.search.text')" style="width: auto; height: 100%">
-            </mdui-text-field>
-            <mdui-button-icon >
-                <mdui-icon-search></mdui-icon-search>
-            </mdui-button-icon>
-        </template>
-    </TopBar>
+    <div class="page">
+        <TopBar :title="$t('orders.topbar.text')" :showHome="false">
+            <template #right >
+                <mdui-text-field variant="outlined" :placeholder="$t('orders.topbar.search.text')" style="width: auto; height: 100%">
+                </mdui-text-field>
+                <mdui-button-icon >
+                    <mdui-icon-search></mdui-icon-search>
+                </mdui-button-icon>
+            </template>
+        </TopBar>
 
-    <div class="container mdui-prose" >
-        <h2>{{$t('orders.main.today')}}</h2>
+        <div class="container mdui-prose" >
+            <h2>{{$t('orders.main.today')}}</h2>
+            <button @click="router.push('/shop')">shop</button>
+            <div v-for="i in 10" :key="i">
+                <OrderCard 
+            :orderId="2026114514" 
+            :orderDisplayId="1"
+            :tableNo="'A1'" 
+            :people="4" 
+            :state="0"
+            :orderType="0"
+            :createTime="new Date('2026-07-06 10:00:00')"
+            :finishedCount="3"
+            :totalCount="5"
+            :unfinishedDishes="[{name:'鱼香肉丝',count:1},{name:'红烧肉',count:2},{name:'青椒肉丝',count:1}, {name:'红烧肉',count:2}, {name:'红烧肉',count:2}]"
+            :tags="['有小孩']"
+            :totalPrice="20000"
+            />
+            </div>
 
-        <div v-for="i in 10" :key="i">
-            <OrderCard 
-        :orderId="2026114514" 
-        :orderDisplayId="1"
-        :tableNo="'A1'" 
-        :people="4" 
-        :state="0"
-        :orderType="0"
-        :createTime="new Date('2026-07-06 10:00:00')"
-        :finishedCount="3"
-        :totalCount="5"
-        :unfinishedDishes="[{name:'鱼香肉丝',count:1},{name:'红烧肉',count:2},{name:'青椒肉丝',count:1}, {name:'红烧肉',count:2}, {name:'红烧肉',count:2}]"
-        :tags="['有小孩']"
-        :totalPrice="20000"
-        />
+            <mdui-fab size="normal" style="position: fixed; bottom: 100px; right: 20px;" @click="router.push('/order/new')" extended>
+                <mdui-icon-edit slot="icon"></mdui-icon-edit>
+                {{$t('orders.main.add')}}
+            </mdui-fab>
+
         </div>
-
-        <mdui-fab size="normal" style="position: fixed; bottom: 100px; right: 20px;" @click="router.push('/order/new')" extended>
-            <mdui-icon-edit slot="icon"></mdui-icon-edit>
-            {{$t('orders.main.add')}}
-        </mdui-fab>
 
     </div>
 

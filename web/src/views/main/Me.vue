@@ -1,77 +1,79 @@
 <template>
-    <TopBar :title="$t('me.topbar.text')" :showHome="false">
-    </TopBar>
-    <TopProgressBar v-model="isLoading"/>
+    <div class="page">
+        <TopBar :title="$t('me.topbar.text')" :showHome="false">
+        </TopBar>
+        <TopProgressBar v-model="isLoading"/>
+        
+        <TipCard variant="filled" background-color="#BB1614" color="#fff" v-if="isDevelopment">
+            <mdui-icon-warning style="flex-shrink: 0"></mdui-icon-warning>
+            {{$t('me.main.dev_warn')}}
+        </TipCard>
 
-    <TipCard variant="filled" background-color="#BB1614" color="#fff" v-if="isDevelopment">
-        <mdui-icon-warning style="flex-shrink: 0"></mdui-icon-warning>
-        {{$t('me.main.dev_warn')}}
-    </TipCard>
 
+        <div class="container mdui-prose" >
+            <div style="display: flex; padding: 12px; gap: 16px; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                    <div style="font-size: 32px; color: grey">
+                    <mdui-icon-manage-accounts v-if="isAdmin">
+                    </mdui-icon-manage-accounts>
+                    <mdui-icon-account-circle v-else>
+                    </mdui-icon-account-circle>
+                    </div>
+                </div>
 
-    <div class="container mdui-prose" >
-        <div style="display: flex; padding: 12px; gap: 16px; align-items: center;">
-            <div style="display: flex; align-items: center;">
-                <div style="font-size: 32px; color: grey">
-                <mdui-icon-manage-accounts v-if="isAdmin">
-                </mdui-icon-manage-accounts>
-                <mdui-icon-account-circle v-else>
-                </mdui-icon-account-circle>
+                <div>
+                    <div style="font-size: 24px">{{username}}</div>
+                    <div>{{isAdmin ? $t('me.main.admin') : $t('me.main.normal') }}</div>
                 </div>
             </div>
+            <mdui-divider></mdui-divider>
 
-            <div>
-                <div style="font-size: 24px">{{username}}</div>
-                <div>{{isAdmin ? $t('me.main.admin') : $t('me.main.normal') }}</div>
-            </div>
+            <mdui-list>
+                <mdui-list-item rounded @click="pushWithFrom('/printer/queue')">
+                    {{$t('me.actions.print_queue')}}
+                    <mdui-icon-print slot="icon"></mdui-icon-print>
+                    <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
+                </mdui-list-item>
+
+                <mdui-list-item rounded @click="pushWithFrom('/me/settings')">
+                    {{$t('me.actions.user_settings')}}
+                    <mdui-icon-app-settings-alt slot="icon"></mdui-icon-app-settings-alt>
+                    <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
+                </mdui-list-item>
+
+                <mdui-list-item rounded @click="pushWithFrom('/shop')">
+                    {{$t('me.actions.shop_settings')}}
+                    <mdui-icon-shopping-cart slot="icon"></mdui-icon-shopping-cart>
+                    <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
+                </mdui-list-item>
+
+                <mdui-list-item rounded @click="pushWithFrom('/system/logs')">
+                    {{$t('me.actions.sys_logs')}}
+                    <mdui-icon-receipt slot="icon"></mdui-icon-receipt>
+                    <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
+                </mdui-list-item>
+
+                <mdui-list-item rounded @click="pushWithFrom('/system/about')">
+                    {{$t('me.actions.sys_about')}}
+                    <mdui-icon-info slot="icon"></mdui-icon-info>
+                    <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
+                </mdui-list-item>
+
+
+                <mdui-list-item rounded @click="handleLogout">
+                    {{$t('me.actions.logout')}}
+                    <mdui-icon-logout slot="icon"></mdui-icon-logout>
+                    <!-- <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right> -->
+                </mdui-list-item>
+                
+            </mdui-list>
         </div>
-        <mdui-divider></mdui-divider>
 
-        <mdui-list>
-            <mdui-list-item rounded @click="router.push('/printer/queue')">
-                {{$t('me.actions.print_queue')}}
-                <mdui-icon-print slot="icon"></mdui-icon-print>
-                <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
-            </mdui-list-item>
-
-            <mdui-list-item rounded @click="router.push('/me/settings')">
-                {{$t('me.actions.user_settings')}}
-                <mdui-icon-app-settings-alt slot="icon"></mdui-icon-app-settings-alt>
-                <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
-            </mdui-list-item>
-
-            <mdui-list-item rounded @click="router.push('/shop/settings')">
-                {{$t('me.actions.shop_settings')}}
-                <mdui-icon-shopping-cart slot="icon"></mdui-icon-shopping-cart>
-                <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
-            </mdui-list-item>
-
-            <mdui-list-item rounded @click="router.push('/system/logs')">
-                {{$t('me.actions.sys_logs')}}
-                <mdui-icon-receipt slot="icon"></mdui-icon-receipt>
-                <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
-            </mdui-list-item>
-
-            <mdui-list-item rounded @click="router.push('/system/about')">
-                {{$t('me.actions.sys_about')}}
-                <mdui-icon-info slot="icon"></mdui-icon-info>
-                <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
-            </mdui-list-item>
-
-
-            <mdui-list-item rounded @click="handleLogout">
-                {{$t('me.actions.logout')}}
-                <mdui-icon-logout slot="icon"></mdui-icon-logout>
-                <!-- <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right> -->
-            </mdui-list-item>
-            
-        </mdui-list>
-    </div>
-
-    <div class="footer">
-        <div style="font-size: 11px; display: flex; justify-content: center; gap: 12px;">
-            <span>{{$t('me.footer.text', {ip: ipAddress})}}</span>
-            <span>{{$t('me.footer.text2', {version: version, state: isDevelopment ? 'develop' : 'product' })}}</span>
+        <div class="footer">
+            <div style="font-size: 11px; display: flex; justify-content: center; gap: 12px;">
+                <span>{{$t('me.footer.text', {ip: ipAddress})}}</span>
+                <span>{{$t('me.footer.text2', {version: version, state: isDevelopment ? 'develop' : 'product' })}}</span>
+            </div>
         </div>
     </div>
     
@@ -100,7 +102,9 @@
     import '@mdui/icons/info.js'
 
     import { ref, computed, onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
+    import { useRouter, useRoute } from 'vue-router'
+
+    import { pushWithFrom } from '@/utils/routerHelper'
 
     import { useAuth } from '@/composables/auth.js'
     import request from '@/utils/request.js'
@@ -108,6 +112,7 @@
     const { logout } = useAuth()
 
     const router = useRouter()
+    const route = useRoute()
 
     const isDevelopment = ref(false)
     const username = computed(() => JSON.parse(localStorage.getItem('userInfo')).username)
