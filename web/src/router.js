@@ -1,7 +1,11 @@
 import { createRouter ,createWebHashHistory } from 'vue-router'
 import mainRouter from './views/main/router.js'
-import shopRouter from './views/shop/router.js'
+import  shopRouter from './views/shop/router.js'
 import systemRouter from './views/system/router.js'
+
+import { getPathDeepth } from '@/utils/utils.js'
+
+import { ref } from 'vue'
 
 const routes = [
     mainRouter,
@@ -55,7 +59,31 @@ const router = createRouter({
     routes
 })
 
+export const navigationKey = ref(0)
+
 router.beforeEach((to, from) => {
+    // 动画处理
+    const toDeepth = getPathDeepth(to.path)
+    const fromDeepth = getPathDeepth(from.path)
+
+    // console.log(from, to)
+
+    if (to.path == from.path) {
+        // console.log("Tab")
+        to.meta.transition = ''
+    } else {
+            if (toDeepth > fromDeepth ) {
+            to.meta.transition = 'slide-left'   
+        } else {
+            to.meta.transition = 'slide-right'
+        }   
+    }
+
+    navigationKey.value++
+
+    // console.log(to.meta.transition)
+
+    // 用户认证
     const token = localStorage.getItem('token')
 
     if (to.meta?.noAuth == true) {
@@ -76,9 +104,9 @@ router.beforeEach((to, from) => {
             return true
         }
     }
-
-
 })
+
+
 
 export default router
 
