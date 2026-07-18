@@ -574,59 +574,65 @@ class _Dishes:
         '''
         获取所有菜品。
         '''
-        result = {}
+        # 准备返回结构
+        result: dict[int, list] = {}
 
-        # 1、获取所有分类
+        # 1、获取所有分类并构建id->name映射，同时初始化每个分类的列表
         categories = self.parent_database.category.get_all()
-        
-        # 1.1、初始化分类的菜品列表为空
-        for category in categories:
-            result[category["id"]] = []
+        categories_map = {category["id"]: category["name"] for category in categories}
+        for cid in categories_map.keys():
+            result[cid] = []
 
-        # 2、从dishes表中获取菜品
-        dishes = self.conn.execute(self.sql_parse.get("dishes.get_all")).fetchall()
-        
-        
+        # 2、一次性获取所有相关表数据
+        dishes_rows = self.conn.execute(self.sql_parse.get("dishes.get_all")).fetchall()
+        dish_stats_rows = self.conn.execute(self.sql_parse.get("dish_stats.get_all")).fetchall()
+        dish_choices_rows = self.conn.execute(self.sql_parse.get("dish_choices.get_all")).fetchall()
 
-        dishes = [dict(dish) for dish in dishes] # 2.1、转换为字典
+        # 3、构建索引以避免嵌套循环
+        stats_map = {stat["id"]: dict(stat) for stat in dish_stats_rows}
 
-        # 3、从dish_stats表中获取菜品统计信息
-        dish_stats = self.conn.execute(self.sql_parse.get("dish_stats.get_all")).fetchall()
+        choices_map: dict[int, dict[str, list]] = {}
+        for choice in dish_choices_rows:
+            did = choice["dish_id"]
+            if did not in choices_map:
+                choices_map[did] = {}
+            choices_map[did][choice["name"]] = json.loads(choice["options"])
 
-        # 3.1、将菜品统计信息与菜品关联
-        for dish in dishes:
-            for stat in dish_stats:
-                if stat["id"] == dish["id"]:
-                    dish["stat"] = dict(stat)
-                    break
+        # 4、组装菜品并分配到分类中
+        for row in dishes_rows:
+            dish = dict(row)
 
-        # 4、从dish_choices表中获取菜品选择
-        dish_choices = self.conn.execute(self.sql_parse.get("dish_choices.get_all")).fetchall()
+            # 附加统计信息（如果存在）
+            stat = stats_map.get(dish["id"])
+            if stat is not None:
+                dish["stat"] = stat
 
-        # 4.1、将菜品选择与菜品关联
-        for dish in dishes:
-            for choice in dish_choices:
-                if choice["dish_id"] == dish["id"]:
-                    if "choices" not in dish:
-                        dish["choices"] = {}
+            # 附加选择（如果存在）
+            ch = choices_map.get(dish["id"])
+            if ch is not None:
+                dish["choices"] = ch
 
-                    dish["choices"][choice["name"]] = json.loads(choice["options"])
+            # 将菜品加入对应分类，若分类缺失则创建一个临时列表
+            try:
+                cid = int(dish["category"])
+            except Exception:
+                cid = None
 
-        # 5、分组
-        for dish in dishes:
-            # print(dish)
-            result[int(dish["category"])].append(dict(dish))
+            if cid is None or cid not in result:
+                # 把未知分类也放入结果（使用id作为键）
+                if cid is None:
+                    continue
+                result.setdefault(cid, []).append(dish)
+            else:
+                result[cid].append(dish)
 
-        # 6、将result的key转换为分类名称
+        # 5、将result的key转换为分类名称并返回
+        result_by_name: dict[str, list] = {}
+        for cid, items in result.items():
+            name = categories_map.get(cid, str(cid))
+            result_by_name[name] = items
 
-        # 6.1 将categories转换为字典
-        categories = {category["id"]: category["name"] for category in categories}
-
-        result_ = {} # 创建新字典因为key不可改变
-        for category_id in result:
-            result_[categories[category_id]] = result[category_id]
-
-        return result_, categories
+        return result_by_name, categories_map
 
 
     def get_from_id(self, dish_id: int):
