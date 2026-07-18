@@ -155,13 +155,18 @@ def setup_logger(name: str, db_name: str, level: str = "info"):
     logger.addHandler(stream_handler)
 
     # 数据库日志记录器
+    
+    if db_name:
+        queue, thread = create_worker(db_name)
 
-    queue, thread = create_worker(db_name)
-
-    db_handler = DatabaseHandler(queue)
-    db_handler.setFormatter(formatter)
-    db_handler.setLevel(level_int)
-    logger.addHandler(db_handler)
+        db_handler = DatabaseHandler(queue)
+        db_handler.setFormatter(formatter)
+        db_handler.setLevel(level_int)
+        logger.addHandler(db_handler)
+    else:
+        queue = None
+        thread = None
+        logger.warning('', "LOGGER", "NotSetupDatabaseHandler")
 
     return logger, thread, queue
 
