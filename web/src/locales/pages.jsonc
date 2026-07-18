@@ -193,6 +193,8 @@
     },
     "all_dishes": {
       "title": "所有菜品",
+      "search": "搜索",
+
       "detail": {
         "basic_title": "基本信息",
         "dish_id": "菜品ID",
@@ -247,9 +249,25 @@
 
       "edit_category_dialog": {
         "headline": "编辑分类“{name}”",
-        "description": "请输入新分类的名称：",
+        "description": "请输入分类的名称：",
 
-      }
+      },
+
+      "new_category_dialog": {
+        "headline": "添加分类",
+        "description": "请输入新分类的名称：",
+      },
+
+      "snackbar_new_category": {
+        "empty": "分类名称不能为空。",
+        "success": "添加成功。",
+        "unknown": "未知错误。",
+        "permission": "权限不足。仅管理员用户可添加分类。",
+        "exist": "分类已存在。",
+        "invaild": "请勿输入含“_disabled”的名称"
+      },
+
+
       
     },
     "dish_edit": {

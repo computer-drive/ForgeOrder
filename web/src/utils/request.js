@@ -56,6 +56,8 @@ request.interceptors.response.use(
                 })
                 // 清除本地的token
                 localStorage.removeItem("token")
+                return
+                
             } else {
                 // 对于权限不足的api，应不跳转到登录页
             }

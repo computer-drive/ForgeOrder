@@ -181,6 +181,8 @@
     import { t } from '@/locales/index.js'    
     import request from '@/utils/request.js'
 
+    import { pushWithFrom } from '@/utils/routerHelper'
+
 
     const props = defineProps({
         id: {
@@ -234,7 +236,7 @@
                 snackbar({
                     message: t("shop.dish_edit.snackbar.success")
                 })
-                router.push("/shop/dishes")
+                pushWithFrom("/shop/dishes")
             } else {
                 alert({
                     headline: t("shop.dish_edit.error_alert.headline"),
@@ -394,7 +396,7 @@
     }
 
     const getAllCategorires = async () => {
-            const res = await request.get(`/shop/dishes/getAllCategories`)
+            const res = await request.get(`/shop/category/getAll`)
                 if (res.data.status == 0) {
                     categories.value = res.data.data
                     // console.log(categories.value)

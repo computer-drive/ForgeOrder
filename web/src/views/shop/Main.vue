@@ -3,19 +3,19 @@
         <h2>{{ $t("shop.title.main") }}</h2>
         <mdui-list>
             <!-- <mdui-list-subheader>Subheader</mdui-list-subheader> -->
-            <mdui-list-item rounded @click="router.push('/shop/dishes')">
+            <mdui-list-item rounded @click="pushWithFrom('/shop/dishes')">
                 {{ $t("shop.title.dishes") }}
                 <mdui-icon-list slot="icon"></mdui-icon-list>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
-            <mdui-list-item rounded @click="router.push('/shop/tables')">
+            <mdui-list-item rounded @click="pushWithFrom('/shop/tables')">
                 {{  $t("shop.title.tables") }}
                 <mdui-icon-table-restaurant slot="icon"></mdui-icon-table-restaurant>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
             </mdui-list-item>
 
-            <mdui-list-item rounded @click="router.push('/shop/users')">
+            <mdui-list-item rounded @click="pushWithFrom('/shop/users')">
                 {{  $t("shop.title.users") }}
                 <mdui-icon-account-circle slot="icon"></mdui-icon-account-circle>
                 <mdui-icon-chevron-right slot="end-icon"></mdui-icon-chevron-right>
@@ -35,7 +35,7 @@
     import 'mdui/components/list-item.js'
     import 'mdui/components/list-subheader.js'
 
-    import { useRouter } from 'vue-router'
+    import { pushWithFrom } from '@/utils/routerHelper';
 
-    const router = useRouter()
+    // const router = useRouter()
 </script>

@@ -2,7 +2,7 @@
     
     <mdui-top-app-bar
         scroll-behavior="elevate shrink"
-        style="align-items: center;"
+        class="topbar"
       >
         
         <slot name="left"></slot>
@@ -34,6 +34,8 @@
     import { computed } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { locale } from '@/locales/index.js'
+
+    import { goBack } from '@/utils/routerHelper';
 
 
     const route = useRoute();
@@ -82,13 +84,20 @@
     }
 
     // 返回按钮 
-    function goBack() {
-        if (route.matched == 1) {
-          router.push('/')
-        } else {
-          router.push(
-            route.path.split('/').slice(0, -1).join('/') || '/'
-          )
-        }
-    }
+    // function goBack() {
+    //     if (route.matched == 1) {
+    //       router.push('/')
+    //     } else {
+    //       router.push(
+    //         route.path.split('/').slice(0, -1).join('/') || '/'
+    //       )
+    //     }
+    // }
 </script>
+
+<style>
+.topbar {
+  align-items: center;
+  position: sticky;
+}
+</style>

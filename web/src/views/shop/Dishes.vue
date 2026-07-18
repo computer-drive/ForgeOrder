@@ -23,13 +23,17 @@
                     <div v-for="dish in dishes[value]" :key="dish.id">
                         <mdui-list-item rounded @click="showDetail(value, dish.id)">{{ dish.name }}</mdui-list-item>
                     </div>
-
                 </div>
             </mdui-li>
 
+            <mdui-button full-width variant="tonal" @click="addCategory" style='margin-top: 20px'>
+                添加分类
+                <mdui-icon-category slot="icon"></mdui-icon-category>
+            </mdui-button>
+
         </div>
 
-
+        
     </div>
 
     <mdui-dialog ref="dishDetail" close-on-overlay-click>
@@ -107,6 +111,11 @@
 
     </mdui-dialog>
 
+    <mdui-fab size="normal" style="position: fixed; bottom: 40px; right: 30px;" @click="router.push('/shop/dishes/new')">
+            <mdui-icon-add slot="icon"></mdui-icon-add>
+            <!-- 添加菜品 -->
+    </mdui-fab>
+
 </template> 
 
 <script setup>
@@ -120,6 +129,7 @@ import 'mdui/components/segmented-button-group.js'
 import 'mdui/components/segmented-button.js'
 import { dialog } from 'mdui/functions/dialog.js'
 import { prompt } from 'mdui/functions/prompt.js'
+import { snackbar } from 'mdui'
 
 import { inject, h, onMounted, ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
@@ -127,15 +137,17 @@ import { useRouter } from 'vue-router'
 import '@mdui/icons/add.js'
 import '@mdui/icons/edit.js'
 import '@mdui/icons/delete.js'
+import '@mdui/icons/category.js';
 
 
 import request from '@/utils/request.js'
 import { t } from '@/locales/index.js'
-import { snackbar } from 'mdui'
+import { pushWithFrom } from '@/utils/routerHelper'
+
 
 const router = useRouter()
 
-const { setRightComponent, clearRightComponent } = inject('rightComponent')
+const { addRightComponent, clearRightComponent } = inject('rightComponent')
 
 const dishes = ref([])
 const categories = ref([])
@@ -148,16 +160,27 @@ const dishDetail = ref(null)
 
 const addDish = () => {
     // router.push({name:'addDish1'})
-    router.push("/shop/dishes/new")
+    pushWithFrom("/shop/dishes/new")
 }
 
 onMounted( async() => {
+    // <mdui-text-field variant="outlined" :placeholder="$t('orders.topbar.search.text')" style="width: auto; height: 100%">
+    //         </mdui-text-field>
+    //         <mdui-button-icon >
+    //             <mdui-icon-search></mdui-icon-search>
+    //         </mdui-button-icon>
 
-    setRightComponent(h('mdui-button-icon', {
-        onClick: addDish
-    }, [
-        h('mdui-icon-add')
-    ]))
+    
+    
+    addRightComponent(h('mdui-text-field', {
+            variant: 'outlined',
+            placeholder: t('shop.all_dishes.search'),
+            style: 'width: calc(100vw - 40px - 40px - 160px); height: 100%; align-items: center'
+        }))
+
+    // addRightComponent(h('mdui-button-icon', {}, [
+    //         h('mdui-icon-search')
+    //     ]))
 
     getDishes()
     
@@ -194,7 +217,7 @@ const showDetail = (category_name, dish_id) => {
 const goEdit = () => {
     dishDetail.value.open = false;
     dishDetail.value.addEventListener('closed', () => {
-        router.push(`/shop/dishes/${currentDish.value.id}`)
+        pushWithFrom(`/shop/dishes/${currentDish.value.id}`)
     })
     
 }
@@ -281,7 +304,7 @@ const deleteCategory = (category_id, category_name) => {
                     'text': t('common.text.confirm'),
                     onClick: async() => {
                         try{
-                            const res = await request.post('/shop/dishes/deleteCategory', {
+                            const res = await request.post('/shop/category/delete', {
                                 category_id: Number(category_id)
                             })
 
@@ -336,7 +359,7 @@ const editCategory = (category_id, category_name) => {
             }
 
             try{
-                const res = await request.post('/shop/dishes/editCategory', {
+                const res = await request.post('/shop/category/edit', {
                     category_id: Number(category_id),
                     category_name: value
                 })
@@ -369,6 +392,68 @@ const editCategory = (category_id, category_name) => {
         }
     })
 }
+
+const addCategory = () => {
+    prompt({
+        headline: t("shop.all_dishes.new_category_dialog.headline"),
+        description: t("shop.all_dishes.new_category_dialog.description"),
+        confirmText: t('common.text.confirm'),
+        cancelText: t('common.text.cancel'),
+        onConfirm: async (value) => {
+            isLoading.value = true
+            let res = null
+            try {
+                if (!value) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.empty")
+                    })
+                    isLoading.value = false
+                    return
+                }
+
+                if (value.includes('_disabled')) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.invaild")
+                    })
+                    isLoading.value = false
+                    return
+                }
+
+                res = await request.post('/shop/category/new', {
+                    name: value
+                })
+
+                // console.log(res.data)
+
+                if (res.data.status == 0) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.success")
+                    })
+                    getDishes()
+                }          
+            }
+            catch (error) {
+                console.log(error)
+
+                if (error.response.data.status == 2002) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.permission")
+                    })
+                } else if (error.response.data.status == 3001) {
+                    snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.exist")
+                    })
+                } else {
+                        snackbar({
+                        message: t("shop.all_dishes.snackbar_new_category.unknown")
+                    })
+                }
+                
+            } finally {
+                isLoading.value = false
+            }
+        }
+})}
 
 onBeforeUnmount(() => {
     clearRightComponent()
