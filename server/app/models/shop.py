@@ -1,3 +1,4 @@
+import time
 
 from flask import g, request
 
@@ -7,11 +8,12 @@ from core.utils import make_response
 from core.app_bp import AppBlueprint
 from app.db.exceptions import CategoryNotFoundError
 
-from ..db.db import get_meta_database
+from ..db.get_db import get_database
 # from .exceptions import ArgumentException
 
 shop_bp = AppBlueprint("shop", __name__)
 
+# 店铺状态
 @shop_bp.get("/api/shop/getBusinessState" , auth=True)
 def get_business_state():
     return make_response(
@@ -39,9 +41,12 @@ def set_business_state():
         None
     )
 
+
+
+# 菜品
 @shop_bp.get("/api/shop/dishes/getAll" , auth=True)
 def get_all_dishes():
-    meta_db = get_meta_database()
+    meta_db = get_database()
 
     dishes, categories = meta_db.dishes.get_all()
 
@@ -51,18 +56,6 @@ def get_all_dishes():
             "dishes": dishes,
             "categories": categories
         }
-    )
-
-@shop_bp.get("/api/shop/dishes/getAllCategories" , auth=True)
-def get_all_categories():
-    meta_db = get_meta_database()
-
-    categories = meta_db.category.get_all()
-    categories = [dict(category) for category in categories]
-
-    return make_response(
-        0,
-        categories
     )
 
 @shop_bp.post("/api/shop/dishes/get" , auth=True,
@@ -77,7 +70,7 @@ def get_dish():
     dish_id = g.args["id"]
 
 
-    meta_db = get_meta_database()
+    meta_db = get_database()
 
     try:
         dish = meta_db.dishes.get_from_id(dish_id)
@@ -115,7 +108,7 @@ def update_dish():
     changed_items : dict = g.args["changed_items"]
     changed_choices : list = g.args["changed_choices"]
 
-    meta_db = get_meta_database()
+    meta_db = get_database()
 
     if len(changed_items.values()) == 0 and len(changed_choices) == 0:
         return make_response(
@@ -145,9 +138,6 @@ def update_dish():
             None
         ), 404
 
-    
-    
-
 @shop_bp.post("/api/shop/dishes/delete", auth=True, is_admin=True,
               arguments=[{
                 "name": "dish_id",
@@ -157,7 +147,7 @@ def update_dish():
 def delete_dish():
     dish_id: int = g.args["dish_id"]
 
-    meta_db = get_meta_database()
+    meta_db = get_database()
 
     try:
         meta_db.dishes.delete(dish_id)
@@ -171,75 +161,6 @@ def delete_dish():
             None
         ), 404
     
-@shop_bp.post("/api/shop/dishes/deleteCategory", auth=True, is_admin=True,
-              arguments=[
-                  {
-                      "name": "category_id",
-                      "type": int,
-                      "required": True
-                  }
-              ])
-def delete_category():
-    category_id: int = g.args["category_id"]
-
-    meta_db = get_meta_database()
-
-    # 删除该分类下的所有菜品
-    meta_db.dishes.delete_by_category(category_id)
-
-    try:
-        meta_db.category.delete(category_id)
-
-        print(category_id)
-
-        name = meta_db.category.get_from_id(category_id)["name"]
-
-        meta_db.category.set_name(category_id, f"{name}_disabled")
-        
-        return make_response(
-            0,
-            None
-        ), 200
-    
-    except NotFoundError:
-        return make_response(
-            3001,
-            None
-        ), 404
-    
-
-@shop_bp.post("/api/shop/dishes/editCategory", auth=True, is_admin=True, 
-              arguments=[
-                  {
-                    "name": "category_id",
-                    "type": int,
-                    "required": True
-                },
-                {
-                    "name": "category_name",
-                    "type": str,
-                    "required": True
-                }
-              ])
-def edit_category():
-    category_id: int = g.args["category_id"]
-    category_name: str = g.args["category_name"]
-
-    meta_db = get_meta_database()
-
-    try:
-        meta_db.category.set_name(category_id, category_name)
-        return make_response(
-            0,
-            None
-        ), 200
-    except NotFoundError:
-        return make_response(
-            3001,
-            None
-        ), 404
-
-
 @shop_bp.post("/api/shop/dishes/new", auth=True, is_admin=True, arguments=[
     {
         "name": "name",
@@ -289,7 +210,7 @@ def new_dish():
     is_available: bool = g.args["is_available"]
     choices: dict = g.args["choices"]
 
-    meta_db = get_meta_database()
+    meta_db = get_database()
 
     try:
         dish_id = meta_db.dishes.create(
@@ -313,3 +234,117 @@ def new_dish():
             e.category_id
         ), 404 # 找不到分类（3001）
     
+
+# 分类
+@shop_bp.post("/api/shop/category/delete", auth=True, is_admin=True,
+              arguments=[
+                  {
+                      "name": "category_id",
+                      "type": int,
+                      "required": True
+                  }
+              ])
+def delete_category():
+    category_id: int = g.args["category_id"]
+
+    meta_db = get_database()
+
+    # 删除该分类下的所有菜品
+    meta_db.dishes.delete_by_category(category_id)
+
+    try:
+        
+
+        # print(category_id)
+
+        name = meta_db.category.get_from_id(category_id)["name"]
+
+        meta_db.category.set_name(category_id, f"{name}_disabled_{time.time()}")
+
+        meta_db.category.delete(category_id)
+        
+        return make_response(
+            0,
+            None
+        ), 200
+    
+    except NotFoundError as e :
+        import traceback
+        traceback.print_exc()
+        return make_response(
+            3001,
+            None
+        ), 404
+
+@shop_bp.get("/api/shop/category/getAll" , auth=True)
+def get_all_categories():
+    meta_db = get_database()
+
+    categories = meta_db.category.get_all()
+    categories = [dict(category) for category in categories]
+
+    return make_response(
+        0,
+        categories
+    )
+
+
+@shop_bp.post("/api/shop/category/edit", auth=True, is_admin=True, 
+              arguments=[
+                  {
+                    "name": "category_id",
+                    "type": int,
+                    "required": True
+                },
+                {
+                    "name": "category_name",
+                    "type": str,
+                    "required": True
+                }
+              ])
+def edit_category():
+
+
+    category_id: int = g.args["category_id"]
+    category_name: str = g.args["category_name"]
+
+    meta_db = get_database()
+
+    try:
+        meta_db.category.set_name(category_id, category_name)
+        return make_response(
+            0,
+            None
+        ), 200
+    except NotFoundError:
+        return make_response(
+            3001,
+            None
+        ), 404
+
+@shop_bp.post("/api/shop/category/new", auth=True, is_admin=True,
+              arguments=[
+                  {
+                      'name': "name",
+                      "type": str,
+                      "required": True
+                  }
+              ])
+def new_category():
+    name: str = g.args["name"]
+
+    meta_db = get_database()
+
+    try:
+        category_id = meta_db.category.new(name)
+        return make_response(
+                0,
+                category_id
+            ), 200
+    except ValueError:
+        return make_response(
+            3001, 
+            None
+        ), 400 # 分类名称已存在（3001）
+     
+

@@ -3,7 +3,7 @@ import json
 from flask import current_app
 from werkzeug.exceptions import UnsupportedMediaType
 
-from ..db.db import close_databases
+from ..db.get_db import close_database
 from core.utils import make_response
 import extensions
 import traceback
@@ -62,7 +62,7 @@ def handle_sqlite_error(e: sqlite3.Error):
 
 
 def teardown_appcontext(error):
-        close_databases()
+        close_database()
         if error is not None:
             logs = {
                     "error": {

@@ -7,7 +7,7 @@ import extensions
 from core.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
 
-from ..db.db import get_main_database
+from ..db.get_db import get_database
 from .exceptions import *
 
 accounts_bp = AppBlueprint("accounts", __name__)
@@ -45,7 +45,7 @@ def login():
     
     
     # 连接数据库
-    main_db = get_main_database()
+    main_db = get_database()
     
     # 查询用户
     account = main_db.users.get_from_username(username)

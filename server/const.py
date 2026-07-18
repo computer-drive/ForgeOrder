@@ -15,7 +15,6 @@ class CONFIG:
         "log.ignore_client_error": False,
 
         "main_db": "data/main.db",
-        "meta_db": "data/meta.db",
 
         "auth.secret_key": "development_key",
         "auth.available_time": 60, # 60分钟
