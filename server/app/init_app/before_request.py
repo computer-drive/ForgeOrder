@@ -11,11 +11,12 @@ def _handle_auth():
         
         if not check_result:
             # 没有在RouteMangaer中注册这个路由
-            extensions.logger.warning(
-                request.path,
-                "BEFORE_REQUEST",
-                "RouteNotRegistered"
-            )
+            # extensions.logger.warning(
+            #     request.path,
+            #     "BEFORE_REQUEST",
+            #     "RouteNotRegistered"
+            # )
+            
             return make_response(
                 1003,
                 None
