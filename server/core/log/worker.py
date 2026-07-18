@@ -38,7 +38,7 @@ def worker(q: queue.Queue, db_name: str):
 def create_worker(db_name: str):
     q = queue.Queue()
 
-    thread = threading.Thread(target=worker, args=(q, db_name))
+    thread = threading.Thread(target=worker, args=(q, db_name), name="LogWorker")
     thread.daemon = True
     thread.start()
 
