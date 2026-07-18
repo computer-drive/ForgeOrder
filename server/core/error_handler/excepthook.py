@@ -6,10 +6,23 @@ import traceback
 
 from core.log.logger import Logger
 from .error_report import generate_error_report
+from app.exceptions import UserError
+
+def generate_user_error_info(error: UserError):
+    info = f'''程序无法继续运行。原因：
+{error.__class__.__name__}: {error.msg}
+
+{error.hint}'''
+    print(info)
+    sys.exit(1)
 
 
 def excepthook(type, value, tb, thread: threading.Thread = None):
     import extensions
+
+    if issubclass(type, UserError):
+        generate_user_error_info(value)
+        return 
 
     if hasattr(extensions, 'logger') and isinstance(extensions.logger, Logger):
         
