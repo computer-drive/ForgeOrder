@@ -8,7 +8,7 @@ from app.init_app import setup_app
 from app.models.exceptions import *
 from const import *
 from core.auth import AuthManager
-from core.config import Config
+from app.config import setup_config, verify_config
 from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
@@ -23,7 +23,10 @@ def init():
         os.makedirs("data")
                 
     # 加载配置文件
-    extensions.config = Config(CONFIG.CONFIG_PATH)
+    extensions.config = setup_config()
+
+    # 验证配置项
+    verify_config()
 
     
     # 初始化日志记录器

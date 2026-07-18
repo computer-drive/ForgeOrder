@@ -1,13 +1,13 @@
 import json
 import os
-from const import CONFIG
 
 
 class Config:
-    def __init__(self, config_file: str):
+    def __init__(self, config_file: str, default):
         self.config_file = config_file
         self.config = None
-
+        self.default = default
+        
         self.load()
 
 
@@ -27,7 +27,7 @@ class Config:
             json.dump(self.config, f, indent=4, ensure_ascii=False)
 
     def get(self, key: str):
-        default = CONFIG.DEFAULT.get(key, None)
+        default = self.default.get(key, None)
         
         if default is None:
             raise ValueError(f"Config key {key} not found in default config")

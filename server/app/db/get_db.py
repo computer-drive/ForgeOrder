@@ -7,7 +7,7 @@ from .main_db import MainDatabase
 
 def get_database():
     if "database" not in g:
-        g.database = MainDatabase(extensions.config.get("main_db"))
+        g.database = MainDatabase(extensions.config.get("database.path"))
         
     return g.database
 
