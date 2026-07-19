@@ -46,7 +46,7 @@ class RouteManager:
         
         args_final = {}
     
-        error_info = []
+        error_info = {}
         
         for arg_rule in args_rule.values():
             arg_name = arg_rule["name"]
@@ -57,9 +57,11 @@ class RouteManager:
             
             elif arg_rule["required"]:
                 # 必填参数缺失
-                error_info.append({
-                    ARGUMENTS.ERROR.NOT_FOUND: arg_name
-                })
+                # error_info.append({
+                #     ARGUMENTS.ERROR.NOT_FOUND: arg_name
+                # })
+
+                error_info[arg_name] = ARGUMENTS.ERROR.NOT_FOUND
                 continue
             
             else:
@@ -68,9 +70,10 @@ class RouteManager:
 
             # 类型检查（不考虑默认值情况，相信调用者会正确传递类型）
             if not isinstance(value, arg_rule["type"]):
-                error_info.append({
-                    ARGUMENTS.ERROR.TYPING_ERROR: arg_name
-                })
+                # error_info.append({
+                #     ARGUMENTS.ERROR.TYPING_ERROR: arg_name
+                # })
+                error_info[arg_name] = ARGUMENTS.ERROR.TYPING_ERROR
                 continue
 
             # 添加到最终的
