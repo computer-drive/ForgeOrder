@@ -1,11 +1,12 @@
-
+import uuid
 
 from flask import request, g
 
 from core.route_manager.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
-from server.core.log.manager import get_log_handler
+from core.log.manager import get_log_handler
+from app.log import RequestLogHandler
 
 def _handle_auth():
     logger = get_log_handler(extensions.logger, "BEFORE_REQUEST")
@@ -164,6 +165,7 @@ def _handle_args():
     if result in [ARGUMENTS.RESULT.PASS, ARGUMENTS.RESULT.NO_ARGS]:
         # 成功
         g.args = data
+        # print("set")
         return None
     
 
@@ -174,11 +176,20 @@ def _handle_args():
             data
         ), 400
 
+def _handle_request_id():
+    g.request_id = str(uuid.uuid4())
+
+    
+    g.logger = RequestLogHandler(extensions.logger, "")
+
+    return None
+
 def before_request():
     # 请求前的逻辑
     handlers = [
         _handle_auth,
         _handle_args,
+        _handle_request_id
     ]
 
     for handler in handlers:
