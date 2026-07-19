@@ -359,7 +359,7 @@ const editCategory = (category_id, category_name) => {
             }
 
             try{
-                const res = await request.post('/shop/category/edit', {
+                const res = await request.post('/shop/category/update', {
                     category_id: Number(category_id),
                     category_name: value
                 })

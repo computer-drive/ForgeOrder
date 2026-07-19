@@ -289,7 +289,7 @@ def get_all_categories():
     )
 
 
-@shop_bp.post("/api/shop/category/edit", auth=True, is_admin=True, 
+@shop_bp.post("/api/shop/category/update", auth=True, is_admin=True, 
               arguments=[
                   {
                     "name": "category_id",
