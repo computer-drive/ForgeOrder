@@ -13,6 +13,7 @@ from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
 from app.init_app.schema import CLIENT_ERROR
+from core.log.manager import get_log_handler
 
 install()
 
@@ -57,6 +58,9 @@ def init():
 
     # 初始化ArgumentsManager
     extensions.route_manager = RouteManager()
+
+    # 初始化LogHandler
+    extensions.accounts_logger = get_log_handler(extensions.logger, "ACCOUNTS")
 
 def shutdown():
     # 关闭数据库日志记录器线程

@@ -5,7 +5,7 @@ import os
 
 from core.auth import AuthManager
 from core.config import Config
-from core.log.manager import get_log_handler
+from core.log.manager import LogHandler, get_log_handler
 from core.log.logger import Logger
 from core.route_manager import RouteManager
 
@@ -27,3 +27,5 @@ local_ip: str = ""
 root_dir = os.path.dirname(os.path.abspath(__file__))
 
 route_manager: RouteManager
+
+accounts_logger: LogHandler

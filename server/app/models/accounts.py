@@ -36,6 +36,8 @@ accounts_bp = AppBlueprint("accounts", __name__)
     is_admin=False
 )
 def login():
+    g.logger.set_class_name("LOGIN_REQUEST")
+
     username = g.args["username"]
     password = g.args["password"]
     cover = g.args["cover"]
@@ -63,11 +65,11 @@ def login():
         # 检查用户是否已禁用
         if account["is_available"]:
             # 添加Token
-            extensions.logger.debug(f"登录验证成功。设备（{ip}正在尝试登录{username}", "LOGIN_REQUEST", "DebugMsg")
-            extensions.logger.debug("生成Token...", "LOGIN_REQUEST", "DebugMsg")
+            g.logger.debug(f"登录验证成功。设备（{ip}正在尝试登录{username}",  "DebugMsg")
+            g.logger.debug("生成Token...",  "DebugMsg")
 
             if cover:
-                extensions.logger.debug("注意到cover=True", "LOGIN_REQUEST", "DebugMsg")
+                g.logger.debug("注意到cover=True",  "DebugMsg")
 
             status, result = extensions.auth_manager.user_login(
                 dict(account),
@@ -78,14 +80,14 @@ def login():
             if status:
                 # 成功生成了Token, result为Token值
                 token = result
-                extensions.logger.debug(f"成功生成Token：{token}", "LOGIN_REQUEST", "DebugMsg")
+                g.logger.debug(f"成功生成Token：{token}",  "DebugMsg")
 
-                extensions.logger.info(
-                    json.dumps({
+                extensions.accounts_logger.info(
+                    {
                         "ip": get_client_ip(),
                         "user_id": account["id"],
                         "cover": cover
-                    }), "ACCOUNTS", "UserLogin"
+                    },  "UserLogin"
                 )
 
                 return make_response(
@@ -98,7 +100,7 @@ def login():
             
             elif result[0] == 0:
                 # 失败，重复登录
-                extensions.logger.debug(f"生成失败，重复登录。请求ip:{ip}, token中的ip:{result[1]}", "LOGIN_REQUEST", "DebugMsg")
+                g.logger.debug(f"生成失败，重复登录。请求ip:{ip}, token中的ip:{result[1]}",  "DebugMsg")
                 return make_response(
                     3003,
                     {
@@ -108,7 +110,7 @@ def login():
                 )
             else:
                 # 失败，设备重复登录
-                extensions.logger.debug(f"生成失败，有新设备登录。请求ip:{ip}, token中的ip:{result[1]}", "LOGIN_REQUEST", "DebugMsg")
+                g.logger.debug(f"生成失败，有新设备登录。请求ip:{ip}, token中的ip:{result[1]}", "DebugMsg")
                 return make_response(
                     3004,
                     {
@@ -146,12 +148,12 @@ def logout():
 
     
 
-    extensions.logger.info(
-        json.dumps({
+    extensions.accounts_logger.info(
+        {
             "ip": get_client_ip(),
             "user_id": token_item["user"]["id"],
-        }), "ACCOUNTS", "UserLogout"
-    )
+        }, "UserLogout")
+    
 
     return make_response(
         0,
