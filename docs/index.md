@@ -10,6 +10,7 @@
 - [参数验证](server/args_verify.md)
 
 - [用户认证](auth.md)
+- [API接口](api.md)
 
 ## 设计思路
 
