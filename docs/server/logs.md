@@ -2,9 +2,9 @@
 
 # 日志
 ForgeOrder的日志为结构化日志，在记录日志时，包含如下字段：
-    - msg: 日志消息。
-    - class_name：记录日志时的功能的名称。
-    - method：记录日志时的方法的名称。
+- msg: 日志消息。
+- class_name：记录日志时的功能的名称。
+- method：记录日志时的方法的名称。
 
 日志记录时，`msg`字段为可选的，因为`class_name`与`method`字段已足够描述日志的来源。`msg`字段可为`dict`、`str`等类型。
 
