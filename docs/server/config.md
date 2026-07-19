@@ -1,4 +1,4 @@
-[返回](index.md)
+[返回](../index.md)
 
 # 配置文件
 ForgeOrder的系统配置文件位于`data`目录下的`config.json`。
