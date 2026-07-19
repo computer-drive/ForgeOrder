@@ -5,10 +5,11 @@ import os
 
 from core.auth import AuthManager
 from core.config import Config
+from core.log.manager import get_log_handler
 from core.log.logger import Logger
 from core.route_manager import RouteManager
 
-logger : Logger 
+logger: Logger
 db_logger_thread : Thread
 db_logger_queue : Queue
 

@@ -1,21 +1,19 @@
+
+
 from flask import request, g
 
 from core.route_manager.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
+from server.core.log.manager import get_log_handler
 
 def _handle_auth():
+    logger = get_log_handler(extensions.logger, "BEFORE_REQUEST")
     # 判断是否以/api/开头，以及是否在白名单内
     if  request.path.startswith("/api/"):
         check_result, route_data = extensions.route_manager.verify_auth(request.path)
         
         if not check_result:
-            # 没有在RouteMangaer中注册这个路由
-            # extensions.logger.warning(
-            #     request.path,
-            #     "BEFORE_REQUEST",
-            #     "RouteNotRegistered"
-            # )
             
             return make_response(
                 1003,
@@ -28,7 +26,7 @@ def _handle_auth():
             return None
         else:
             # 需要登录的api请求，进一步判断token
-            extensions.logger.debug("用户访问需要登录的接口，正在验证Token", "BEFORE_REQUEST", "DebugMsg")
+            logger.debug("访问需认证接口。", "DebugMsg")
             pass
     else:
         # 正常页面，继续访问
@@ -37,11 +35,11 @@ def _handle_auth():
     
     # 用户登录状态检查
     token = request.headers.get("Authorization", None)
-    extensions.logger.debug(f"请求头中的Authorization是 {token}", "BEFORE_REQUEST", "DebugMsg")
 
 
     # 判断token是否有效
     if token is None:
+        logger.debug("无Token。", "DebugMsg")
         return make_response(
             2001,
             None
@@ -50,6 +48,7 @@ def _handle_auth():
     elif token.startswith("Bearer "):
         token = token.split(" ")[1]
     else:
+        logger.debug("Token格式错误。", "DebugMsg")
         return make_response(
             2003,
             None
@@ -62,20 +61,20 @@ def _handle_auth():
         match result:
             case None:
                 # token无效
-                extensions.logger.info({
+                logger.info({
                     "ip": get_client_ip(),
                     "error": "InvalidToken"
-                }, "BEFORE_REQUEST", "AuthError")
+                }, "AuthError")
 
                 return make_response(
                     2003,
                     None
                 ) , 401
             case "expire":
-                extensions.logger.info({
+                logger.info({
                     "ip": get_client_ip(),
                     "error": "TokenExpire"
-                }, "BEFORE_REQUEST", "AuthError")
+                }, "AuthError")
                 
                 # token过期
                 return make_response(
@@ -83,20 +82,20 @@ def _handle_auth():
                     None
                 ) , 401
             case "logout":
-                extensions.logger.info({
+                logger.info({
                     "ip": get_client_ip(),
                     "error": "TokenLogout"
-                }, "BEFORE_REQUEST", "AuthError")
+                }, "AuthError")
                 # 用户退出登录
                 return make_response(
                     2003,
                     None
                 ) , 401
             case "old_device":
-                extensions.logger.info({
+                logger.info({
                     "ip": get_client_ip(),
                     "error": "OldDevice"
-                }, "BEFORE_REQUEST", "AuthError")
+                }, "AuthError")
 
                 return make_response(
                     2005,
@@ -106,11 +105,11 @@ def _handle_auth():
         # token有效，判断ip是否对应
         if result["device_ip"] != get_client_ip(): # type: ignore
             # ip不一致
-            extensions.logger.info({
+            logger.info({
                 "ip": get_client_ip(),
                 "token_ip": result["device_ip"],
                 "error": "IPNotMatch"
-            }, "BEFORE_REQUEST", "AuthError") # type: ignore
+            }, "AuthError") # type: ignore
             
             return make_response(
                 2003,
@@ -118,27 +117,28 @@ def _handle_auth():
             ) , 401
         
         # token正确，更新到期时间
-        extensions.logger.debug("Token有效！", "BEFORE_REQUEST", "DebugMsg")
+        logger.debug("Token有效。", "DebugMsg")
         
         extensions.auth_manager.update_time(token)
-        extensions.logger.debug(f"更新Token的有效时间为：{result['expire']}", "BEFORE_REQUEST", "DebugMsg") # type: ignore
+
+        logger.debug(f"更新Token的有效时间为%s " % result['expire'], "DebugMsg") # type: ignore
         
         # token 有效，判断是否为管理员页面
         if route_data["is_admin"]:
             # 管理员页面，判断用户是否有权限
-            extensions.logger.debug(f"访问管理员页面（用户的管理员状态：{result['user']['is_admin']}）", "BEFORE_REQUEST", "DebugMsg") # type: ignore
+            logger.debug(f"访问管理员接口。", "DebugMsg") # type: ignore
 
             if result["user"]["is_admin"] == 1:
                 # 管理员页面，继续请求
                 return None
 
             else:
-                extensions.logger.warning(
+                logger.warning(
                     {
                         "path": request.path,
                         "user_id": result["user"]["id"],
                         "ip": get_client_ip(),
-                    }, "BEFORE_REQUEST", "NonAdminUserAccess"
+                    },  "NonAdminUserAccess"
                 )
                 # 非管理员用户，返回错误
                 return make_response( # type: ignore
@@ -151,8 +151,10 @@ def _handle_auth():
             return None
 
 def _handle_args():
+    logger = extensions.get_log_handler(extensions.logger, "BEFORE_REQUEST")
+
     if not extensions.route_manager.has_args(request.path):
-        extensions.logger.debug("请求路径 %s，无需验证参数" % request.path, "BEFORE_REQUEST.ARGS", "DebugMsg")
+        logger.debug("请求路径 %s，无需验证参数" % request.path, "DebugMsg")
         return None
     
     

@@ -72,9 +72,14 @@ def shutdown():
 
 
 if __name__ == "__main__":
+
     # 加载配置文件
     init()
-    extensions.logger.debug(f"版本：{VERSION}, IP地址：{extensions.local_ip}", "MAIN", "DebugMsg")
+
+    #Log Handler
+    logger = extensions.get_log_handler(extensions.logger, "MAIN")
+
+    logger.debug(f"ForgeOrder版本：%s" % VERSION,"DebugMsg")
 
     # 设置环境
     os.environ["ENV"] = extensions.config.get("server.env")
@@ -87,19 +92,20 @@ if __name__ == "__main__":
     # 运行服务器
     # extensions.server_status = 200
     if os.environ["ENV"] == "product":
-        extensions.logger.debug("生产环境运行！", "MAIN", "DebugMsg")
+        logger.debug("生产环境运行。", "DebugMsg")
 
         from waitress import serve
 
         host = extensions.config.get("server.host")
         port = extensions.config.get("server.port")
 
-        extensions.logger.info({
+        logger.info({
             "host": host,
             "port": port,
-        }, "MAIN", "StartServer")
+        },  "StartServer")
         serve(app, host=host, port=port)
     else:
+        logger.debug("开发环境运行。", "DebugMsg")
         app.run(
             host=extensions.config.get("server.host"), #type: ignore
             port=extensions.config.get("server.port"), #type: ignore
@@ -108,7 +114,7 @@ if __name__ == "__main__":
     # 关闭服务器
     # extensions.server_status = 299
 
-    extensions.logger.info(None, "MAIN", "ServerStopped")
+    logger.info('', "ServerStopped")
     shutdown()
 
 
