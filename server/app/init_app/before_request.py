@@ -41,7 +41,13 @@ def _handle_auth():
 
 
     # 判断token是否有效
-    if token is not None and token.startswith("Bearer "):
+    if token is None:
+        return make_response(
+            2001,
+            None
+        ), 401
+    
+    elif token.startswith("Bearer "):
         token = token.split(" ")[1]
     else:
         return make_response(
