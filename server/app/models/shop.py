@@ -274,8 +274,8 @@ def delete_category():
         ), 200
     
     except NotFoundError as e :
-        import traceback
-        traceback.print_exc()
+        # import traceback
+        # traceback.print_exc()
         return make_response(
             3001,
             None
