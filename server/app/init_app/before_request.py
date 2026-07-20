@@ -6,7 +6,7 @@ from flask import request, g
 from core.route_manager.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
-from server.core.log.context import get_log_context
+from core.log.context import get_log_context
 from app.log import RequestLogContext
 
 def _handle_auth():

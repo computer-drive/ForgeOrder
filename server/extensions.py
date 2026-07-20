@@ -5,7 +5,7 @@ import os
 
 from core.auth import AuthManager
 from core.config import Config
-from server.core.log.context import LogContext, get_log_context
+from core.log.context import LogContext, get_log_context
 from core.log.logger import Logger
 from core.route_manager import RouteManager
 

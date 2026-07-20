@@ -13,7 +13,7 @@ from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
 from app.init_app.schema import CLIENT_ERROR
-from server.core.log.context import get_log_context
+from core.log.context import get_log_context
 
 install()
 
@@ -44,7 +44,7 @@ def init():
     # 处理log.ignore_client_error
     if extensions.config.get("log.ignore_client_error"):
         for error in CLIENT_ERROR:
-            extensions.logger.setIgnoreMethod(error)
+            extensions.logger.setIgnoreAction(error)
 
     # 初始化认证管理器
     extensions.auth_manager = AuthManager(

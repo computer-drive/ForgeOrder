@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS {table_name} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp DATETIME NOT NULL,
     level INTEGER NOT NULL,
-    class_name TEXT NOT NULL,
-    method TEXT NOT NULL,
+    category TEXT NOT NULL,
+    action TEXT NOT NULL,
     message TEXT,
     request_id TEXT
 )
@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 SELECT * FROM sqlite_master WHERE type = 'table' AND name = ?
 
 -- command: insert_log
-INSERT INTO {table_name} (timestamp, level, class_name, method, message, request_id)
+INSERT INTO {table_name} (timestamp, level, category, action, message, request_id)
 VALUES (?, ?, ?, ?, ?, ?)

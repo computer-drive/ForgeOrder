@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 import extensions
 from core.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
-from server.core.log.context import get_log_context
+from core.log.context import get_log_context
 
 from ..db.get_db import get_database
 from .exceptions import *
@@ -41,7 +41,7 @@ accounts_bp = AppBlueprint("accounts", __name__)
 def login():
     logger = g.logger.get_log_handler("ACCOUNTS")
 
-    g.logger.set_class_name("LOGIN_REQUEST")
+    g.logger.set_category("LOGIN_REQUEST")
 
     username = g.args["username"]
     password = g.args["password"]

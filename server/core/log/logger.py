@@ -13,8 +13,8 @@ class Logger(logging.Logger):
     def __init__(self, name: str):
         super().__init__(name)
 
-        self.ignore_class_name = []
-        self.ignore_method = []
+        self.ignore_category = []
+        self.ignore_action = []
         self.debug_ignore = []
 
     def setLevel(self, level: int | str) -> None:
@@ -26,15 +26,15 @@ class Logger(logging.Logger):
 
         return super().setLevel(level)
     
-    def setIgnoreClassName(self, class_name: str) -> None:
-        self.ignore_class_name.append(class_name)
+    def setIgnoreCategory(self, category: str) -> None:
+        self.ignore_category.append(category)
     
-    def setIgnoreMethod(self, method: str) -> None:
-        self.ignore_method.append(method)
+    def setIgnoreAction(self, action: str) -> None:
+        self.ignore_action.append(action)
 
 
-    def log(self, msg: str | dict | list , level: int, class_name: str, method: str, request_id: str = None): # type:ignore
-        extra = {"class_name": class_name, "method": method, "request_id": request_id}
+    def log(self, msg: str | dict | list , level: int, category: str, action: str, request_id: str = None): # type:ignore
+        extra = {"category": category, "action": action, "request_id": request_id}
 
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False)
@@ -43,29 +43,29 @@ class Logger(logging.Logger):
         else:
             msg = str(msg)
 
-        if class_name in self.ignore_class_name or method in self.ignore_method:
+        if category in self.ignore_category or action in self.ignore_action:
             return
         
         super().log(level, msg, extra=extra)
 
-    def info(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
-        self.log(msg, logging.INFO, class_name, method, request_id)
+    def info(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.INFO, category, action, request_id)
 
-    def warning(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
-        self.log(msg, logging.WARNING, class_name, method, request_id)
+    def warning(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.WARNING, category, action, request_id)
 
-    def error(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
-        self.log(msg, logging.ERROR, class_name, method)
+    def error(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.ERROR, category, action)
 
-    def critical(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
-        self.log(msg, logging.CRITICAL, class_name, method, request_id)
+    def critical(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.CRITICAL, category, action, request_id)
 
-    def debug(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
-        # print(class_name, self.debug_ignore)
-        if class_name in self.debug_ignore:
+    def debug(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
+        # print(category, self.debug_ignore)
+        if category in self.debug_ignore:
             return
         else:
-            self.log(msg, logging.DEBUG, class_name, method)
+            self.log(msg, logging.DEBUG, category, action)
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, queue: queue.Queue):
@@ -93,7 +93,7 @@ class DatabaseHandler(logging.Handler):
             case _:
                 level = logging.INFO
 
-        self.q.put((time, level, record.class_name, record.method, record.msg, record.request_id))
+        self.q.put((time, level, record.category, record.action, record.msg, record.request_id))
         
         
 

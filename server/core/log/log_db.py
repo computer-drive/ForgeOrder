@@ -39,8 +39,8 @@ class LogDatabase(Database):
     def insert_log(self, 
                    time: datetime.datetime,
                    level: int,
-                   class_name: str,
-                   method: str,
+                   category: str,
+                   action: str,
                    message: str,
                    request_id: str = None):
         
@@ -53,7 +53,7 @@ class LogDatabase(Database):
         
         # !: 表名总是由日期构成，无需注意SQL注入问题
         self.execute(self.parser.get("insert_log").replace("{table_name}", f"log_{self.date_now}"),
-                      (time, level, class_name, method, message, request_id))
+                      (time, level, category, action, message, request_id))
         
 
 if __name__ == "__main__":

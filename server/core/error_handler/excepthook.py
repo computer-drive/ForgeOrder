@@ -33,8 +33,8 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
                 "value": traceback.format_exception(type, value, tb),
                 "thread": thread.name,
             }, 
-            class_name="ERROR_HANDLER",
-            method="ThreadedUncaughtException",
+            category="ERROR_HANDLER",
+            action="ThreadedUncaughtException",
         )
             
         else:
@@ -44,8 +44,8 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
                 "value": traceback.format_exception(type, value, tb),
                 # "traceback": str(tb),
             },
-            class_name="ERROR_HANDLER",
-            method="UncaughtException",
+            category="ERROR_HANDLER",
+            action="UncaughtException",
         )
     else:
         print(f"{'Threaded' if thread else ''} Uncaught exception: {type.__name__} in thread '{thread.name if thread else ''}'")
