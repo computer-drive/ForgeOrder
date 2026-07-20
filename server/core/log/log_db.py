@@ -41,16 +41,19 @@ class LogDatabase(Database):
                    level: int,
                    class_name: str,
                    method: str,
-                   message: str):
+                   message: str,
+                   request_id: str = None):
         
         date_now = datetime.datetime.now().strftime("%Y%m%d")
 
         if date_now != self.date_now:
+            # print(1)
             self.date_now = date_now
             self._init()
         
         # !: 表名总是由日期构成，无需注意SQL注入问题
-        self.execute(self.parser.get("insert_log").replace("{table_name}", f"log_{self.date_now}"), (time, level, class_name, method, message))
+        self.execute(self.parser.get("insert_log").replace("{table_name}", f"log_{self.date_now}"),
+                      (time, level, class_name, method, message, request_id))
         
 
 if __name__ == "__main__":

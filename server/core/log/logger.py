@@ -33,8 +33,8 @@ class Logger(logging.Logger):
         self.ignore_method.append(method)
 
 
-    def log(self, msg: str | dict | list , level: int, class_name: str, method: str): # type:ignore
-        extra = {"class_name": class_name, "method": method}
+    def log(self, msg: str | dict | list , level: int, class_name: str, method: str, request_id: str = None): # type:ignore
+        extra = {"class_name": class_name, "method": method, "request_id": request_id}
 
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False)
@@ -45,22 +45,22 @@ class Logger(logging.Logger):
 
         if class_name in self.ignore_class_name or method in self.ignore_method:
             return
-
+        
         super().log(level, msg, extra=extra)
 
-    def info(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
-        self.log(msg, logging.INFO, class_name, method)
+    def info(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.INFO, class_name, method, request_id)
 
-    def warning(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
-        self.log(msg, logging.WARNING, class_name, method)
+    def warning(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.WARNING, class_name, method, request_id)
 
-    def error(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
+    def error(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
         self.log(msg, logging.ERROR, class_name, method)
 
-    def critical(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
-        self.log(msg, logging.CRITICAL, class_name, method)
+    def critical(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
+        self.log(msg, logging.CRITICAL, class_name, method, request_id)
 
-    def debug(self, msg: str | dict | list , class_name: str, method: str):  # type:ignore
+    def debug(self, msg: str | dict | list , class_name: str, method: str, request_id: str = None):  # type:ignore
         # print(class_name, self.debug_ignore)
         if class_name in self.debug_ignore:
             return
@@ -93,7 +93,7 @@ class DatabaseHandler(logging.Handler):
             case _:
                 level = logging.INFO
 
-        self.q.put((time, level, record.class_name, record.method, record.msg))
+        self.q.put((time, level, record.class_name, record.method, record.msg, record.request_id))
         
         
 
@@ -105,9 +105,7 @@ class Formatter(logging.Formatter):
         
         record.color = ""
         record.reset = "\033[0m"
-
-        if record.msg != '':
-            record.msg = f": {record.msg}"
+      
         
         match record.levelname:
             case "DEBUG":
@@ -120,6 +118,11 @@ class Formatter(logging.Formatter):
                 record.color = "\033[91m"
             case "CRITICAL":
                 record.color = "\033[95m"
+
+        if record.request_id:
+            record.msg = f": [{record.request_id[:8]}...] {record.msg} "
+        else:
+            record.msg = f": {record.msg}"
 
         return super().format(record)
 
@@ -160,7 +163,7 @@ def setup_logger(name: str, db_name: str, level: str = "info"):
         queue, thread = create_worker(db_name)
 
         db_handler = DatabaseHandler(queue)
-        db_handler.setFormatter(formatter)
+        # db_handler.setFormatter(formatter)
         db_handler.setLevel(level_int)
         logger.addHandler(db_handler)
     else:

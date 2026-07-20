@@ -1,4 +1,5 @@
 import uuid
+import time
 
 from flask import request, g
 
@@ -9,7 +10,7 @@ from core.log.manager import get_log_handler
 from app.log import RequestLogHandler
 
 def _handle_auth():
-    logger = get_log_handler(extensions.logger, "BEFORE_REQUEST")
+    logger = g.logger.get_log_handler("BEFORE_REQUEST")
     # 判断是否以/api/开头，以及是否在白名单内
     if  request.path.startswith("/api/"):
         check_result, route_data = extensions.route_manager.verify_auth(request.path)
@@ -171,20 +172,24 @@ def _handle_args():
             data
         ), 400
 
-def _handle_request_id():
+def _handle_request_info():
     g.request_id = str(uuid.uuid4())
 
     
-    g.logger = RequestLogHandler(extensions.logger, "")
+    g.logger = RequestLogHandler(extensions.logger, "REQUEST")
+
+
+    g.start_time = time.time()
 
     return None
 
 def before_request():
     # 请求前的逻辑
     handlers = [
+        _handle_request_info,
         _handle_auth,
         _handle_args,
-        _handle_request_id
+        
     ]
 
     for handler in handlers:

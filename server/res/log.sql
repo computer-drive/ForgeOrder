@@ -8,12 +8,13 @@ CREATE TABLE IF NOT EXISTS {table_name} (
     level INTEGER NOT NULL,
     class_name TEXT NOT NULL,
     method TEXT NOT NULL,
-    message TEXT
+    message TEXT,
+    request_id TEXT
 )
 
 -- command: check_table_exists
 SELECT * FROM sqlite_master WHERE type = 'table' AND name = ?
 
 -- command: insert_log
-INSERT INTO {table_name} (timestamp, level, class_name, method, message)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO {table_name} (timestamp, level, class_name, method, message, request_id)
+VALUES (?, ?, ?, ?, ?, ?)
