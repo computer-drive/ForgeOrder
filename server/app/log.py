@@ -60,7 +60,7 @@ class RequestLogContext(LogContext):
 
         return super().log(msg, level, action, g.request_id)
         
-    def get_log_handler(self, category: str):
+    def get_log_context(self, category: str):
         return LogContextWithRequestId(self.logger, category, g.request_id, self._before_log)
 
 

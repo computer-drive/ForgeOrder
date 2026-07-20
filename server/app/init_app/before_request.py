@@ -10,7 +10,7 @@ from core.log.context import get_log_context
 from app.log import RequestLogContext
 
 def _handle_auth():
-    logger = g.logger.get_log_handler("BEFORE_REQUEST")
+    logger = g.logger.get_log_context("BEFORE_REQUEST")
     # 判断是否以/api/开头，以及是否在白名单内
     if  request.path.startswith("/api/"):
         check_result, route_data = extensions.route_manager.verify_auth(request.path)

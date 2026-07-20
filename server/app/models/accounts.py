@@ -39,7 +39,7 @@ accounts_bp = AppBlueprint("accounts", __name__)
     is_admin=False
 )
 def login():
-    logger = g.logger.get_log_handler("ACCOUNTS")
+    logger = g.logger.get_log_context("ACCOUNTS")
 
     g.logger.set_category("LOGIN_REQUEST")
 
@@ -141,7 +141,7 @@ def login():
         
 @accounts_bp.post("/api/auth/logout", auth=True)
 def logout():
-    logger = g.logger.get_log_handler("ACCOUNTS")
+    logger = g.logger.get_log_context("ACCOUNTS")
 
     token = request.headers.get("Authorization")
 
