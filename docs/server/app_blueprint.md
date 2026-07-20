@@ -13,7 +13,7 @@ AppBlueprint的用法与`flask.Blueprint`大致相同，下面的文档，将着
 与`flask.Blueprint.route`方法不同的是，`route`方法在注册路由时，可添加`arguments`、`auth`、`is_admin`参数，用于参数验证、用户认证。
 
 
-**与参数验证有关的部分，详见[Route Manager](args_verify.md) 。**
+**与参数验证有关的部分，详见[args_verify.md](args_verify.md) 。**
 
 **与用户认证有关的部分，详见[Auth](../auth.md)。**
 

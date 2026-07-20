@@ -39,8 +39,8 @@ Flask注册路由时，AppBlueprint将把所有路由注册到RouteManager中。
 #### Token无效(InvalidToken)
 请求中的Token在RouteManager中不存在。
 
-#### Token过期(TokenExpired)
-请求中的Token在RouteManager中存在，但已经超出了配置文件中的`auth.token_expire`时间。
+#### Token过期(TokenExpire)
+请求中的Token在RouteManager中存在，但已经超出了Token的过期时间。
 
 在有效期内发送请求，Token将会更新过期时间。
 

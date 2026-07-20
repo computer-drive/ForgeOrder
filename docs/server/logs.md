@@ -168,7 +168,7 @@ logger.info("msg", "action")
 - `msg`字段包含以下内容：
     - `user_id`: 用户ID。
     - `ip`: 登录IP地址。
-    - `cover`：覆盖上一次登录。（详见[Auth Design](auth_design.md)中的说明）
+    - `cover`：覆盖上一次登录。（详见[Auth](auth.md)中的说明）
 
 #### UserLogout
 - 级别：`INFO`
