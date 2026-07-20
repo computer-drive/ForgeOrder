@@ -501,7 +501,7 @@ class _DishesCategory:
 
       
 class _Dishes:
-    def __init__(self, parent_database: MetaDatabase, conn: sqlite3.Connection, sql_parse: SqlParse):
+    def __init__(self, parent_database, conn: sqlite3.Connection, sql_parse: SqlParse):
         self.conn = conn
         self.sql_parse = sql_parse
         self.parent_database = parent_database
