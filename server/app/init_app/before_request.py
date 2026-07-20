@@ -129,11 +129,7 @@ def _handle_auth():
             # 管理员页面，判断用户是否有权限
             logger.debug(f"访问管理员接口。", "DebugMsg") # type: ignore
 
-            if result["user"]["is_admin"] == 1:
-                # 管理员页面，继续请求
-                return None
-
-            else:
+            if not result["user"]["is_admin"] == 1:
                 logger.warning(
                     {
                         "path": request.path,
@@ -147,9 +143,8 @@ def _handle_auth():
                 None
             ), 401
         
-        else:
-            # 非管理员页面，继续请求
-            return None
+        # 继续请求
+        g.user_info = result
 
 def _handle_args():
     logger = extensions.get_log_handler(extensions.logger, "BEFORE_REQUEST")
