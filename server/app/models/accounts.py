@@ -90,10 +90,13 @@ def login():
                     },  "UserLogin"
                 )
 
+                account = dict(account).copy()
+                account.pop("password", None)
+                
                 return make_response(
                     0,
                     {
-                        "user_info": dict(account),
+                        "user_info": account,
                         "token": token
                     }
                 )
@@ -118,7 +121,6 @@ def login():
                     }
                 )
 
-        
 
         
         else:
