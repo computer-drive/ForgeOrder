@@ -61,7 +61,7 @@
         <div v-if="!isBusiness">
           <TipCard variant="filled" background-color="#BB1614" color="#fff">
             <mdui-icon-warning></mdui-icon-warning>
-              {{$t('home.main.not_bussiness.text')}}
+              {{$t('home.main.not_business.text')}}
           </TipCard>
         </div>
 
@@ -169,8 +169,8 @@
       
       <!-- 切换营业状态对话框-->
     <mdui-dialog
-      :headline="$t('home.dialog.change_business_state.headline')"
-      :description="$t('home.dialog.change_business_state.description')"
+      :headline="t('home.dialog.change_business_state.headline')"
+      :description="t('home.dialog.change_business_state.description')"
       ref="changeBusinessStateDialog"
       style="height: auto;"
     >
@@ -179,8 +179,8 @@
     </div>
 
   
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">$t("common.text.cancel")</mdui-button>
-    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfirmButton">$t("common.text.confirm")</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateDialog.open=false">{{ $t("common.text.cancel") }}</mdui-button>
+    <mdui-button v-if="!changeBusinessStateisLoading" slot="action" variant="text" @click="changeBusinessStateConfirmClick" ref="changeBusinessStateConfirmButton">{{ $t("common.text.confirm") }}</mdui-button>
   </mdui-dialog>
   
     </div>
@@ -230,6 +230,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/auth.js'
 import request from '@/utils/request.js'
 import { pushWithFrom } from '@/utils/routerHelper'
+import { t } from '@/locales/index.js'
 
 const router = useRouter();
 const currentUser = ref('用户'); // 当前用户
@@ -286,7 +287,7 @@ const changeBusinessState = () => {
 const changeBusinessStateConfirmClick = async () => {
   changeBusinessStateisLoading.value = true;
 
-  changeBusinessStateDialog.value.description = $t('home.dialog.change_business_state.changing.text');
+  changeBusinessStateDialog.value.description = t('home.dialog.change_business_state.changing.text');
   
 
   const response = await request.post('/shop/setBusinessState', {
