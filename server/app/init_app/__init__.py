@@ -3,6 +3,7 @@ import os
 from flask import Flask
 
 from .before_request import before_request
+from .after_request import after_request
 from .errorhandler import *
 import extensions
 
@@ -27,5 +28,7 @@ def setup_app():
     app.errorhandler(415)(unsupported_media_type)
     app.teardown_appcontext(teardown_appcontext) # type: ignore
     app.before_request(before_request) # type: ignore
+
+    app.after_request(after_request)
     
     return app

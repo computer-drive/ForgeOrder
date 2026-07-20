@@ -33,7 +33,7 @@ def verify_config():
         errors.append(f"auth.available_time({item})：必须是正整数")
 
     item = extensions.config.get("auth.secret_key")
-    if os.environ.get("ENV") == 'product' and item == "development_key":
+    if extensions.config.get("server.env") == "product" and item == "development_key":
         errors.append(f"auth.secret_key({item})：在生产环境中不能使用默认密钥")
 
     if errors:

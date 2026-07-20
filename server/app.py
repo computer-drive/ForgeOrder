@@ -60,8 +60,8 @@ def init():
     extensions.route_manager = RouteManager()
 
     # 初始化LogHandler
-    extensions.accounts_logger = get_log_handler(extensions.logger, "ACCOUNTS")
-    extensions.shop_logger = get_log_handler(extensions.logger, "SHOP")
+    # extensions.accounts_logger = get_log_handler(extensions.logger, "ACCOUNTS")
+    # extensions.shop_logger = get_log_handler(extensions.logger, "SHOP")
 
 def shutdown():
     # 关闭数据库日志记录器线程

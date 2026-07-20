@@ -6,11 +6,14 @@ from werkzeug.security import check_password_hash
 import extensions
 from core.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
+from core.log.manager import get_log_handler
 
 from ..db.get_db import get_database
 from .exceptions import *
 
 accounts_bp = AppBlueprint("accounts", __name__)
+
+
 
  
 @accounts_bp.post("/api/auth/login",              
@@ -36,6 +39,8 @@ accounts_bp = AppBlueprint("accounts", __name__)
     is_admin=False
 )
 def login():
+    logger = g.logger.get_log_handler("ACCOUNTS")
+
     g.logger.set_class_name("LOGIN_REQUEST")
 
     username = g.args["username"]
@@ -82,12 +87,12 @@ def login():
                 token = result
                 g.logger.debug(f"成功生成Token：{token}",  "DebugMsg")
 
-                extensions.accounts_logger.info(
+                logger.info(
                     {
                         "ip": get_client_ip(),
                         "user_id": account["id"],
                         "cover": cover
-                    },  "UserLogin"
+                    },  "UserLogin", g.request_id
                 )
 
                 account = dict(account).copy()
@@ -136,6 +141,8 @@ def login():
         
 @accounts_bp.post("/api/auth/logout", auth=True)
 def logout():
+    logger = g.logger.get_log_handler("ACCOUNTS")
+
     token = request.headers.get("Authorization")
 
     if not token:
@@ -150,11 +157,11 @@ def logout():
 
     
 
-    extensions.accounts_logger.info(
+    logger.info(
         {
             "ip": get_client_ip(),
             "user_id": token_item["user"]["id"],
-        }, "UserLogout")
+        }, "UserLogout", g.request_id)
     
 
     return make_response(
