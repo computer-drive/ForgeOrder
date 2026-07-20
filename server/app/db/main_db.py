@@ -345,12 +345,6 @@ class _Orders:
 
         id_int = int(id_str)
 
-        # 取订单号后4位并+1
-        # !: 实际上这里会有大于9999的订单号，但不常见
-        if latest_id != 0:
-            id_str += str(int(latest_id[-4:]) + 1)
-        else:
-            id_str += "0001"
         
         latest_display_no = latest_order['display_no'] if latest_order else 0 # 获取最新的订单的流水号
         display_no = latest_display_no + 1 # 增加流水号
