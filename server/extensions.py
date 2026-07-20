@@ -29,3 +29,4 @@ root_dir = os.path.dirname(os.path.abspath(__file__))
 route_manager: RouteManager
 
 accounts_logger: LogHandler
+shop_logger: LogHandler

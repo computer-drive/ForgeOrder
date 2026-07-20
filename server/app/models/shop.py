@@ -36,6 +36,11 @@ def set_business_state():
     
     extensions.is_business = is_business
 
+    extensions.shop_logger.info({
+        "is_business": is_business,
+        "operator": g.user_info["user"]["id"]
+    },  "UpdateBusinessState")
+
     return make_response(
         0,
         None
