@@ -21,6 +21,8 @@ CONFIG_ITEMS = [
     ConfigItem("auth.available_time", int, 60),
 
     ConfigItem("server.env", str, "dev"),
+
+    ConfigItem("server.first_start", bool, True),
 ]
 
 CONFIG_PATH = "data/config.json"

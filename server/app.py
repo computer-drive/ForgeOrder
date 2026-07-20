@@ -17,6 +17,24 @@ from core.log.context import get_log_context
 
 install()
 
+def init_first():
+    import random
+    from werkzeug.security import generate_password_hash
+    from app.db.main_db import MainDatabase
+    # 第一次启动，创建超级管理员用户
+
+    password = "".join(random.choices("abcdefghijklmnopqrstuvwxyz1234567890", k=8))
+    password_hash = generate_password_hash(password)
+    database = MainDatabase(extensions.config.get("database.path"))
+
+    database.users.new_s("superadmin", password_hash, True, True)
+
+    database.close()
+
+    extensions.logger.info("创建 superadmin 用户，密码为 %s" % password, "MAIN", "Init")
+
+
+
 def init():
 
     # 初始化路径
@@ -28,8 +46,6 @@ def init():
 
     # 验证配置项
     verify_config()
-
-    
     # 初始化日志记录器
 
     logger, thread, queue = setup_logger(__name__,
@@ -62,6 +78,10 @@ def init():
     # 初始化LogHandler
     # extensions.accounts_logger = get_log_handler(extensions.logger, "ACCOUNTS")
     # extensions.shop_logger = get_log_handler(extensions.logger, "SHOP")
+
+    if extensions.config.get("server.first_start"):
+        init_first()
+        extensions.config.set("server.first_start", False)
 
 def shutdown():
     # 关闭数据库日志记录器线程
