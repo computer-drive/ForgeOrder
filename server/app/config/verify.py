@@ -1,5 +1,5 @@
 # 验证配置项的有效性
-from os import error
+import os
 
 import extensions
 from .exceptions import ConfigError
@@ -31,6 +31,10 @@ def verify_config():
     item = extensions.config.get("auth.available_time")
     if item <= 0:
         errors.append(f"auth.available_time({item})：必须是正整数")
+
+    item = extensions.config.get("auth.secret_key")
+    if os.environ.get("ENV") == 'product' and item == "development_key":
+        errors.append(f"auth.secret_key({item})：在生产环境中不能使用默认密钥")
 
     if errors:
         raise ConfigError(errors)
