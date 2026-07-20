@@ -1,10 +1,10 @@
 
 from flask import request, g 
 
-from core.log.manager import LogHandler
+from server.core.log.context import LogContext
 from core.log.logger import Logger
 
-class LogHandlerWithRequestId(LogHandler):
+class LogContextWithRequestId(LogContext):
     def __init__(self, logger: Logger, class_name: str = "", request_id: str = None, before_log = None):
         super().__init__(logger, class_name)
 
@@ -16,7 +16,7 @@ class LogHandlerWithRequestId(LogHandler):
 
         super().log(msg, level, method, self.request_id)
 
-class RequestLogHandler(LogHandler):
+class RequestLogContext(LogContext):
     def __init__(self, logger: Logger, class_name: str = ""):
         super().__init__(logger, class_name)
 
@@ -61,7 +61,7 @@ class RequestLogHandler(LogHandler):
         return super().log(msg, level, method, g.request_id)
         
     def get_log_handler(self, class_name: str):
-        return LogHandlerWithRequestId(self.logger, class_name, g.request_id, self._before_log)
+        return LogContextWithRequestId(self.logger, class_name, g.request_id, self._before_log)
 
 
 

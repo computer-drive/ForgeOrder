@@ -13,7 +13,7 @@ from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
 from app.init_app.schema import CLIENT_ERROR
-from core.log.manager import get_log_handler
+from server.core.log.context import get_log_context
 
 install()
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     init()
 
     #Log Handler
-    logger = extensions.get_log_handler(extensions.logger, "MAIN")
+    logger = extensions.get_log_context(extensions.logger, "MAIN")
 
     logger.debug(f"ForgeOrder版本：%s" % VERSION,"DebugMsg")
 

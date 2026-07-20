@@ -6,8 +6,8 @@ from flask import request, g
 from core.route_manager.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
-from core.log.manager import get_log_handler
-from app.log import RequestLogHandler
+from server.core.log.context import get_log_context
+from app.log import RequestLogContext
 
 def _handle_auth():
     logger = g.logger.get_log_handler("BEFORE_REQUEST")
@@ -148,7 +148,7 @@ def _handle_auth():
         g.user_info = result
 
 def _handle_args():
-    logger = extensions.get_log_handler(extensions.logger, "BEFORE_REQUEST")
+    logger = extensions.get_log_context(extensions.logger, "BEFORE_REQUEST")
 
     if not extensions.route_manager.has_args(request.path):
         logger.debug("请求路径 %s，无需验证参数" % request.path, "DebugMsg")
@@ -176,7 +176,7 @@ def _handle_request_info():
     g.request_id = str(uuid.uuid4())
 
     
-    g.logger = RequestLogHandler(extensions.logger, "REQUEST")
+    g.logger = RequestLogContext(extensions.logger, "REQUEST")
 
 
     g.start_time = time.time()

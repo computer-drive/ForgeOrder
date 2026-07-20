@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 import extensions
 from core.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
-from core.log.manager import get_log_handler
+from server.core.log.context import get_log_context
 
 from ..db.get_db import get_database
 from .exceptions import *

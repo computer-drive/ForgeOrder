@@ -1,10 +1,9 @@
 from .logger import Logger
 import logging
 
-from .exceptions import LoggerIsNotInitializedError
 
 
-class LogHandler:
+class LogContext:
     def __init__(self, logger: Logger, class_name: str) -> None:
         self.logger = logger
         self.class_name = class_name
@@ -27,8 +26,8 @@ class LogHandler:
     def critical(self, msg: str | dict | list , method: str, request_id: str = None):
         self.log(msg, logging.CRITICAL, method, request_id)
 
-def get_log_handler(logger: Logger, class_name: str):
+def get_log_context(logger: Logger, class_name: str):
 
     
-    return LogHandler(logger, class_name)
+    return LogContext(logger, class_name)
 
