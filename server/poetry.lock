@@ -194,6 +194,24 @@ files = [
 ]
 
 [[package]]
+name = "nuitka"
+version = "4.1.3"
+description = "Python compiler with full language support and CPython compatibility"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "nuitka-4.1.3.tar.gz", hash = "sha256:838ff8899dc2f0b652d4fcf6c5d7466cb7ad5abcb005668ac622d1e40f4d8a8d"},
+]
+
+[package.extras]
+all = ["imageio", "setuptools (>=42)", "toml", "zstandard (>=0.15)"]
+app = ["zstandard (>=0.15)"]
+build-wheel = ["setuptools (>=42)", "toml", "wheel"]
+icon-conversion = ["imageio"]
+onefile = ["zstandard (>=0.15)"]
+
+[[package]]
 name = "waitress"
 version = "3.0.2"
 description = "Waitress WSGI server"
@@ -230,4 +248,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14"
-content-hash = "f699f337aad67506a2ee54dec0873c578849a7ba0d3d2eb15daf3fa35808f14c"
+content-hash = "15fecbf203abedf07794e89dd9ae5e1bcc478991264c162bc9346fe95342a97b"
