@@ -1,5 +1,7 @@
 import hashlib
 import time
+import threading
+
 from core.auth.schema import UserInfo
 
 
@@ -10,6 +12,8 @@ class AuthManager:
         self.available_time = available_time
 
         self.tokens = []
+
+        self._lock = threading.Lock()
 
     def user_login(self,
                    user: UserInfo,
@@ -90,24 +94,23 @@ class AuthManager:
         2 - 过期
         3 - 旧设备登录
         '''
-        for token_item in self.tokens:
-            if token_item["token"] == token:
-                # 找到了token，看是否过期
-                if token_item["expire"] < int(time.time()):
-                    token_item["is_available"] = False  # 添加这行
-                    token_item["cause_expire"] = "expire"
+        with self._lock:  # 获取锁
+            for token_item in self.tokens:
+                if token_item["token"] == token:
+                    # 找到了token，看是否过期
+                    if token_item["expire"] < int(time.time()):
+                        token_item["is_available"] = False  # 添加这行
+                        token_item["cause_expire"] = "expire"
+                        
+                    # 判断是否有效
+                    if token_item["is_available"]:
+                        return (True, token_item)
                     
-                # 判断是否有效
-                if token_item["is_available"]:
-                    return (True, token_item)
-                
-                else:
-                    # token失效，判断失效原因
-                    self.tokens.remove(token_item) # 删除失效token
-                    return (False, token_item["cause_expire"])
+                    else:
+                        # token失效，判断失效原因
+                        self.tokens.remove(token_item) # 删除失效token
+                        return (False, token_item["cause_expire"])
                     
-                    
-        
         # 不存在这个token
         return (False, None)
     
