@@ -492,8 +492,7 @@ class _DishesCategory:
         if cursor.rowcount == 0:
             raise NotFoundError(str(id))
         self.conn.commit()
-
-      
+   
 class _Dishes:
     def __init__(self, parent_database, conn: sqlite3.Connection, sql_parse: SqlParse):
         self.conn = conn
@@ -806,6 +805,26 @@ class _Dishes:
 
         return True 
     
+class _Settings:
+    def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
+        self.conn = conn
+        self.sql_parse = sql_parse
+
+    def get(self, key: str):
+        cursor = self.conn.execute(self.sql_parse.get("settings.get"), (key,))
+        
+        
+        try:
+            return dict(cursor.fetchone())
+        except Exception as e:
+            print(f"{e.__class__.__name__}: {e}")
+
+    
+    def insert(self, key: str, value: str):
+        self.conn.execute(self.sql_parse.get("settings.insert"),
+                              (key, value, ))
+        self.conn.commit()
+
 
 class MainDatabase(Database):
     def __init__(self, db_name: str) -> None:
@@ -823,6 +842,8 @@ class MainDatabase(Database):
         self.category = _DishesCategory(self.conn, self.sql_parse)
 
         self.dishes = _Dishes(self, self.conn, self.sql_parse)
+
+        self.settings = _Settings(self.conn, self.sql_parse)
 
     def _init(self):
         # 获取res

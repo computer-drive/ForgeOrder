@@ -97,6 +97,11 @@ CREATE TABLE IF NOT EXISTS dish_choices (
     FOREIGN KEY (dish_id) REFERENCES dishes (id)
 );
 
+CREATE TABLE IF NOT EXISTS settings(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    value TEXT NOT NULL
+)
 
 -- command: users.new
 INSERT INTO users (username, password, is_admin, is_available, created_at)
@@ -231,6 +236,19 @@ UPDATE dishes SET is_deleted = 1 WHERE category = ?;
 
 
 
+
+- settings 表操作
+
+-- command: settings.init_settings
+INSERT or IGNORE settings (key, value)
+VALUES (?, ?)
+
+-- command: settings.get
+SELECT * FROM settings WHERE key = ?
+
+-- command: settings.insert
+INSERT INTO settings (key, value)
+VALUES (?, ?)
 
 
 
