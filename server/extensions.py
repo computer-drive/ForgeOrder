@@ -4,7 +4,7 @@ from threading import Thread
 import os
 
 from core.auth import AuthManager
-from core.config import Config
+from core.config.json_config import JSONConfig
 from core.log.context import LogContext, get_log_context
 from core.log.logger import Logger
 from core.route_manager import RouteManager
@@ -18,7 +18,7 @@ auth_manager : AuthManager
 # server_status : int = -1
 # server_info: str = ""
 
-config : Config
+config : JSONConfig
 
 is_business: bool = True
 
