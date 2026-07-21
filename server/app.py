@@ -13,7 +13,9 @@ from core.log.logger import setup_logger
 from core.route_manager import RouteManager
 # from core.utils import create_server_info_by_exception, get_local_ip
 from app.init_app.schema import CLIENT_ERROR
-from core.log.context import get_log_context
+from app.db.main_db import MainDatabase
+
+from app.app_settings.manager import SettingsManager
 
 install()
 
@@ -46,6 +48,14 @@ def init():
 
     # 验证配置项
     verify_config()
+
+    # 验证数据库的settings
+    db = MainDatabase(extensions.config.get("database.path"))
+
+    manager = SettingsManager(db)
+
+    manager._init()
+
     # 初始化日志记录器
 
     logger, thread, queue = setup_logger(__name__,
