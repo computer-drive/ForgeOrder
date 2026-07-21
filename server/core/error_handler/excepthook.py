@@ -48,7 +48,7 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
             action="UncaughtException",
         )
     else:
-        print(f"{'Threaded' if thread else ''} Uncaught exception: {type.__name__} in thread '{thread.name if thread else ''}'")
+        print(f"{'Threaded' if thread else ''} Uncaught exception: {type.__name__}: {value}  {f'in thread {thread.name}' if thread else ''}")
         traceback.print_tb(tb)
 
     generate_error_report(
