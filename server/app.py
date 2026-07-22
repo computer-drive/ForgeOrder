@@ -31,42 +31,47 @@ if __name__ == "__main__":
     # 初始化flask
     app = setup_app()
     
-    console_logger.info("正在启动应用。")
+    console_logger.info("正在启动HTTP服务...")
+
+    host = extensions.config.get("server.host")
+    port = extensions.config.get("server.port")
+
+    
     
     if os.environ["ENV"] == "product":
         logger.debug("生产环境运行。", "DebugMsg")
 
         from waitress import serve
 
-        host = extensions.config.get("server.host")
-        port = extensions.config.get("server.port")
-
         logger.info({
             "host": host,
             "port": port,
         },  "StartServer")
-        console_logger.info(f"应用启动成功，用时{int((time.time() - init_time) * 1000)}ms。")
+
+
+        console_logger.info(f"启动成功({int((time.time() - init_time) * 1000)}ms)")
+
 
         serve(app, host=host, port=port)
 
 
     else:
         logger.debug("开发环境运行。", "DebugMsg")
-        console_logger.info(f"应用启动成功，用时{int((time.time() - init_time) * 1000)}ms。")
 
-
+        console_logger.info(f"启动成功({int((time.time() - init_time) * 1000)}ms)")
+        
         app.run(
-            host=extensions.config.get("server.host"), #type: ignore
-            port=extensions.config.get("server.port"), #type: ignore
+            host=host,
+            port=port,
         )
 
 
     logger.info('', "ServerStopped")
 
-    # console_logger.info("正在关闭应用。")
+
     shutdown()
 
-    # console_logger.info("应用已退出。")
+
 
 
 
