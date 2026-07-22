@@ -113,6 +113,12 @@ SELECT * FROM users WHERE username = ?
 -- command: users.get_from_id
 SELECT * FROM users WHERE id = ?
 
+
+-- command: users.change_password
+UPDATE users SET password = ? WHERE id = ?
+
+
+
 -- command: tables.new
 INSERT INTO tables (name, is_available)
 VALUES (?, ?);

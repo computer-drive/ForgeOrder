@@ -130,7 +130,19 @@ class _Users:
             return 3, None
 
         return 0, user
-    
+
+    def change_pasword(self, user_id: int, new_password: str):
+
+        cursor = self.conn.execute(self.sql_parse.get("users.change_password"),
+                                   (new_password, user_id, ))
+        
+        if cursor.rowcount == 0:
+            raise NotFoundError(str(user_id))
+
+        self.conn.commit()
+
+        return
+
 class _Tables:
     def __init__(self, conn: sqlite3.Connection, sql_parse: SqlParse):
         self.conn = conn

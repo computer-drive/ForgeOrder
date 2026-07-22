@@ -19,10 +19,7 @@ from app.cli import create_parser, execute_command
 
 console_logger= get_console_logger("init")
 
-def init_first():
-    if not extensions.config.get("server.first_start"):
-        return
-
+def init_root_user(reset = False):
 
     import random
     from werkzeug.security import generate_password_hash
@@ -33,13 +30,26 @@ def init_first():
     password_hash = generate_password_hash(password)
 
     database = MainDatabase(extensions.config.get("database.path"))
-    database.users.new_s("superadmin", password_hash, True, True)
+
+    if reset:
+        root_user = database.users.get_from_username("root")
+        if root_user:
+            root_user_id = root_user['id']
+
+            database.users.change_pasword(root_user_id, password_hash)
+
+            console_logger.info("重置root用户密码：%s" % password)
+            return
+
+        else:
+            console_logger.warning("root用户不存在，无法重置密码")
+
+    database.users.new_s("root", password_hash, True, True)
+    console_logger.info("创建root用户，密码：%s" % password)
     database.close()
 
-
-    console_logger.info("创建 superadmin 用户，密码为 %s" % password)
-
-
+    
+    
     extensions.config.set("server.first_start", False)
 
 def init_log():
