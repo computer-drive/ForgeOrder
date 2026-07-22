@@ -1,131 +1,38 @@
-import logging
+import time
 import os
 
+from app.init import init, shutdown
+from const import *
 from core.error_handler.excepthook import install
-from core.utils import get_local_ip
+from core.log import get_console_logger
 import extensions
 from app.init_app import setup_app
-from app.models.exceptions import *
-from const import *
-from core.auth import AuthManager
-from app.config import setup_config, verify_config
-from core.log.logger import setup_logger
-from core.route_manager import RouteManager
-# from core.utils import create_server_info_by_exception, get_local_ip
-from app.init_app.schema import CLIENT_ERROR
-from app.db.main_db import MainDatabase
-
-from app.app_settings.manager import SettingsManager
-
-install()
-
-def init_first():
-    import random
-    from werkzeug.security import generate_password_hash
-    from app.db.main_db import MainDatabase
-    # 第一次启动，创建超级管理员用户
-
-    password = "".join(random.choices("abcdefghijklmnopqrstuvwxyz1234567890", k=8))
-    password_hash = generate_password_hash(password)
-    database = MainDatabase(extensions.config.get("database.path"))
-
-    database.users.new_s("superadmin", password_hash, True, True)
-
-    database.close()
-
-    extensions.logger.info("创建 superadmin 用户，密码为 %s" % password, "MAIN", "Init")
 
 
-
-def init():
-
-    # 初始化路径
-    if not os.path.exists("data"):
-        os.makedirs("data")
-                
-    # 加载配置文件
-    extensions.config = setup_config()
-
-    # 验证配置项
-    verify_config()
-
-    # 验证数据库的settings
-    db = MainDatabase(extensions.config.get("database.path"))
-
-    manager = SettingsManager(db)
-
-    manager._init()
-
-    # 初始化日志记录器
-
-    logger, thread, queue = setup_logger(__name__,
-                extensions.config.get("log.database"), # type: ignore
-                extensions.config.get("log.level")) #type: ignore
-    
-    
-    extensions.logger = logger
-    extensions.db_logger_thread = thread
-    extensions.db_logger_queue = queue
-
-    # 处理log.ignore_client_error
-    if extensions.config.get("log.ignore_client_error"):
-        for error in CLIENT_ERROR:
-            extensions.logger.setIgnoreAction(error)
-
-    # 初始化认证管理器
-    extensions.auth_manager = AuthManager(
-            extensions.config.get("auth.secret_key"),
-            int(extensions.config.get("auth.available_time")),
-        )
-
-
-    # 取本地ip
-    extensions.local_ip = get_local_ip()
-
-    # 初始化ArgumentsManager
-    extensions.route_manager = RouteManager()
-
-    # 初始化LogHandler
-    # extensions.accounts_logger = get_log_handler(extensions.logger, "ACCOUNTS")
-    # extensions.shop_logger = get_log_handler(extensions.logger, "SHOP")
-
-    if extensions.config.get("server.first_start"):
-        init_first()
-        extensions.config.set("server.first_start", False)
-
-def shutdown():
-    # 关闭数据库日志记录器线程
-    if extensions.db_logger_thread is None:
-        return
-    
-    extensions.db_logger_queue.join()
-    extensions.db_logger_queue.put(None)
-
-    extensions.db_logger_thread.join()
-
-    logging.shutdown()
 
 
 if __name__ == "__main__":
 
-    # 加载配置文件
+    console_logger= get_console_logger("main")
+    init_time = time.time()
+
+    install()
+
     init()
 
-    #Log Handler
-    logger = extensions.get_log_context(extensions.logger, "MAIN")
+    ## 设置环境变量
+    os.environ["ENV"] = extensions.config.get("server.env")
 
+    logger = extensions.get_log_context(extensions.logger, "MAIN")
     logger.debug(f"ForgeOrder版本：%s" % VERSION,"DebugMsg")
 
-    # 设置环境
-    os.environ["ENV"] = extensions.config.get("server.env")
+    
 
     # 初始化flask
     app = setup_app()
-    # extensions.server_status = 100
-
     
-    # 运行服务器
-    # extensions.server_status = 200
+    console_logger.info("正在启动应用。")
+    
     if os.environ["ENV"] == "product":
         logger.debug("生产环境运行。", "DebugMsg")
 
@@ -138,19 +45,28 @@ if __name__ == "__main__":
             "host": host,
             "port": port,
         },  "StartServer")
+        console_logger.info(f"应用启动成功，用时{int((time.time() - init_time) * 1000)}ms。")
+
         serve(app, host=host, port=port)
+
+
     else:
         logger.debug("开发环境运行。", "DebugMsg")
+        console_logger.info(f"应用启动成功，用时{int((time.time() - init_time) * 1000)}ms。")
+
+
         app.run(
             host=extensions.config.get("server.host"), #type: ignore
             port=extensions.config.get("server.port"), #type: ignore
         )
 
-    # 关闭服务器
-    # extensions.server_status = 299
 
     logger.info('', "ServerStopped")
+
+    # console_logger.info("正在关闭应用。")
     shutdown()
+
+    # console_logger.info("应用已退出。")
 
 
 
