@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-
+from venv import logger
 
 from core.utils import get_local_ip
 import extensions
@@ -16,15 +16,17 @@ from app.db.main_db import MainDatabase
 from core.log import get_console_logger
 from app.app_settings.manager import SettingsManager
 from app.cli import create_parser, execute_command
+from app.config.verify import verify_config
+from app.exceptions import UserError
 
-console_logger= get_console_logger("init")
+console_logger= get_console_logger("startup")
 
 def init_root_user(reset = False):
 
     import random
     from werkzeug.security import generate_password_hash
     from app.db.main_db import MainDatabase
-    # 第一次启动，创建超级管理员用户
+
 
     password = "".join(random.choices("abcdefghijklmnopqrstuvwxyz1234567890", k=8))
     password_hash = generate_password_hash(password)
@@ -70,7 +72,7 @@ def init_log():
 
 def init():
 
-    console_logger.info("正在初始化应用。")
+    console_logger.info("正在初始化...")
 
     # 创建data目录
     if not os.path.exists("data"):
@@ -78,14 +80,8 @@ def init():
     # 加载配置文件
     extensions.config = setup_config()
 
-    # # 验证配置项
-    # verify_config()
 
-    # # 验证数据库的settings
-    # db = MainDatabase(extensions.config.get("database.path"))
-    # manager = SettingsManager(db)
-    # manager._init()
-
+    
     # 初始化日志记录器
     init_log()
 
@@ -103,22 +99,44 @@ def init():
     # 初始化ArgumentsManager
     extensions.route_manager = RouteManager()
 
+    # print(extensions.config.get("server.first_start"))
+    if extensions.config.get("server.first_start"):
+        init_root_user()
 
-    init_first()
+    stop_running = init_args()
 
-    init_args()
+    if stop_running:
+        shutdown()
+        sys.exit(0)
+
+    # 验证配置项
+    try:
+        verify_config()
+    except UserError as e:
+        console_logger.error(f"启动失败：{e} \n {e.hint}")
+        sys.exit(1)
+
+
+    # 验证数据库的settings
+    db = MainDatabase(extensions.config.get("database.path"))
+    manager = SettingsManager(db)
+    manager._init()
+
+    
+    
 
 def init_args():
     parser = create_parser()
 
     args = parser.parse_args()
 
-    console_logger.info(f"命令行参数：{''.join(sys.argv[1:])}")
+    if len(sys.argv) > 1:
+        console_logger.info(f"命令行参数：{' '.join(sys.argv[1:])}")
 
+    return execute_command(args)
 
-    execute_command(args)
-
-
+    
+    
 
 def shutdown():
     # 关闭数据库日志记录器线程
