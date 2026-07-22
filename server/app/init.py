@@ -112,15 +112,18 @@ def init():
     # 验证配置项
     try:
         verify_config()
+
+
+        # 验证数据库的settings
+        db = MainDatabase(extensions.config.get("database.path"))
+        manager = SettingsManager(db)
+
+
+        manager._init()
+
     except UserError as e:
-        console_logger.error(f"启动失败：{e} \n {e.hint}")
-        sys.exit(1)
-
-
-    # 验证数据库的settings
-    db = MainDatabase(extensions.config.get("database.path"))
-    manager = SettingsManager(db)
-    manager._init()
+            console_logger.error(f"启动失败：{e} \n {e.hint}")
+            sys.exit(1)
 
     
     

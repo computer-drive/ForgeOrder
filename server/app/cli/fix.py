@@ -1,15 +1,16 @@
 
-from pkgutil import extend_path
 import sys
 import time
 
 from core.log import get_console_logger
-from app.config.verify import verify_config, verify_error_to_str
-from core.config.validation import *
-from app.config.schema import CONFIG_ITEMS
-import extensions
+
 
 def _fix_config():
+    import extensions
+    from app.config.schema import CONFIG_ITEMS
+    # from core.config.validation import 
+    from app.config.verify import verify_config
+
     logger = get_console_logger("fix")
 
     errors = verify_config(True)

@@ -5,6 +5,7 @@ from app.db.main_db import MainDatabase
 # from ...core.config_schema.schema import SettingsProperty, Type
 from core.config.validation import SettingsProperty
 from .registry import SETTINGS
+from app.config.verify import verify_error_to_str
 
 class SettingsManager:
     def __init__(self, db: MainDatabase):
@@ -85,7 +86,7 @@ class SettingsManager:
             result = property.verify.verify(value)
 
             if not result.success:
-                raise SettingVerifyError(key, str(result.error))
+                raise SettingVerifyError(key, verify_error_to_str(result.error))
             
         return True
 

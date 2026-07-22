@@ -826,10 +826,13 @@ class _Settings:
         cursor = self.conn.execute(self.sql_parse.get("settings.get"), (key,))
         
         
-        try:
+        result = cursor.fetchone()
+        
+        if result:
             return dict(cursor.fetchone())
-        except Exception as e:
-            print(f"{e.__class__.__name__}: {e}")
+        else:
+            return None
+
 
     
     def insert(self, key: str, value: str):

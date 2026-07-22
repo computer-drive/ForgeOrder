@@ -3,7 +3,7 @@ from app.exceptions import UserError
 class SettingsInitError(UserError):
     def __init__(self, msg: str):
         self.msg = msg
-        self.hint = "更改数据库中的项目或使用'--fix'参数尝试修复此问题。"
+        self.hint = "更改数据库表的记录或使用'--fix'参数尝试修复此问题。"
         super().__init__(msg)
 
 
