@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Union
+from typing import Any, Callable
+
+from flask import has_request_context
 
 from .excptions import UnsupportedTypeError, UnsupportedVerifyHandlerError
 
@@ -11,18 +13,64 @@ class SettingsProperty:
     default: Any
     verify: VerifyHandler | None = None
 
+    def verify_value(self, value: Any):
+        # print(type(value), self.value_type)
+        if isinstance(value, self.value_type):
+            if self.verify:
+                return self.verify.verify(value)
+            else:
+                return VerifyResult(True)
+        else:
+            return VerifyResult(False, ValueTypeError(self.value_type))
+
+
+
+class VerifyError:
+    
+    def __init__(self, msg: str = ""):
+        self.msg = msg
+
+    def fix(self, property: SettingsProperty):
+        '''
+        返回修复好的值
+        '''
+        return property.default
+
+@dataclass
+class VerifyResult:
+    success: bool
+    error: VerifyError | None = None
+    can_fix: bool = True
+
+@dataclass
+class ValueTypeError(VerifyError):
+    expected_type: type
+
 class VerifyHandler:
     allow_types : type | None = None # None 表示接收任意类型
 
-    def verify(self, value: Any) -> tuple[bool, str]:
+    def verify(self, value: Any) -> VerifyResult:
         if self.allow_types is None or isinstance(value, self.allow_types):
-            return self._verify(value)
+
+            result =  self._verify(value)
+            can_fix = False
+            if hasattr(result.error, 'fix'):
+                can_fix = True
+            
+            return VerifyResult(result.success, result.error, can_fix)
         else:
+            # return VerifyResult(False, ValueTypeError(self.allow_types))
+        
             raise UnsupportedTypeError(self, self.allow_types, type(value)) #type: ignore
         
-    def _verify(self, value: Any) -> tuple[bool, str]: #type: ignore
+    def _verify(self, value: Any) -> VerifyResult: #type: ignore
         pass
 
+
+class EmptyError(VerifyError):
+    
+    def fix(self, property: SettingsProperty):
+        return property.default
 
 class NotEmpty(VerifyHandler):
     '''
@@ -31,13 +79,18 @@ class NotEmpty(VerifyHandler):
     '''
     allow_types = str | None #type: ignore
 
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         if value is not None and isinstance(value, str) and value.strip() != "":
-            return True, ""
+            return VerifyResult(True)
         else:
-            return False, "value must be not empty."
-        
+            return VerifyResult(False, EmptyError())
 
+
+@dataclass
+class IntervalError(VerifyError):
+    interval: Interval
+
+    
 
 @dataclass(frozen=True)
 class Boundary:
@@ -50,15 +103,11 @@ class Boundary:
     def symbol_right(self):
         return ")" if self.inclusive else "]"
        
-
-
 def Open(value):
     return Boundary(value, False)
 
-
 def Closed(value):
     return Boundary(value, True)
-
 
 class Interval(VerifyHandler):
     '''
@@ -87,14 +136,14 @@ class Interval(VerifyHandler):
 
 
         
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         if self.min_value.value is not None:
             if self.min_value.inclusive and value >= self.min_value.value:
                 pass
             elif not self.min_value.inclusive and value > self.min_value.value:
                 pass
             else:
-                return False, f"value must be in {self}"
+                return VerifyResult(False, IntervalError(self))
             
             
         if self.max_value.value is not None:
@@ -103,9 +152,9 @@ class Interval(VerifyHandler):
             elif not self.max_value.inclusive and value < self.max_value.value:
                 pass
             else:
-                return False, f"value must be in {self}"
+                return VerifyResult(False, self)
             
-        return True, ""
+        return VerifyResult(True)
     
     def __str__(self):
         if self.min_value.value is None:
@@ -120,7 +169,11 @@ class Interval(VerifyHandler):
             
         return f"{self.min_value.symbol_left()}{min_value},{max_value}{self.max_value.symbol_right()}"
         
-        
+@dataclass
+class LengthError(VerifyError):
+    min: int | None = None
+    max: int | None = None
+
 class Length(VerifyHandler):
     '''
     限制值长度在指定范围内。
@@ -132,15 +185,19 @@ class Length(VerifyHandler):
         self.min_value = min_value
         self.max_value = max_value
         
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         if not isinstance(value, str):
-            return False, f"value must be str type"
+            return VerifyResult(False, LengthError(self.min_value, self.max_value))
 
         if self.min_value <= len(value) <= self.max_value:
-            return True, ""
+            return VerifyResult(True)
         else:
-            return False, f"value must be in {self.min_value} and {self.max_value}"
-        
+            return  VerifyResult(False, LengthError(self.min_value, self.max_value))
+
+@dataclass
+class ChoicesError(VerifyError):
+    choices: tuple[Any, ...]
+
 class Choices(VerifyHandler):
     '''
     限制值只能是指定的选项。
@@ -151,11 +208,12 @@ class Choices(VerifyHandler):
     def __init__(self, *choices):
         self.choices = choices
         
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         if value in self.choices:
-            return True, ""
+            return VerifyResult(True)
         else:
-            return False, f"value must be {', '.join(self.choices)}"
+            return VerifyResult(False, ChoicesError(self.choices))
+
 
 class FunctionHandler(VerifyHandler):
     '''
@@ -167,17 +225,22 @@ class FunctionHandler(VerifyHandler):
     def __init__(self, func: Callable):
         self.func = func
         
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         result = self.func(value)
         
-        if isinstance(result, tuple) and len(result) == 2:
-            if isinstance(result[0], bool) and isinstance(result[1], str):
-                return result
-            else:
-                raise UnsupportedVerifyHandlerError(self.__class__)
+        if isinstance(result, VerifyResult):
+            return result   
         else:
             raise UnsupportedVerifyHandlerError(self.__class__)
-        
+
+
+
+class AnyOfError(VerifyError):  
+    children: list[VerifyError]
+
+    def __init__(self, *children):
+        self.children = list(children)
+
 class AnyOf(VerifyHandler):
     '''
     限制值必须匹配任意一个验证器。
@@ -188,17 +251,27 @@ class AnyOf(VerifyHandler):
     def __init__(self, *verify_handlers: VerifyHandler):
         self.verify_handlers = verify_handlers
     
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
         errors = []
         
         for verify_handler in self.verify_handlers:
             result = verify_handler.verify(value)
-            if result[0]:
+            if result.success:
                 return result
             else:
-                errors.append(result[1])
+                errors.append(result.error)
         
-        return False, f"value not pass any of the verify handlers: {', '.join(errors)}"
+        if len(errors) == 1:
+            return VerifyResult(False, errors[0])
+        else:
+            return VerifyResult(False, AnyOfError(*errors))
+
+
+class AllOfError(VerifyError):
+    children: list[VerifyError]
+
+    def __init__(self, *children):
+        self.children = list(children)
 
 class AllOf(VerifyHandler):
     '''
@@ -211,12 +284,19 @@ class AllOf(VerifyHandler):
     def __init__(self, *verify_handlers):
         self.verify_handlers: tuple[VerifyHandler] = verify_handlers
     
-    def _verify(self, value: Any) -> tuple[bool, str]:
+    def _verify(self, value: Any):
+        errors = []
+
         for verify_handler in self.verify_handlers:
             result = verify_handler.verify(value)
-            if not result[0]:
-                return False, result[1]
+            if not result.success:
+                errors.append(result.error)
+            
+        if len(errors) == 0:
+            return VerifyResult(True)
+        elif len(errors) == 1:
+            return VerifyResult(False, errors[0])
         else:
-            return True, ""
+            return VerifyResult(False, AllOfError(*errors))
         
-   
+

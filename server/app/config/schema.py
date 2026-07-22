@@ -1,12 +1,12 @@
 import os
 
-from core.config.validation import Choices, NotEmpty, SettingsProperty, NotEmpty, Interval, FunctionHandler, AllOf, Open, Closed
+from core.config.validation import Choices, NotEmpty, SettingsProperty, NotEmpty, Interval, FunctionHandler, AllOf, Open, Closed, VerifyError, VerifyResult
 
-def auth_secret_key_verify(value: str) -> tuple[bool, str]:
+def auth_secret_key_verify(value: str):
     if os.environ.get("ENV") == "product" and value == "development_key":
-        return False, "Secret key is not set in production environment"
+        return VerifyResult(False, VerifyError("生产环境不能使用开发密钥"))
     else:
-        return True, ""
+        return VerifyResult(True)
     
 
 CONFIG_ITEMS = [

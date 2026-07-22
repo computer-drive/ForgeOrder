@@ -82,10 +82,10 @@ class SettingsManager:
         #     raise SettingTypingError(key, property.value_type, type(value))
         
         if property.verify is not None:
-            result, msg = property.verify.verify(value)
+            result = property.verify.verify(value)
 
-            if not result:
-                raise SettingVerifyError(key, msg)
+            if not result.success:
+                raise SettingVerifyError(key, str(result.error))
             
         return True
 
