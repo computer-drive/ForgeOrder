@@ -37,7 +37,7 @@ class Logger(logging.Logger):
         extra = {"category": category, "action": action, "request_id": request_id}
 
         if isinstance(msg, (dict, list)):
-            msg = json.dumps(msg, ensure_ascii=False)
+            msg = json.dumps(msg, ensure_ascii=False, indent=4)
         elif msg is None:
             msg = ''
         else:
