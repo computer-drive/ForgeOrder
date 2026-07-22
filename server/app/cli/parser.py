@@ -19,14 +19,21 @@ def create_parser():
         "--fix", "-f",
         action="store_true",
         dest="fix",
-        help="修复可能的问题，然后继续运行。"
+        help="修复配置文件、设置数据库的问题。"
     )
 
     parser.add_argument(
-        "--fix-exit",
+        "--reset-root",
         action="store_true",
-        dest="fix_exit",
-        help="修复可能的问题，然后退出。"
+        dest="reset_root",
+        help="重置root用户的密码"
+    )
+
+    parser.add_argument(
+        "--exit",
+        action="store_true",
+        dest="exit",
+        help="在执行其他命令后退出而不是继续运行。"
     )
 
     return parser
