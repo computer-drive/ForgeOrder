@@ -7,13 +7,16 @@ import traceback
 from core.log.logger import Logger
 from .error_report import generate_error_report
 from app.exceptions import UserError
+from core.log import get_console_logger
 
 def generate_user_error_info(error: UserError):
     info = f'''程序无法继续运行。原因：
 {error.__class__.__name__}: {error.msg}
 
 {error.hint}'''
-    print(info)
+    logger = get_console_logger("errorHandler")
+    logger.error(info)
+
     sys.exit(1)
 
 
@@ -48,8 +51,10 @@ def excepthook(type, value, tb, thread: threading.Thread = None):
             action="UncaughtException",
         )
     else:
-        print(f"{'Threaded' if thread else ''} Uncaught exception: {type.__name__}: {value}  {f'in thread {thread.name}' if thread else ''}")
-        traceback.print_tb(tb)
+        logger = get_console_logger("errorHandler")
+        logger.error(f"{'Threaded' if thread else ''} Uncaught exception: {type.__name__}: {value}  {f'in thread {thread.name}' if thread else ''}")
+        
+        logger.error(traceback.format_exc())
 
     generate_error_report(
         error_type="critical",

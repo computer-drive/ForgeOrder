@@ -1,0 +1,1 @@
+from .console import get_console_logger
