@@ -22,7 +22,7 @@ def verify_config():
                 
             continue
         else:
-            errors.append(f"{item.key}({type(value).__name__}<{value}>)：必须是{item.value_type.__name__}类型")
+            errors.append(f"配置项'{item.key}'必须是{item.value_type.__name__}类型，当前为{type(value).__name__}")
             
 
         
