@@ -1,10 +1,22 @@
 import logging
 
+max_name_length = 0
+max_level_length = 0
+
 class Formatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
+        global max_level_length, max_name_length
 
-        record.levelname = record.levelname.lower().ljust(5)
-        record.name = record.name.ljust(6)
+        if len(record.levelname) > max_level_length:
+            max_level_length = len(record.levelname)
+
+        record.levelname = record.levelname.lower().ljust(max_level_length)
+
+        if len(record.name) > max_name_length:
+            max_name_length = len(record.name)
+
+        record.name = record.name.ljust(max_name_length)
+
         record.reset = '\033[0m'
 
 
