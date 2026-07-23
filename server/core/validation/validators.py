@@ -1,97 +1,35 @@
-from dataclasses import dataclass
 from typing import Any, Callable
+from dataclasses import dataclass
 
-from flask import has_request_context
+from .base import ValidationResult
+from .errors import *
+from .exceptions import UnsupportedVerifyHandlerError
 
-from .excptions import UnsupportedTypeError, UnsupportedVerifyHandlerError
-
-@dataclass
-class VerifyResult:
-    success: bool
-    error: 'VerifyError | None' = None
-    can_fix: bool = True
-
-
-@dataclass
-class SettingsProperty:
-    key: str
-    value_type: type
-    default: Any
-    verify: 'VerifyHandler | None' = None
-
-    def verify_value(self, value: Any):
-        # print(type(value), self.value_type)
-        if isinstance(value, self.value_type):
-            if self.verify:
-                return self.verify.verify(value)
-            else:
-                return VerifyResult(True)
-        else:
-            return VerifyResult(False, ValueTypeError(self.value_type))
-
-
-class VerifyError:
-    msg : str 
-
-    def __init__(self, msg: str = ""):
-        self.msg = msg
-
-    def fix(self, property: SettingsProperty):
-        '''
-        返回修复好的值
-        '''
-        return property.default
-
-    def __str__(self) -> str:
-        return self.msg
-
-
-
-@dataclass
-class ValueTypeError(VerifyError):
-    expected_type: type
-
-    def __str__(self) -> str:
-        return f"The handler only allows {self.expected_type} type."
-
-
-class VerifyHandler:
+class Validator:
     allow_types : type | None = None # None 表示接收任意类型
 
-    def verify(self, value: Any) -> VerifyResult:
+    def validate(self, value: Any) -> ValidationResult:
         if self.allow_types is None or isinstance(value, self.allow_types):
 
-            result =  self._verify(value)
-            can_fix = False
-            if hasattr(result.error, 'fix'):
-                can_fix = True
+            result =  self._validate(value)
             
-            return VerifyResult(result.success, result.error, can_fix)
+            return ValidationResult(result.success, result.error)
         else:
             # return VerifyResult(False, ValueTypeError(self.allow_types))
         
             raise UnsupportedTypeError(self, self.allow_types, type(value)) #type: ignore
         
-    def _verify(self, value: Any) -> VerifyResult: #type: ignore
+    def _validate(self, value: Any) -> ValidationResult: #type: ignore
         pass
 
-
-class EmptyError(VerifyError):
-    
-    def fix(self, property: 'SettingsProperty'):
-        return property.default
-
-    def __str__(self):
-        return "The value cannot be empty."
-
-class NotEmpty(VerifyHandler):
+class NotEmpty(Validator):
     '''
     不可为空。
     允许的类型：str | None
     '''
     allow_types = str | dict | list | None #type: ignore
 
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         is_error = False
 
         if value is not None :
@@ -107,19 +45,10 @@ class NotEmpty(VerifyHandler):
             is_error = True
 
         if is_error:
-            return VerifyResult(False, EmptyError())
+            return ValidationResult(False, EmptyError())
         else:
-            return VerifyResult(True)
+            return ValidationResult(True)
 
-
-@dataclass
-class IntervalError(VerifyError):
-    interval: 'Interval'
-
-    def __str__(self):
-        return f"Value must be in {self.interval}"
-
-    
 
 @dataclass(frozen=True)
 class Boundary:
@@ -138,7 +67,7 @@ def Open(value):
 def Closed(value):
     return Boundary(value, True)
 
-class Interval(VerifyHandler):
+class Interval(Validator):
     '''
     限制值在一个区间内。
     允许的类型：float | int
@@ -165,14 +94,14 @@ class Interval(VerifyHandler):
 
 
         
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         if self.min_value.value is not None:
             if self.min_value.inclusive and value >= self.min_value.value:
                 pass
             elif not self.min_value.inclusive and value > self.min_value.value:
                 pass
             else:
-                return VerifyResult(False, IntervalError(self))
+                return ValidationResult(False, IntervalError(self))
             
             
         if self.max_value.value is not None:
@@ -181,9 +110,9 @@ class Interval(VerifyHandler):
             elif not self.max_value.inclusive and value < self.max_value.value:
                 pass
             else:
-                return VerifyResult(False, self)
+                return ValidationResult(False, self)
             
-        return VerifyResult(True)
+        return ValidationResult(True)
     
     def __str__(self):
         if self.min_value.value is None:
@@ -197,16 +126,10 @@ class Interval(VerifyHandler):
             max_value = self.max_value.value
             
         return f"{self.min_value.symbol_left()}{min_value},{max_value}{self.max_value.symbol_right()}"
-        
-@dataclass
-class LengthError(VerifyError):
-    min: int | None = None
-    max: int | None = None
 
-    def __str__(self) -> str:
-        return f"The length of value must be between {self.min} and {self.max}."
 
-class Length(VerifyHandler):
+
+class Length(Validator):
     '''
     限制值长度在指定范围内。
     允许的类型：str
@@ -217,23 +140,17 @@ class Length(VerifyHandler):
         self.min_value = min_value
         self.max_value = max_value
         
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         if not isinstance(value, str):
-            return VerifyResult(False, LengthError(self.min_value, self.max_value))
+            return ValidationResult(False, LengthError(self.min_value, self.max_value))
 
         if self.min_value is None or self.min_value <= len(value) and self.max_value is None or self.max_value >= len(value):
-            return VerifyResult(True)
+            return ValidationResult(True)
         else:
-            return  VerifyResult(False, LengthError(self.min_value, self.max_value))
+            return  ValidationResult(False, LengthError(self.min_value, self.max_value))
 
-@dataclass
-class ChoicesError(VerifyError):
-    choices: tuple[Any, ...]
 
-    def __str__(self) -> str:
-        return f"The value must be in {self.choices}"
-
-class Choices(VerifyHandler):
+class Choices(Validator):
     '''
     限制值只能是指定的选项。
     允许的类型：Any
@@ -243,14 +160,14 @@ class Choices(VerifyHandler):
     def __init__(self, *choices):
         self.choices = choices
         
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         if value in self.choices:
-            return VerifyResult(True)
+            return ValidationResult(True)
         else:
-            return VerifyResult(False, ChoicesError(self.choices))
+            return ValidationResult(False, ChoicesError(self.choices))
 
 
-class FunctionHandler(VerifyHandler):
+class FunctionHandler(Validator):
     '''
     自定义验证器。
     允许的类型：Any
@@ -260,61 +177,42 @@ class FunctionHandler(VerifyHandler):
     def __init__(self, func: Callable):
         self.func = func
         
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         result = self.func(value)
         
-        if isinstance(result, VerifyResult):
+        if isinstance(result, ValidationResult):
             return result   
         else:
             raise UnsupportedVerifyHandlerError(self.__class__)
 
 
-
-class AnyOfError(VerifyError):  
-    children: list[VerifyError]
-
-    def __init__(self, *children):
-        self.children = list(children)
-
-    def __str__(self) -> str:
-        return "The value must match any of the following validators: " + ", ".join([str(child) for child in self.children])
-
-class AnyOf(VerifyHandler):
+class AnyOf(Validator):
     '''
     限制值必须匹配任意一个验证器。
     允许的类型：Any
     '''
     allow_types = None
     
-    def __init__(self, *verify_handlers: VerifyHandler):
-        self.verify_handlers = verify_handlers
+    def __init__(self, *validators: Validator):
+        self.validators = validators
     
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         errors = []
         
-        for verify_handler in self.verify_handlers:
-            result = verify_handler.verify(value)
+        for validator in self.validators:
+            result = validator.validate(value)
             if result.success:
                 return result
             else:
                 errors.append(result.error)
         
         if len(errors) == 1:
-            return VerifyResult(False, errors[0])
+            return ValidationResult(False, errors[0])
         else:
-            return VerifyResult(False, AnyOfError(*errors))
+            return ValidationResult(False, AnyOfError(*errors))
 
 
-class AllOfError(VerifyError):
-    children: list[VerifyError]
-
-    def __init__(self, *children):
-        self.children = list(children)
-
-    def __str__(self) -> str:
-        return "The value must match all of the following validators: " + ", ".join([str(child) for child in self.children])
-
-class AllOf(VerifyHandler):
+class AllOf(Validator):
     '''
     限制值必须匹配所有指定验证器。
 
@@ -322,22 +220,21 @@ class AllOf(VerifyHandler):
     '''
     allow_types = None
     
-    def __init__(self, *verify_handlers):
-        self.verify_handlers: tuple[VerifyHandler] = verify_handlers
+    def __init__(self, *validators: Validator):
+        self.validators = validators
     
-    def _verify(self, value: Any):
+    def _validate(self, value: Any):
         errors = []
 
-        for verify_handler in self.verify_handlers:
-            result = verify_handler.verify(value)
+        for validator in self.validators:
+            result = validator.validate(value)
             if not result.success:
                 errors.append(result.error)
             
         if len(errors) == 0:
-            return VerifyResult(True)
+            return ValidationResult(True)
         elif len(errors) == 1:
-            return VerifyResult(False, errors[0])
+            return ValidationResult(False, errors[0])
         else:
-            return VerifyResult(False, AllOfError(*errors))
-        
-
+            return ValidationResult(False, AllOfError(*errors))
+ 
