@@ -7,9 +7,10 @@ from flask.cli import pass_script_info
 import extensions
 from .exceptions import ConfigError
 from .schema import CONFIG_ITEMS
-from core.config.validation import *
+from core.validation.base import ValidationResult
+from core.validation.errors import *
 
-def verify_error_to_str(error: VerifyError):
+def verify_error_to_str(error: ValidationResult):
     error_str = ''
     match error:
         case EmptyError():
@@ -43,7 +44,7 @@ def verify_error_to_str(error: VerifyError):
 
     return error_str
 
-def errors_to_str(errors: dict[str, VerifyResult]):
+def errors_to_str(errors: dict[str, ValidationResult]):
     errors_list = []
     for key, result in errors.items():
         errors_list.append(f"{key}: {verify_error_to_str(result.error)}")
@@ -52,7 +53,7 @@ def errors_to_str(errors: dict[str, VerifyResult]):
 
 
 def verify_config(fix=False):
-    errors: dict[str, VerifyResult] = {}
+    errors: dict[str, ValidationResult] = {}
 
     for item in CONFIG_ITEMS:
         value = extensions.config.get(item.key)

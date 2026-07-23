@@ -1,5 +1,6 @@
-from core.config.validation import SettingsProperty, NotEmpty, AllOf
+from core.validation.field import FieldDefinition
+from core.validation.validators import NotEmpty
 
 SETTINGS = [
-    SettingsProperty("shop.name", str, "ForgeOrder", NotEmpty())
+    FieldDefinition("shop.name", str, "ForgeOrder", NotEmpty())
 ]

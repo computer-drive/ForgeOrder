@@ -47,8 +47,8 @@ class SettingsManager:
                     raise SettingsInitError(f"类型转换错误，{row["value"]}不能转换为{prop.value_type}。")
                 
                 try:
-        
-                    self._verify(prop.key, value)
+                    if prop.validator:
+                        prop.validator.validate(value)
                     
                 except SettingsException as e:
                     msg = f"设置项'{prop.key}'验证失败："
