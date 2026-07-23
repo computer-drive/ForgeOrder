@@ -5,13 +5,19 @@ from flask import has_request_context
 
 from .excptions import UnsupportedTypeError, UnsupportedVerifyHandlerError
 
+@dataclass
+class VerifyResult:
+    success: bool
+    error: 'VerifyError | None' = None
+    can_fix: bool = True
+
 
 @dataclass
 class SettingsProperty:
     key: str
     value_type: type
     default: Any
-    verify: VerifyHandler | None = None
+    verify: 'VerifyHandler | None' = None
 
     def verify_value(self, value: Any):
         # print(type(value), self.value_type)
@@ -22,7 +28,6 @@ class SettingsProperty:
                 return VerifyResult(True)
         else:
             return VerifyResult(False, ValueTypeError(self.value_type))
-
 
 
 class VerifyError:
@@ -36,11 +41,7 @@ class VerifyError:
         '''
         return property.default
 
-@dataclass
-class VerifyResult:
-    success: bool
-    error: VerifyError | None = None
-    can_fix: bool = True
+
 
 @dataclass
 class ValueTypeError(VerifyError):
@@ -69,7 +70,7 @@ class VerifyHandler:
 
 class EmptyError(VerifyError):
     
-    def fix(self, property: SettingsProperty):
+    def fix(self, property: 'SettingsProperty'):
         return property.default
 
 class NotEmpty(VerifyHandler):
@@ -77,18 +78,32 @@ class NotEmpty(VerifyHandler):
     不可为空。
     允许的类型：str | None
     '''
-    allow_types = str | None #type: ignore
+    allow_types = str | dict | list | None #type: ignore
 
     def _verify(self, value: Any):
-        if value is not None and isinstance(value, str) and value.strip() != "":
-            return VerifyResult(True)
+        is_error = False
+
+        if value is not None :
+            if isinstance(value, str):
+                if value.strip() == "":
+                    is_error = True
+            elif isinstance(value, (dict, list)):
+                if len(value) == 0:
+                    is_error = True
+
+                
         else:
+            is_error = True
+
+        if is_error:
             return VerifyResult(False, EmptyError())
+        else:
+            return VerifyResult(True)
 
 
 @dataclass
 class IntervalError(VerifyError):
-    interval: Interval
+    interval: 'Interval'
 
     
 
@@ -179,9 +194,9 @@ class Length(VerifyHandler):
     限制值长度在指定范围内。
     允许的类型：str
     '''
-    allow_types = str
+    allow_types = str | dict | list | None #type: ignore
 
-    def __init__(self, min_value: int, max_value: int):
+    def __init__(self, min_value: int | None, max_value: int | None):
         self.min_value = min_value
         self.max_value = max_value
         
@@ -189,7 +204,7 @@ class Length(VerifyHandler):
         if not isinstance(value, str):
             return VerifyResult(False, LengthError(self.min_value, self.max_value))
 
-        if self.min_value <= len(value) <= self.max_value:
+        if self.min_value is None or self.min_value <= len(value) and self.max_value is None or self.max_value >= len(value):
             return VerifyResult(True)
         else:
             return  VerifyResult(False, LengthError(self.min_value, self.max_value))
