@@ -1,36 +1,33 @@
 import json
+from typing import Any
 
 from .exceptions import *
 from app.db.main_db import MainDatabase
-# from ...core.config_schema.schema import SettingsProperty, Type
-from core.config.validation import SettingsProperty
 from .registry import SETTINGS
-from app.config.verify import verify_error_to_str
+from core.type_convert import TypeConverterManager, TypeConvertError
+
+
+
+    
+con_manager = TypeConverterManager()
+
+con_manager.register_converter(str, int, int)
+con_manager.register_converter(int, str, str)
+
+con_manager.register_converter(str, bool, lambda x: x == "1")
+con_manager.register_converter(bool, str, lambda x: "1" if x else "0")
+
+con_manager.register_converter(str, list, lambda x: json.loads(x))
+con_manager.register_converter(list, str, lambda x: json.dumps(x))
+
+con_manager.register_converter(str, dict, lambda x: json.loads(x))
+con_manager.register_converter(dict, str, lambda x: json.dumps(x))
+
+
 
 class SettingsManager:
     def __init__(self, db: MainDatabase):
         self.db = db
-        
-    def convert(self, value: str, value_type: type):
-        '''
-        将字符串转换为指定类型。
-        '''
-
-        try:
-            if value_type == str:
-                return value
-            elif value_type == int:
-                return int(value)
-            elif value_type == bool:
-                return value == "1" 
-            
-            elif value_type == list or value_type == dict:
-                return json.loads(value)
-            else:
-                raise TypingConvertError(value, value_type, f"Cannot convert the value to {value_type}.")
-        except ValueError as e:
-            raise TypingConvertError(value, value_type, f"Failed to convert: {e}")
-        
             
     def _init(self):
         for prop in SETTINGS:
@@ -44,10 +41,13 @@ class SettingsManager:
                 self.db.settings.insert(prop.key, prop.default)
                 continue
             else:
-                # 检查值的类型和验证函数
+                try: 
+                    value = con_manager.convert(row["value"], prop.value_type)
+                except TypeConvertError:
+                    raise SettingsInitError(f"类型转换错误，{row["value"]}不能转换为{prop.value_type}。")
+                
                 try:
-                    value = self.convert(row["value"], prop.value_type)
-
+        
                     self._verify(prop.key, value)
                     
                 except SettingsException as e:
@@ -61,34 +61,50 @@ class SettingsManager:
                     elif isinstance(e, SettingVerifyError):
                         msg += f"{e.msg}。"
 
-                    elif isinstance(e, TypingConvertError):
-                        msg += f"类型转换错误，{e.value}不能转换为{e.convert_type}。"
-
                     raise SettingsInitError(msg)
 
-    @staticmethod                    
-    def _verify(key, value):
-        '''
-        更新设置项时验证设置项的有效性。
-        
-        '''
 
-        property : SettingsProperty | None = next((prop for prop in SETTINGS if prop.key == key), None)
-        
+    def get(self, key: str):
+        row = self.db.settings.get(key)
 
-        if not property:
+        prop = next((prop for prop in SETTINGS if prop.key == key), None)
+
+        if prop is None:
             raise SettingNotFoundError(key)
-        
-        # if not isinstance(value, property.value_type):
-        #     raise SettingTypingError(key, property.value_type, type(value))
-        
-        if property.verify is not None:
-            result = property.verify.verify(value)
 
-            if not result.success:
-                raise SettingVerifyError(key, verify_error_to_str(result.error))
-            
-        return True
+        if row is None:
+            return prop.default
+
+
+        return con_manager.convert(row["value"], prop.value_type) # 可能抛出TypeConvertError
+
+    def set(self, key: str, value: Any):
+        prop = next((prop for prop in SETTINGS if prop.key == key), None)
+
+        if prop is None:
+            raise SettingNotFoundError(key)
+
+        print(prop)
+        if not isinstance(value, prop.value_type):
+            raise SettingTypingError(key, prop.value_type, type(value))
+
+        value_str = con_manager.convert(value, prop.value_type)
+
+
+        self.db.settings.update(key, value_str)
+        
+     
+if __name__ == "__main__":
+
+    db = MainDatabase("data/main.db")
+
+    settings_manager = SettingsManager(db)
+
+    settings_manager.set("shop.name", "fuck")
+
+    print(settings_manager.get("shop.name"))
+
+
 
 
 

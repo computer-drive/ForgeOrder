@@ -256,5 +256,11 @@ SELECT * FROM settings WHERE key = ?
 INSERT INTO settings (key, value)
 VALUES (?, ?)
 
+-- command: settings.update
+INSERT INTO settings (key, value)
+VALUES (?, ?)
+ON CONFLICT(key) DO UPDATE SET value = excluded.value
+
+
 
 

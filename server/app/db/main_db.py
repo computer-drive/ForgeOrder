@@ -834,8 +834,13 @@ class _Settings:
         else:
             return None
 
+    def update(self, key: str, value: str):
+        cursor = self.conn.execute(self.sql_parse.get("settings.update"),
+                              (key, value))
+        self.conn.commit()
 
-    
+        return cursor.lastrowid
+
     def insert(self, key: str, value: str):
         self.conn.execute(self.sql_parse.get("settings.insert"),
                               (key, value, ))
