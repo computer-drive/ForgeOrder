@@ -4,7 +4,7 @@ from flask import  request, g
 from werkzeug.security import check_password_hash
 
 import extensions
-from core.app_bp import AppBlueprint
+from app.routes.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
 from core.log.context import get_log_context
 

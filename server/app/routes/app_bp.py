@@ -1,6 +1,6 @@
 from flask import Blueprint
-from .route_manager import RouteManager
-from .route_manager.schema import ArgRule
+from .manager import RouteManager
+# from .schema import ArgRule
 
 class AppBlueprint(Blueprint):
     def __init__(self, name: str, import_name: str):

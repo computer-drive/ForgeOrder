@@ -7,7 +7,7 @@ from core.auth import AuthManager
 from core.config.json_config import JSONConfig
 from core.log.context import LogContext, get_log_context
 from core.log.logger import Logger
-from core.route_manager import RouteManager
+from app.routes.manager import RouteManager
 
 logger: Logger
 db_logger_thread : Thread

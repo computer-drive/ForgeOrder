@@ -3,7 +3,7 @@ import time
 
 from flask import request, g
 
-from core.route_manager.schema import ARGUMENTS
+from app.routes.schema import ARGUMENTS
 import extensions
 from core.utils.server import make_response, get_client_ip
 from core.log.context import get_log_context

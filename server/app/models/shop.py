@@ -5,7 +5,7 @@ from flask import g, request
 import extensions
 from core.db.exceptions import ColumnNotFoundError, NotFoundError
 from core.utils import make_response
-from core.app_bp import AppBlueprint
+from app.routes.app_bp import AppBlueprint
 from app.db.exceptions import CategoryNotFoundError
 
 from ..db.get_db import get_database

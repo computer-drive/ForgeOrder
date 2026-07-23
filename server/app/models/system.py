@@ -5,7 +5,7 @@ from flask import Blueprint
 import extensions
 from const import *
 from core.utils import make_response
-from core.app_bp import AppBlueprint
+from app.routes.app_bp import AppBlueprint
 
 
 

@@ -2,7 +2,7 @@
 import os
 
 from flask import (Blueprint, current_app, send_from_directory)
-from core.app_bp import AppBlueprint
+from app.routes.app_bp import AppBlueprint
 
 basic_bp = AppBlueprint("basic", __name__)
 

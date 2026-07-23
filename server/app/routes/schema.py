@@ -1,19 +1,16 @@
-# from enum import Enum, auto
-# from os import nam/e
 from typing import TypedDict, Required, NotRequired, Any
 
-class ArgRule(TypedDict):
-    name: Required[str]
-    type: Required[type]
-    required: Required[bool]
-    default: NotRequired[Any]
+from .field import RequestField
 
 
 
+class RoutesInfo(TypedDict):
+    is_admin: bool
+    auth: bool
+    args: dict[str, RequestField]
 
-class RouteArgs(TypedDict):
-    route: str
-    args: list[ArgRule]
+
+
 
 
 class ARGUMENTS:
