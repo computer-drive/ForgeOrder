@@ -31,7 +31,8 @@ class SettingsProperty:
 
 
 class VerifyError:
-    
+    msg : str 
+
     def __init__(self, msg: str = ""):
         self.msg = msg
 
@@ -41,11 +42,18 @@ class VerifyError:
         '''
         return property.default
 
+    def __str__(self) -> str:
+        return self.msg
+
 
 
 @dataclass
 class ValueTypeError(VerifyError):
     expected_type: type
+
+    def __str__(self) -> str:
+        return f"The handler only allows {self.expected_type} type."
+
 
 class VerifyHandler:
     allow_types : type | None = None # None 表示接收任意类型
@@ -72,6 +80,9 @@ class EmptyError(VerifyError):
     
     def fix(self, property: 'SettingsProperty'):
         return property.default
+
+    def __str__(self):
+        return "The value cannot be empty."
 
 class NotEmpty(VerifyHandler):
     '''
@@ -104,6 +115,9 @@ class NotEmpty(VerifyHandler):
 @dataclass
 class IntervalError(VerifyError):
     interval: 'Interval'
+
+    def __str__(self):
+        return f"Value must be in {self.interval}"
 
     
 
@@ -189,6 +203,9 @@ class LengthError(VerifyError):
     min: int | None = None
     max: int | None = None
 
+    def __str__(self) -> str:
+        return f"The length of value must be between {self.min} and {self.max}."
+
 class Length(VerifyHandler):
     '''
     限制值长度在指定范围内。
@@ -212,6 +229,9 @@ class Length(VerifyHandler):
 @dataclass
 class ChoicesError(VerifyError):
     choices: tuple[Any, ...]
+
+    def __str__(self) -> str:
+        return f"The value must be in {self.choices}"
 
 class Choices(VerifyHandler):
     '''
@@ -256,6 +276,9 @@ class AnyOfError(VerifyError):
     def __init__(self, *children):
         self.children = list(children)
 
+    def __str__(self) -> str:
+        return "The value must match any of the following validators: " + ", ".join([str(child) for child in self.children])
+
 class AnyOf(VerifyHandler):
     '''
     限制值必须匹配任意一个验证器。
@@ -287,6 +310,9 @@ class AllOfError(VerifyError):
 
     def __init__(self, *children):
         self.children = list(children)
+
+    def __str__(self) -> str:
+        return "The value must match all of the following validators: " + ", ".join([str(child) for child in self.children])
 
 class AllOf(VerifyHandler):
     '''
