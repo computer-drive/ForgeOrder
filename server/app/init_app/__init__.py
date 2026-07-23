@@ -1,3 +1,4 @@
+from codecs import register
 import os
 
 from flask import Flask
@@ -14,13 +15,10 @@ def setup_app():
 
     from app import blueprints
     for bp in blueprints:
-        app.register_blueprint(bp)
+        bp.register_for_app(app, extensions.route_manager)
 
-        for route in bp.routes_:
-            extensions.route_manager.register(route["path"], route["auth"], route["is_admin"], route["arguments"])
+        
 
-
-            
 
     app.errorhandler(405)(method_not_allowed)
     app.errorhandler(404)(not_found)

@@ -1,6 +1,7 @@
-from flask import Blueprint
+from flask import Blueprint, Flask
+
 from .manager import RouteManager
-# from .schema import ArgRule
+from .schema import RequestField
 
 class AppBlueprint(Blueprint):
     def __init__(self, name: str, import_name: str):
@@ -8,8 +9,18 @@ class AppBlueprint(Blueprint):
 
         self.routes_ = []
 
+    def register_for_app(self, app: Flask, route_manager: RouteManager):
+        app.register_blueprint(self)
+
+        for route in self.routes_:
+            route_manager.register(route["path"],
+                                    route["auth"],
+                                    route["is_admin"],
+                                    route["arguments"])
+        
+
     def route(self, rule: str,
-            arguments: list[ArgRule] | None = None,
+            arguments: list[RequestField] | None = None,
             auth: bool = False,
             is_admin: bool = False,
             **options
@@ -38,7 +49,7 @@ class AppBlueprint(Blueprint):
         return self.route(rule, None, auth, is_admin, **options)
     
     def post(self, rule: str,
-            arguments: list[ArgRule] | None = None,
+            arguments: list[RequestField] | None = None,
             auth: bool = False,
             is_admin: bool = False,
             **options
