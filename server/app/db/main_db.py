@@ -827,9 +827,10 @@ class _Settings:
         
         
         result = cursor.fetchone()
-        
+
         if result:
-            return dict(cursor.fetchone())
+            
+            return dict(result)
         else:
             return None
 

@@ -34,12 +34,12 @@ class SettingsManager:
             
     def _init(self):
         for prop in SETTINGS:
-            try:
-                row = self.db.settings.get(prop.key)
-            except TypeError:
-                row = None
 
+            row = self.db.settings.get(prop.key)
+
+            # print(row)
             if row is None:
+                # print(1)
                 # 不存在则创建
                 self.db.settings.insert(prop.key, prop.default)
                 continue
