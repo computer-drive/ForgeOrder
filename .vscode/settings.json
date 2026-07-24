@@ -1,0 +1,14 @@
+{
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/server"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}/server"
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/server"
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/server"
+    ]
+}
