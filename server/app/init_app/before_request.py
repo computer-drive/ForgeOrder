@@ -3,10 +3,9 @@ import time
 
 from flask import request, g
 
-from app.routes.schema import ARGUMENTS
+from app.routes.exceptions import ArgumentException
 import extensions
 from core.utils.server import make_response, get_client_ip
-from core.log.context import get_log_context
 from app.log import RequestLogContext
 
 def _handle_auth():
@@ -23,7 +22,7 @@ def _handle_auth():
             ), 404
         
 
-        if not route_data["auth"]:
+        if not route_data["auth"]: #type: ignore
             # 无需登录
             return None
         else:
@@ -156,16 +155,23 @@ def _handle_args():
     
     
     body = request.get_json()
-    result, data = extensions.route_manager.verify_args(request.path, body)
 
-    if result in [ARGUMENTS.RESULT.PASS, ARGUMENTS.RESULT.NO_ARGS]:
-        # 成功
+    result, data = extensions.route_manager.validate_args(request.path, body)
+
+    if result:
         g.args = data
-        # print("set")
+        # print(g.args)
         return None
     
-
     else:
+        error_info = []
+        for key, value in data.items():
+            error_info.append({
+                "key": key,
+                "error": value.__class__.__name__,
+                "msg": value.msg
+            })
+
         # 失败
         return make_response(
             1001,

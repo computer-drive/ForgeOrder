@@ -13,14 +13,4 @@ class RoutesInfo(TypedDict):
 
 
 
-class ARGUMENTS:
-    class RESULT:
-        PASS = "PASS"
-        FAIL = "FAIL"
-        NO_ARGS = "NO_ARGS"
-
-    class ERROR:
-        TYPING_ERROR = "TYPING_ERROR"
-        NOT_FOUND = "NOT_FOUND"
-
 

@@ -45,11 +45,13 @@ class RouteManager:
 
         args_final = {}
 
+        errors = {}
+
         for key, field in routes_info["args"].items():
             if key in args.keys():
                 # key本身存在，验证类型
                 if not isinstance(args[key], field.value_type):
-                    raise InvalidArgumentTypeError(key, field.value_type, type(args[key]))
+                    errors[key] = InvalidArgumentTypeError(key, field.value_type, type(args[key]))
 
 
                 # 执行Validator
@@ -63,18 +65,21 @@ class RouteManager:
                     args_final[key] = args[key]
                     continue
                 else:
-                    raise ArgumentValidationError(key, result.error) #type: ignore
+                    errors[key] = ArgumentValidationError(key, result.error) #type: ignore
                 
 
                 
             elif field.required:
                 # key不存在，必填项。
-                raise MissingRequiredArgumentError(field.key)
+                errors[key] = MissingRequiredArgumentError(field.key)
             else:
                 # key不存在，非必填项。
                 args_final[key] = field.default
 
-        return args_final
+        if errors:
+            return False, errors
+        else:
+            return True, args_final
 
 
     

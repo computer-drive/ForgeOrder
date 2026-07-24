@@ -8,4 +8,3 @@ class UnsupportedVerifyHandlerError(Exception):
         
         super().__init__(f"Implemented {verify_handler_class.__name__} in an unsupported way.")
 
-class 
