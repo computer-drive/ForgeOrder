@@ -1,4 +1,3 @@
-import json
 
 from flask import  request, g
 from werkzeug.security import check_password_hash
@@ -6,34 +5,17 @@ from werkzeug.security import check_password_hash
 import extensions
 from app.routes.app_bp import AppBlueprint
 from core.utils import get_client_ip, make_response
-from core.log.context import get_log_context
-
 from ..db.get_db import get_database
 from .exceptions import *
+from app.routes.field import RequestField, NotEmpty
 
 accounts_bp = AppBlueprint("accounts", __name__)
 
-
-
- 
 @accounts_bp.post("/api/auth/login",              
     arguments = [   
-            {
-                "name": "username",
-                "type": str,
-                "required": True
-            },
-            {
-                "name": "password",
-                "type": str,
-                "required": True
-            },
-            {
-                "name": "cover",
-                "type": bool,
-                "required": False,
-                "default": False
-            }
+        RequestField("username", str, True, None, NotEmpty()),
+        RequestField("password", str, True, None, NotEmpty()),
+        RequestField("cover", bool, False, False)
     ],
     auth=False,
     is_admin=False

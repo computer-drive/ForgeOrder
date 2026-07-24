@@ -7,9 +7,8 @@ from core.db.exceptions import ColumnNotFoundError, NotFoundError
 from core.utils import make_response
 from app.routes.app_bp import AppBlueprint
 from app.db.exceptions import CategoryNotFoundError
-
 from ..db.get_db import get_database
-# from .exceptions import ArgumentException
+from app.routes.field import *
 
 shop_bp = AppBlueprint("shop", __name__)
 
@@ -25,11 +24,7 @@ def get_business_state():
             auth=True,
             is_admin=True,
             arguments=[
-                {
-                   "name": "is_business",
-                   "type": bool,
-                   "required": True
-                }
+                RequestField("is_business", bool, True)
             ])
 def set_business_state():
     is_business = g.args["is_business"]
@@ -65,11 +60,7 @@ def get_all_dishes():
 
 @shop_bp.post("/api/shop/dishes/get" , auth=True,
               arguments=[
-                  {
-                      "name": "id",
-                      "type": int,
-                      "required": True
-                  }
+                  RequestField("id", int, True)
               ])
 def get_dish():
     dish_id = g.args["id"]
@@ -93,21 +84,11 @@ def get_dish():
     )
 
 @shop_bp.post("/api/shop/dishes/update", auth=True, is_admin=True,
-              arguments=[{
-                "name": "dish_id",
-                "type": int,
-                "required": True
-              },
-              {
-                  "name": "changed_items",
-                  "type": dict,
-                  "required": True
-              },
-              {
-                  "name": "changed_choices",
-                  "type": list,
-                  "required": True
-              }])
+              arguments=[
+                  RequestField("dish_id", int, True),
+                  RequestField("changed_items", dict, True),
+                  RequestField("changed_choices", dict, True)
+              ])
 def update_dish():
     dish_id: int = g.args["dish_id"]
     changed_items : dict = g.args["changed_items"]
@@ -115,11 +96,17 @@ def update_dish():
 
     meta_db = get_database()
 
-    if len(changed_items.values()) == 0 and len(changed_choices) == 0:
+
+    if Not(AllOf(
+        NotEmpty().bind(changed_items),
+        NotEmpty().bind(changed_choices)
+    )).validate():
+        
         return make_response(
             3001,
             None
-        ), 400
+        ), 400 
+        
 
     extensions.logger.debug([dish_id, changed_items, changed_choices], "UPDATE_DISH_REQUEST", "DebugMsg")
 
@@ -144,11 +131,9 @@ def update_dish():
         ), 404
 
 @shop_bp.post("/api/shop/dishes/delete", auth=True, is_admin=True,
-              arguments=[{
-                "name": "dish_id",
-                "type": int,
-                "required": True
-              }])
+               arguments=[
+                   RequestField("dish_id", int, True)
+               ])
 def delete_dish():
     dish_id: int = g.args["dish_id"]
 
@@ -167,44 +152,13 @@ def delete_dish():
         ), 404
     
 @shop_bp.post("/api/shop/dishes/new", auth=True, is_admin=True, arguments=[
-    {
-        "name": "name",
-        "type": str,
-        "required": True
-    },
-    {
-        "name": "price",
-        "type": int, # 单位：分
-        "required": True
-    },
-    {
-        "name": "category",
-        "type": int,
-        "required": True
-    },
-    {
-        "name": "description",
-        "type": str,
-        "required": False,
-        "default": ""
-    },
-    {
-        "name": "image",
-        "type": str,
-        "required": False,
-        "default": ""
-    },
-    {
-        "name": "is_available",
-        "type": bool,
-        "required": True,
-    },
-    {
-        "name": "choices",
-        "type": dict,
-        "required": False,
-        "default": {}
-    }
+    RequestField("name", str, True, None, NotEmpty()),
+    RequestField("price", int, True, None, Interval(Open(0), None)),
+    RequestField("category", int, True),
+    RequestField("description", str, False, ""),
+    RequestField("image", str, False, ""),
+    RequestField("is_available", bool, True),
+    RequestField("choices", dict, False, {})
 ])
 def new_dish():
     name: str = g.args["name"]
@@ -243,11 +197,8 @@ def new_dish():
 # 分类
 @shop_bp.post("/api/shop/category/delete", auth=True, is_admin=True,
               arguments=[
-                  {
-                      "name": "category_id",
-                      "type": int,
-                      "required": True
-                  }
+                  RequestField("cateogry_id", int, True)
+
               ])
 def delete_category():
     category_id: int = g.args["category_id"]
@@ -296,16 +247,8 @@ def get_all_categories():
 
 @shop_bp.post("/api/shop/category/update", auth=True, is_admin=True, 
               arguments=[
-                  {
-                    "name": "category_id",
-                    "type": int,
-                    "required": True
-                },
-                {
-                    "name": "category_name",
-                    "type": str,
-                    "required": True
-                }
+                  RequestField("category_id", int, True),
+                  RequestField("category_name", str, True, None, NotEmpty())
               ])
 def edit_category():
 
@@ -329,13 +272,10 @@ def edit_category():
 
 @shop_bp.post("/api/shop/category/new", auth=True, is_admin=True,
               arguments=[
-                  {
-                      'name': "name",
-                      "type": str,
-                      "required": True
-                  }
+                  RequestField("name", str, True, None, NotEmpty())
               ])
 def new_category():
+    
     name: str = g.args["name"]
 
     meta_db = get_database()

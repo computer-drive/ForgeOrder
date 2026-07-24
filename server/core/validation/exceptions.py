@@ -7,3 +7,5 @@ class UnsupportedVerifyHandlerError(Exception):
         self.verify_handler_class = verify_handler_class
         
         super().__init__(f"Implemented {verify_handler_class.__name__} in an unsupported way.")
+
+class 

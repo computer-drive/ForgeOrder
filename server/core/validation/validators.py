@@ -8,7 +8,7 @@ from .exceptions import UnsupportedVerifyHandlerError
 class Validator:
     allow_types : type | None = None # None 表示接收任意类型
 
-    def validate(self, value: Any) -> ValidationResult:
+    def validate(self, value: Any = None) -> ValidationResult:
         if self.allow_types is None or isinstance(value, self.allow_types):
 
             result =  self._validate(value)
@@ -21,6 +21,24 @@ class Validator:
         
     def _validate(self, value: Any) -> ValidationResult: #type: ignore
         pass
+
+    def __call__(self, value: Any) -> ValidationResult:
+        return self.validate(value)
+
+    def bind(self, value: Any) -> 'ValidatorWithValue':
+        return ValidatorWithValue(self, value)
+
+class ValidatorWithValue(Validator):
+
+    def __init__(self, validator: Validator, value: Any):
+        self.validator = validator
+        self.value = value
+
+    def validate(self, value = None) -> ValidationResult:
+        if value is not None:
+            raise ValueError("The value must be None when using 'ValidatorWithValue'.")
+        
+        return self.validator.validate(self.value)
 
 class NotEmpty(Validator):
     '''
@@ -237,4 +255,16 @@ class AllOf(Validator):
             return ValidationResult(False, errors[0])
         else:
             return ValidationResult(False, AllOfError(*errors))
- 
+
+class Not(Validator):
+    allow_types = None
+
+    def __init__(self, validator: Validator):
+        self.validator = validator
+
+    def _validate(self, value: Any):
+        result = self.validator.validate(value)
+        if result.success:
+            return ValidationResult(False, ValidationError("value must failed to validate."))
+        else:
+            return ValidationResult(True)
