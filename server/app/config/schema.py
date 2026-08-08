@@ -3,12 +3,13 @@ import os
 from core.validation.field import FieldDefinition
 from core.validation.validators import Choices, NotEmpty, Interval, FunctionHandler, AllOf, Open, Closed
 from core.validation.base import ValidationResult
+from core.validation.errors import ValidationError
 
 # from core.config.validation import Choices, NotEmpty, SettingsProperty, NotEmpty, Interval, FunctionHandler, AllOf, Open, Closed, VerifyError, VerifyResult
 
 def auth_secret_key_verify(value: str):
     if os.environ.get("ENV") == "product" and value == "development_key":
-        return ValidationResult(False, ValidationResult("生产环境不能使用开发密钥"))
+        return ValidationResult(False, ValidationError("生产环境不能使用开发密钥"))
     else:
         return ValidationResult(True)
     

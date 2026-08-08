@@ -90,7 +90,7 @@
     const props = defineProps({
         'dish': {
             type: Object,
-            default : {}
+            default : () => ({})
         }
     })
 
@@ -131,11 +131,11 @@
         }
 
         if (props.dish.choices) {
-            const firstKey = Object.keys(props.dish.choices)[0]
-            currentChoices.value = {
-                [firstKey]: props.dish.choices[firstKey][0] || {}
-                
+            const defaults = {}
+            for (const [name, options] of Object.entries(props.dish.choices)) {
+                defaults[name] = options[0] || ''
             }
+            currentChoices.value = defaults
         }
     }
 

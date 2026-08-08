@@ -1,6 +1,5 @@
 # 验证配置项的有效性
 import os
-from ssl import VerifyFlags
 
 from flask.cli import pass_script_info
 

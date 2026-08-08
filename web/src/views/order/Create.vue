@@ -2,7 +2,7 @@
     
    <BasicInfo v-show="index == 0" v-model:index ="index" v-model:orderInfo="orderBasicInfo"/>
    <Dishes v-show="index == 1" v-model:index ="index" v-model:dishInfo="dishInfo"/>
-   <Confrim v-show="index == 2" v-model:index ="index" v-model:orderInfo="orderBasicInfo" v-model:dishInfo="dishInfo"/>
+   <Confirm v-show="index == 2" v-model:index ="index" v-model:orderInfo="orderBasicInfo" v-model:dishInfo="dishInfo"/>
 
 </template> 
 
@@ -18,8 +18,8 @@
     const Dishes = defineAsyncComponent(
   () => import('@/views/order/views/Dishes.vue')
 )
-     const Confrim = defineAsyncComponent(
-  () => import('@/views/order/views/Confrim.vue')
+     const Confirm = defineAsyncComponent(
+  () => import('@/views/order/views/Confirm.vue')
 )
 
     const index= ref(0)

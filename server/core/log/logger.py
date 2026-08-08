@@ -55,7 +55,7 @@ class Logger(logging.Logger):
         self.log(msg, logging.WARNING, category, action, request_id)
 
     def error(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
-        self.log(msg, logging.ERROR, category, action)
+        self.log(msg, logging.ERROR, category, action, request_id)
 
     def critical(self, msg: str | dict | list , category: str, action: str, request_id: str = None):  # type:ignore
         self.log(msg, logging.CRITICAL, category, action, request_id)

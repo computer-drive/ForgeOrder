@@ -81,7 +81,7 @@ class SettingsManager:
         if not isinstance(value, prop.value_type):
             raise SettingTypingError(key, prop.value_type, type(value))
 
-        value_str = con_manager.convert(value, prop.value_type)
+        value_str = con_manager.convert(value, str)
 
 
         self.db.settings.update(key, value_str)

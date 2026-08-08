@@ -80,8 +80,7 @@ class Renderer:
     def _qr(self, cmd_info: dict):
         content = cmd_info["content"]
 
-        args = cmd_info
-        del args["content"]
+        args = {k: v for k, v in cmd_info.items() if k != "content"}
 
         args = args | self.qr_info
 

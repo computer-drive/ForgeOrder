@@ -21,8 +21,6 @@ export function pushWithFrom(target, extraQuery = {}) {
         ...extraQuery
     }
 
-    console.log(fromPages)
-
     return router.push({
         path: routeConfig.path,
         query: query,

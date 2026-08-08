@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-from venv import logger
 
 from app.app_settings.global_connection import SettingsConnection
 from app.printer.service import PrintManager
@@ -23,12 +22,14 @@ console_logger= get_console_logger("startup")
 
 def init_root_user(reset = False):
 
-    import random
+    import secrets
+    import string
     from werkzeug.security import generate_password_hash
     from app.db.main_db import MainDatabase
 
 
-    password = "".join(random.choices("abcdefghijklmnopqrstuvwxyz1234567890", k=8))
+    alphabet = string.ascii_lowercase + string.digits
+    password = ''.join(secrets.choice(alphabet) for _ in range(8))
     password_hash = generate_password_hash(password)
 
     database = MainDatabase(extensions.config.get("database.path"))
@@ -38,7 +39,7 @@ def init_root_user(reset = False):
         if root_user:
             root_user_id = root_user['id']
 
-            database.users.change_pasword(root_user_id, password_hash)
+            database.users.change_password(root_user_id, password_hash)
 
             console_logger.info("重置root用户密码：%s" % password)
             return

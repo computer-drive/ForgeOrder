@@ -19,6 +19,7 @@ class Database:
         self.db_name = db_name
 
         self.conn : sqlite3.Connection = None #type: ignore
+        self._last_cursor = None
 
 
     def connect(self):
@@ -35,7 +36,8 @@ class Database:
 
     def execute(self, sql: str, params: tuple = None): # type: ignore
         try:
-            self.conn.execute(sql, params or ())
+            self._last_cursor = self.conn.execute(sql, params or ())
+            return self._last_cursor
         except sqlite3.OperationalError as e:
             raise ExecuteError(sql, e)
 
@@ -50,10 +52,14 @@ class Database:
         self.conn.commit()
 
     def fetchall(self):
-        return self.conn.cursor().fetchall()
+        if self._last_cursor is None:
+            return []
+        return self._last_cursor.fetchall()
     
     def fetchone(self):
-        return self.conn.cursor().fetchone()
+        if self._last_cursor is None:
+            return None
+        return self._last_cursor.fetchone()
     
     def get_all_columns(self, table_name: str):
         cursor =  self.conn.execute(

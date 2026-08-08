@@ -101,7 +101,7 @@
     import '@mdui/icons/receipt.js'
     import '@mdui/icons/info.js'
 
-    import { ref, computed, onMounted } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
 
     import { pushWithFrom } from '@/utils/routerHelper'
@@ -115,8 +115,8 @@
     const route = useRoute()
 
     const isDevelopment = ref(false)
-    const username = computed(() => JSON.parse(localStorage.getItem('userInfo')).username)
-    const isAdmin = computed(() => JSON.parse(localStorage.getItem('userInfo')).is_admin)
+    const username = ref('')
+    const isAdmin = ref(false)
     const ipAddress = ref('192.168.1.5')
     const version = ref('1.0.0')
 
@@ -154,20 +154,30 @@
 
 
     onMounted( async () => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+        if (userInfo) {
+            username.value = userInfo.username
+            isAdmin.value = userInfo.is_admin
+        }
+
         let systemInfo = {}
         if (localStorage.getItem(`systemInfo`)) {
             systemInfo = JSON.parse(localStorage.getItem(`systemInfo`))
             
         } else {
-            const res = await request.get('/system/getSystemInfo')
-            if (res.data.status == 0) {
-                localStorage.setItem(`systemInfo`, JSON.stringify(res.data.data))
-                systemInfo = res.data.data
+            try {
+                const res = await request.get('/system/getSystemInfo')
+                if (res.data.status == 0) {
+                    localStorage.setItem(`systemInfo`, JSON.stringify(res.data.data))
+                    systemInfo = res.data.data
+                }
+            } catch (e) {
+                console.error('Failed to get system info:', e)
             }
         } 
 
         version.value = systemInfo.version
-        isDevelopment.value = true ? systemInfo.env == 'dev' : false
+        isDevelopment.value = systemInfo.env === 'dev'
         ipAddress.value = systemInfo.ip_address
             
     })

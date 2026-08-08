@@ -115,7 +115,7 @@
 
     import { formatDateInTime, getSub } from '@/utils/date.js';
     import { useRouter } from 'vue-router';
-;
+
     const router = useRouter();
 
 

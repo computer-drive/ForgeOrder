@@ -227,7 +227,7 @@ def new_dish():
 # 分类
 @shop_bp.post("/api/shop/category/delete", auth=True, is_admin=True,
               arguments=[
-                  RequestField("cateogry_id", int, True)
+                  RequestField("category_id", int, True)
               ],
               responses=[
                   ResponseInfo(0, "OK", None),
@@ -238,14 +238,13 @@ def delete_category():
 
     db = get_database_flask()
 
-    # 删除该分类下的所有菜品
-    db.dishes.delete_by_category(category_id)
-
     g.logger.set_category("SHOP")
 
     try:
-        
         name = db.category.get_from_id(category_id)["name"]
+
+        # 先验证分类存在，再删除该分类下的所有菜品
+        db.dishes.delete_by_category(category_id)
 
         db.category.update(category_id, f"{name}_disabled_{time.time()}")
 
