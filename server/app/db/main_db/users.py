@@ -128,7 +128,7 @@ class Users:
 
         return 0, user
 
-    def change_pasword(self, user_id: int, new_password: str):
+    def change_password(self, user_id: int, new_password: str):
 
         cursor = self.conn.execute(self.sql_parse.get("users.change_password"),
                                    (new_password, user_id, ))

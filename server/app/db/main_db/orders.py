@@ -158,7 +158,7 @@ class Orders:
         display_no = latest_display_no + 1 # 增加流水号
 
 
-        order = _Order(
+        order = Order(
             id_int, display_no, user_id, table_id, created_at, note, order_items
             )
         

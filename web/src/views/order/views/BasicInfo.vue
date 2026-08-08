@@ -108,19 +108,21 @@
     })
 
     const nextStep = () => {
+        let tableName = ''
         if (orderType.value == '1') {
             selectedTable.value = -1
-
+        } else {
+            const index = tables.value.findIndex(table => table.id == selectedTable.value)
+            if (index >= 0) {
+                tableName = tables.value[index].name
+            }
         }
         emit('update:index', props.index + 1)
-
-        const index = tables.value.findIndex(table => table.id == selectedTable.value)
-        console.log(tables.value, index)
         emit('update:orderInfo', {
             "order_type": orderType.value,
             "party_size": partySize.value,
             "table_id": selectedTable.value,
-            "table_name": tables.value[index].name
+            "table_name": tableName
         })
     }
 

@@ -26,7 +26,6 @@ class UnsupportedTypeError(Exception):
     def __init__(self, verify_handler_class: type, expected_type: type, value_type: type):
         self.verify_handler_class = verify_handler_class
         self.expected_type = expected_type
-        self.expected_type = expected_type
         self.value_type = value_type
 
         super().__init__(

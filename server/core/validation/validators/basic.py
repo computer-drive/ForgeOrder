@@ -93,7 +93,7 @@ class Interval(Validator):
             elif not self.max_value.inclusive and value < self.max_value.value:
                 pass
             else:
-                return ValidationResult(False, self)
+                return ValidationResult(False, IntervalError(self))
             
         return ValidationResult(True)
     
@@ -127,10 +127,11 @@ class Length(Validator):
         if not isinstance(value, str):
             return ValidationResult(False, LengthError(self.min_value, self.max_value))
 
-        if self.min_value is None or self.min_value <= len(value) and self.max_value is None or self.max_value >= len(value):
-            return ValidationResult(True)
-        else:
-            return  ValidationResult(False, LengthError(self.min_value, self.max_value))
+        if self.min_value is not None and len(value) < self.min_value:
+            return ValidationResult(False, LengthError(self.min_value, self.max_value))
+        if self.max_value is not None and len(value) > self.max_value:
+            return ValidationResult(False, LengthError(self.min_value, self.max_value))
+        return ValidationResult(True)
 
 
 class Choices(Validator):

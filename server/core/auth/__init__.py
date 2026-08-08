@@ -1,6 +1,7 @@
 import hashlib
 import time
 import threading
+import secrets
 
 from core.auth.schema import UserInfo
 
@@ -57,9 +58,7 @@ class AuthManager:
                 
                 
         # 不存在这个用户或覆盖旧设备，创建新token
-        token = hashlib.sha512(
-            (user["username"] + self.secret_key + str(time.time())).encode("utf-8")
-        ).hexdigest()
+        token = secrets.token_hex(32)
 
         now = int(time.time())
         expire = now + self.available_time * 60

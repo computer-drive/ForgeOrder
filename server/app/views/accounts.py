@@ -148,7 +148,8 @@ def logout():
     
     token_item : dict = extensions.auth_manager.user_logout(token) #type: ignore
 
-    
+    if token_item is None:
+        return make_response(2003, None), 401
 
     logger.info(
         {

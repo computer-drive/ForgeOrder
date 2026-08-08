@@ -21,21 +21,21 @@ def unsupported_media_type(e: UnsupportedMediaType):
 def method_not_allowed(e):
         return make_response(
             1002,
-            405,
+            "Method Not Allowed",
         ), 405
     
 
 def not_found(e):
         return make_response(
             1003,
-            404,
+            "Not Found",
         ), 404
 
 
 def internal_server_error(e):
         return make_response(
             9001,
-            500,
+            "Internal Server Error",
         ), 500
     
 
@@ -51,7 +51,7 @@ def handle_execute_error(e: ExecuteError):
         "FLASK_APP",
         "ExecuteError"
     )
-    return make_response(9002, 500), 500
+    return make_response(9002, "Database Error"), 500
 
 
 def handle_sqlite_error(e: sqlite3.Error):
@@ -60,7 +60,7 @@ def handle_sqlite_error(e: sqlite3.Error):
         "FLASK_APP",
         "SqliteError"
     )
-    return make_response(9002, 500), 500
+    return make_response(9002, "Database Error"), 500
 
 
 def teardown_appcontext(error):
