@@ -114,8 +114,15 @@ def init():
     # 初始化日志记录器
     initLog()
 
+    # 初始化数据库的表结构
+    db = Database(config.get(CONFIG.DATABASE_PATH))
+    db.connect()
+    
+    repos = RepositoryManager(db)
+    repos.init()
 
-
+    # 关闭数据库连接
+    db.close()
 
 
     if config.get(CONFIG.SERVER_FIRST_START):
@@ -129,15 +136,7 @@ def init():
         sys.exit(0)
 
 
-    # 初始化数据库的表结构
-    db = Database(config.get(CONFIG.DATABASE_PATH))
-    db.connect()
     
-    repos = RepositoryManager(db)
-    repos.init()
-
-    # 关闭数据库连接
-    db.close()
 
     validateAppSettings()
 
