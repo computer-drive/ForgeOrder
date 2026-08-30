@@ -25,7 +25,6 @@ def afterRequest(response: Response):
 
     if data:
 
-        print(data, type(data))
         if  data.get("status") == None and data.get("message") == None:
             pass
         else:
