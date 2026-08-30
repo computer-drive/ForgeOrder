@@ -34,6 +34,9 @@ class If(Validator):
     def Else(self, validator: Validator):
         self.elseValidator = Else(validator)
         return self.elseValidator
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.condition}, {self.validator})" + (("." + repr(self.elseValidator)) if self.elseValidator is not None else "")
     
 class Elif(If):
     pass
@@ -46,3 +49,6 @@ class Else(Validator):
 
     def _validate(self, value: Any, context: Any = None):
         return self.validator.validate(value, context)
+
+    def __repr__(self):
+        return f"Else({self.validator})"

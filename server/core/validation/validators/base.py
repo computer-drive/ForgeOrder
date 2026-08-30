@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from ..base import ValidationResult
 from typing import Any, TYPE_CHECKING
-from ..exceptions import NonMergeableValidatorError, UnsupportedTypeError
+from ..exceptions import NonMergeableValidatorError, UnsupportedTypeError, UncaughtValidationError
 
 
 
@@ -13,9 +13,12 @@ class Validator:
     def validate(self, value: Any = None, context: Any = None) -> ValidationResult:
         if not (self.allowTypes is None or isinstance(value, self.allowTypes)):
             raise UnsupportedTypeError(type(self), self.allowTypes, type(value))
-        
-        result =  self._validate(value, context)
-        
+
+        try:
+            result =  self._validate(value, context)
+        except Exception as e:
+            raise UncaughtValidationError(self, value, e) from None
+
         
         return ValidationResult(result.success, result.error)
 

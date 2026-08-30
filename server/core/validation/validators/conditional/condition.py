@@ -1,10 +1,16 @@
-from typing import Any, Callable, TYPE_CHECKING
-
+from typing import Any
+lazy from .provider import ValueProvider
 
 
 class Condition:
     def check(self, context: Any = None) -> bool:  #type: ignore
         pass
+
+    def _getValue(self, value: Any, context: Any = None):
+        if isinstance(value, ValueProvider):
+            return value.get(context)
+        else:
+            return value
 
 
 class Equal(Condition):
@@ -13,18 +19,8 @@ class Equal(Condition):
         self.rightValue = rightValue
 
     def check(self, context: Any = None):
-        if hasattr(self.leftValue, "get") and isinstance(self.leftValue.get, Callable):
-            leftValue : Any= self.leftValue.get(context)
-        else:
-            raise AttributeError(f"{self.leftValue} does not have a 'get' method.")
-
-        if hasattr(self.rightValue, "get") and isinstance(self.rightValue.get, Callable):
-            rightValue : Any = self.rightValue.get(context)
-        else:
-            raise AttributeError(f"{self.rightValue} does not have a 'get' method.")
-
-
-        return leftValue == rightValue
+    
+        return self._getValue(self.leftValue, context) == self._getValue(self.rightValue, context)
 
     def __str__(self):
         return f"{self.leftValue} == {self.rightValue}"

@@ -24,8 +24,11 @@ class Ref(ValueProvider):
             raise ContextAccessError(context)
             raise ContextAccessError(context)
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
+
+    def __repr__(self):
+        return f"Ref({self.name})"
 
 
 class Computed(ValueProvider):
@@ -36,3 +39,6 @@ class Computed(ValueProvider):
 
     def get(self, context: Any=None):
         return self.func(*self.args, **self.kwargs)
+
+    def __repr__(self):
+        return f"Computed({self.func}, {self.args}, {self.kwargs})"

@@ -55,11 +55,9 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None):
             action="UncaughtException",
         )
             
-    else:
-        consoleLogger = getConsoleLogger("errorHandler")
-        consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
-        
-        consoleLogger.error(''.join(traceback.format_exception(type, value, tb)))
+    consoleLogger = getConsoleLogger("errorHandler")
+    consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
+    
 
     generateErrorReport(
         errorType="critical",
