@@ -5,8 +5,7 @@ from .base import Service
 from .exceptions import *
 from core.typeConvert import converter, TypeConvertError
 from core.validation.field import FieldDefinition
-from core.validation.validators import Choices, Interval, NotEmpty, Closed, If
-from core.validation.validators.conditional.condition import RefEqual
+from core.validation.validators import Choices, Interval, NotEmpty, Closed, If, Ref
 
 
 class SETTINGS:
