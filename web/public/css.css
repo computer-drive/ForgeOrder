@@ -11,6 +11,10 @@ body {
   padding: 0;
 }
 
+html, body {
+  font-family: Roboto, sans-serif;
+}
+
 .app {
   display: flex;
   flex-direction: column;
