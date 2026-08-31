@@ -1,67 +1,98 @@
-[返回](./index.md)
+[返回文档首页](./index.md)
 
 # 用户认证
-本文档主要介绍前端、后端的用户认证的设计与实现。
 
-## 用户认证设计
-用户的用户名、密码存储在数据库中，用户登录时校验用户名、密码是否匹配。
+ForgeOrder 的 API 使用基于 `Authorization` 请求头的 Token 认证机制。认证由后端路由层统一处理，业务视图只需要声明接口是否需要认证以及是否要求管理员权限。
 
-登录成功后，后端使用SHA512算法，用配置文件中的`secret_key`生成一个Token并返回给前端，前端将Token保存至`localStorage`中，后端将Token存储在内存中。
+## 认证流程
 
-在前端，所有请求的请求头中都包含`Authorization`字段，值为`Bearer ${token}`。后端收到请求，进入路由的视图函数前，校验`Authorization`中的Token是否有效。
+1. 客户端调用 `/api/auth/login`，提交用户名和密码。
+2. 登录成功后，服务端返回登录信息，其中包含后续请求所需的认证信息。
+3. 客户端在需要认证的请求中携带 `Authorization` 请求头。
+4. 后端在进入具体视图函数前执行认证和权限检查。
+5. Token 失效、过期或用户状态不允许访问时，请求会在进入业务逻辑前被拒绝。
 
+当前登录接口定义如下：
 
-## 后端认证设计
+```text
+POST /api/auth/login
+```
 
-### 设置路由认证
-后端认证主要通过[AppBlueprint](server/app_blueprint.md)及[RouteManager](server/route_manager.md)实现。
+请求参数：
 
-在注册路由时，需要添加`auth`及`is_admin`参数，参数均为`bool`类型。
-`auth`参数用于指定路由是否需要用户认证。
-`is_admin`参数用于指定路由是否需要管理员权限。
-例如：
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `username` | `string` | 是 | 用户名，不能为空 |
+| `password` | `string` | 是 | 密码，不能为空 |
+| `cover` | `boolean` | 否 | 是否覆盖已有登录状态，默认 `false` |
+
+当前登录相关业务状态包括：
+
+| 状态码 | 状态 | 说明 |
+| --- | --- | --- |
+| `0` | `OK` | 登录成功 |
+| `3001` | `UsernameOrPasswordError` | 用户名或密码错误 |
+| `3002` | `UserIsDisabled` | 用户已被禁用 |
+| `3003` | `RepeatLogin` | 检测到重复登录 |
+| `3004` | `NewDeviceLogin` | 检测到新设备登录 |
+
+## 请求头
+
+需要认证的接口使用：
+
+```http
+Authorization: Bearer <token>
+```
+
+后端会在路由进入视图函数之前处理认证，因此业务接口通常不需要自行解析 Token。
+
+## 路由权限声明
+
+ForgeOrder 使用 `AppBlueprint` 注册 API 路由，并通过路由声明控制认证和管理员权限。例如：
+
 ```python
-@bp.get("/api/auth/test", auth=True, is_admin=False)
-def test():
+@blueprint.post(
+    "/api/example",
+    requiresAuth=True,
+    isAdmin=True,
+)
+def example():
     ...
 ```
 
-Flask注册路由时，AppBlueprint将把所有路由注册到RouteManager中。
+其中：
 
+- `requiresAuth=True`：要求用户已经登录。
+- `isAdmin=True`：除登录外，还要求管理员权限。
+- `requiresAuth=False`：接口不要求登录，例如登录接口。
 
-### 生成Token
-在登录请求中，若校验成功，后端将生成一个Token，Token由用户名、`secret_key`、当前的时间组合哈希得到。
+## 退出登录
 
-### 校验Token
-后端收到请求，进入路由的视图函数前，校验`Authorization`中的Token是否有效，对于任何无效的情况，都会阻止进入视图函数，返回401错误。
+退出登录接口：
 
-校验失败的情况有如下几种：
-#### Token无效(InvalidToken)
-请求中的Token在RouteManager中不存在。
+```text
+POST /api/auth/logout
+```
 
-#### Token过期(TokenExpire)
-请求中的Token在RouteManager中存在，但已经超出了Token的过期时间。
+该接口需要认证。服务端会根据 `Authorization` 中的 Token 注销当前登录状态。
 
-在有效期内发送请求，Token将会更新过期时间。
+如果 Token 无效，会返回 `3001 TokenInvalid`。
 
-#### 用户退出登录(TokenLogout)
-请求中的Token在RouteManager中存在，但对应的用户已退出登录。
+## 会话有效期
 
-#### 旧设备登录(OldDevice)
-请求中的Token在RouteManager中存在，但对应的用户已登录在其他设备上。
-在接下来的部分，将会介绍“多设备互踢”机制的实现。
+Token 的有效时间由配置项 `auth.available_time` 控制，默认值为 **60 分钟**。当前配置 Schema 中没有 `auth.secret_key` 配置项，因此旧版文档中关于通过配置文件设置 `secret_key` 的说明已经废弃。
 
-#### IP地址不匹配(IPNotMatch)
-请求中的Token在RouteManager中存在，但对应的用户IP地址与请求IP地址不匹配。
+## 多设备登录
 
-### 多设备互踢机制
-登录校验成功后，若发现当前用户已被其他设备登录，但IP相同，则会返回“重复登录”信息。若IP不同，将会返回一个“新设备登录”的信息，在前端，用户需要确认是否踢出其他设备的登录。
-在用户确认前，旧设备的Token仍然有效。
-用户确认后，旧设备的Token将被踢出RouteManager，用户需要重新登录。
+当前登录接口会区分重复登录和新设备登录：
 
+- **重复登录（`3003`）**：服务端检测到已有登录状态，需要客户端处理重复登录场景。
+- **新设备登录（`3004`）**：服务端检测到来自新设备的登录，需要客户端根据返回信息决定是否覆盖原登录状态。
 
+具体 Token 生命周期和设备判定属于后端内部实现；如果修改认证实现，应同步更新本文档和 API 文档。
 
+## 安全建议
 
-
-
-
+- 不要在日志、Issue 或公开文档中记录真实 Token。
+- 生产环境应使用受信任的局域网环境，并合理限制服务端口的访问范围。
+- 客户端应妥善保存认证信息，并在退出登录后清理本地会话状态。
