@@ -11,24 +11,24 @@ server/
 ├── run.py                 # 进程入口
 ├── app/
 │   ├── init.py            # 启动/关闭流程
-│   ├── config/             # 配置
-│   ├── hooks/              # 请求前后钩子
-│   ├── routes/             # 路由元数据、参数验证和响应生成
-│   ├── views/              # HTTP API 控制器
-│   ├── service/            # 业务逻辑
-│   ├── db/                 # 业务 Repository
-│   ├── printer/            # 打印任务及打印机服务
-│   └── cli/                # 命令行处理
+│   ├── config/            # 配置
+│   ├── hooks/             # 请求前后钩子
+│   ├── routes/            # 路由元数据、参数验证和响应生成
+│   ├── views/             # HTTP API 控制器
+│   ├── service/           # 业务逻辑
+│   ├── db/                # 业务 Repository
+│   ├── printer/           # 打印任务及打印机服务
+│   └── cli/               # 命令行处理
 └── core/
-    ├── database/           # 通用数据库 / Repository 基础设施
-    ├── validation/         # 通用验证器
-    ├── log/                # 通用日志
-    ├── errorHandler/       # 异常处理
-    ├── binpack/            # Binpack 相关能力
+    ├── database/          # 通用数据库 / Repository 基础设施
+    ├── validation/        # 通用验证器
+    ├── log/               # 通用日志
+    ├── errorHandler/      # 异常处理
+    ├── binpack/           # Binpack 相关能力
     └── utils/              # 通用工具
 ```
 
-核心依赖方向应理解为：
+核心依赖方向：
 
 ```text
 HTTP Request
@@ -53,7 +53,7 @@ Database
 
 ## 2. 启动流程
 
-`server/run.py` 首先安装全局异常处理，然后调用 `app.init.init()` 完成初始化；之后通过 `setupApp()` 创建 Flask 应用并读取 `server.host` / `server.port` 启动 HTTP 服务。开发环境使用 Flask 内置服务器，生产环境使用 Waitress。fileciteturn22file0
+`server/run.py` 首先安装全局异常处理，然后调用 `app.init.init()` 完成初始化；之后通过 `setupApp()` 创建 Flask 应用并读取 `server.host` / `server.port` 启动 HTTP 服务。开发环境使用 Flask 内置服务器，生产环境使用 Waitress。
 
 初始化阶段包括：
 
@@ -64,11 +64,11 @@ Database
 5. 首次启动时创建 `root` 管理员。
 6. 解析 CLI 参数；如果命令要求程序停止，则执行关闭流程后退出。
 7. 校验应用级设置。
-8. 初始化打印管理器。fileciteturn56file0
+8. 初始化打印管理器。
 
 ## 3. Repository 层
 
-`RepositoryManager` 集中持有用户、Token、桌台、设置、打印任务、菜品、订单等 Repository，并在启动时逐一调用 `_init()` 创建表。fileciteturn60file0
+`RepositoryManager` 集中持有用户、Token、桌台、设置、打印任务、菜品、订单等 Repository，并在启动时逐一调用 `_init()` 创建表。
 
 通用 `Repository` 提供以下基础能力：
 
@@ -79,7 +79,7 @@ Database
 - `delete(where)`：删除记录。
 - `commit()` / `rollback()`：事务提交与回滚。
 - `execute(sql, params)`：执行自定义 SQL，原则上只在 Repository 封装不足时使用。
-- `many.getAll(...)`：对查询条件使用 `IN` 做批量查询。fileciteturn68file0
+- `many.getAll(...)`：对查询条件使用 `IN` 做批量查询。
 
 Repository 同时负责 Python 类型和数据库类型之间的转换，因此业务层通常不需要直接处理 SQLite 的底层值表示。
 
@@ -91,11 +91,11 @@ Service 是业务规则的主要承载层。例如：
 - `ShopService` 组合菜品分类、菜品和桌台业务。
 - `OrderService` 处理订单创建和订单查询。
 
-Service 通常返回统一的 `Result`，由 View 根据结果码转换为 HTTP API 响应。订单创建就是典型例子：View 调用 `OrderService.new()`，根据 `ResultCode` 将桌台、菜品、选项等业务错误映射成对应响应。fileciteturn45file0turn46file0
+Service 通常返回统一的 `Result`，由 View 根据结果码转换为 HTTP API 响应。订单创建就是典型例子：View 调用 `OrderService.new()`，根据 `ResultCode` 将桌台、菜品、选项等业务错误映射成对应响应。
 
 ## 5. View 与路由元数据
 
-API View 使用 `AppBlueprint`。它除了注册 Flask 路由，还会保存 `requiresAuth`、`isAdmin`、参数定义和响应定义，并在注册到 Flask 应用时交给 `RouteManager`。fileciteturn48file0
+API View 使用 `AppBlueprint`。它除了注册 Flask 路由，还会保存 `requiresAuth`、`isAdmin`、参数定义和响应定义，并在注册到 Flask 应用时交给 `RouteManager`。
 
 因此一个 API 的定义实际上同时描述了：
 
@@ -105,7 +105,7 @@ API View 使用 `AppBlueprint`。它除了注册 Flask 路由，还会保存 `re
 - Body / Path 参数。
 - 可能返回的业务响应。
 
-`RouteManager` 将这些信息保存为路由元数据，供请求钩子使用。fileciteturn49file0
+`RouteManager` 将这些信息保存为路由元数据，供请求钩子使用。
 
 ## 6. 请求生命周期
 
@@ -125,7 +125,7 @@ afterRequest / error handling
 
 ### `_handleRequestInfo`
 
-创建 `requestId`、日志上下文和请求开始时间，初始化 `ResponseGenerator`，并获取数据库连接。fileciteturn47file0
+创建 `requestId`、日志上下文和请求开始时间，初始化 `ResponseGenerator`，并获取数据库连接。
 
 ### `_handleAuth`
 
@@ -135,11 +135,11 @@ afterRequest / error handling
 Authorization: Bearer <token>
 ```
 
-随后验证 Token、过期时间、退出状态和 Token 所绑定的 IP；管理员接口还会检查用户的 `isAdmin`。认证成功后，当前用户信息写入 `g.userInfo`。fileciteturn47file0
+随后验证 Token、过期时间、退出状态和 Token 所绑定的 IP；管理员接口还会检查用户的 `isAdmin`。认证成功后，当前用户信息写入 `g.userInfo`。
 
 ### `_handleArguments`
 
-根据路由元数据读取 JSON Body 和 URL Path 参数，然后执行类型检查及 Validator。失败时统一返回 `ArgumentError`，HTTP 状态码为 `400`。fileciteturn49file0turn66file0
+根据路由元数据读取 JSON Body 和 URL Path 参数，然后执行类型检查及 Validator。失败时统一返回 `ArgumentError`，HTTP 状态码为 `400`。
 
 ## 7. 统一响应
 
@@ -153,9 +153,9 @@ API 使用统一结构：
 }
 ```
 
-实际生成由 `ResponseInfo` → `ResponseGenerator` → `makeResponse()` 完成。每个路由声明允许返回的 `ResponseInfo`，View 通过 `g.res.<ResponseName>(data)` 生成响应。fileciteturn50file0turn51file0
+实际生成由 `ResponseInfo` → `ResponseGenerator` → `makeResponse()` 完成。每个路由声明允许返回的 `ResponseInfo`，View 通过 `g.res.<ResponseName>(data)` 生成响应。
 
-全局错误码集中在 `GLOBAL` 中，例如参数错误 `1001`、方法错误 `1002`、资源不存在 `1003`、权限错误 `2002`、Token 无效 `2003`、Token 过期 `2004`，以及服务端/数据库相关错误 `9010`、`9020`、`9021`。fileciteturn66file0
+全局错误码集中在 `GLOBAL` 中，例如参数错误 `1001`、方法错误 `1002`、资源不存在 `1003`、权限错误 `2002`、Token 无效 `2003`、Token 过期 `2004`，以及服务端/数据库相关错误 `9010`、`9020`、`9021`。
 
 ## 8. 开发建议
 
