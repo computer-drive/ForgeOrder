@@ -10,7 +10,9 @@ class CONFIG:
     SERVER_HOST = "server.host"
     SERVER_PORT = "server.port"
     SERVER_ENV = "server.env"
-    SERVER_FIRST_START = "server.first_start"
+
+    # 被弃用的
+    # SERVER_FIRST_START = "server.first_start"
     
     # Log
     LOG_LEVEL = "log.level"
@@ -41,8 +43,8 @@ CONFIG_ITEMS = [
     FieldDefinition(CONFIG.AUTH_AVAILABLE_TIME, int, 60, Interval(Open(0), None)), # 无上限
 
     FieldDefinition(CONFIG.SERVER_ENV, str, "dev", Choices("dev", "product")),
-    FieldDefinition(CONFIG.SERVER_FIRST_START, bool, True),
+    # FieldDefinition(CONFIG.SERVER_FIRST_START, bool, True), # 被弃用的
 
 ]
 
-CONFIG_PATH = "data/config.json"
+# CONFIG_PATH = "data/config.json"

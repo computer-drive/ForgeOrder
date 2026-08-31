@@ -3,17 +3,19 @@ import os
 
 from app.init import init, shutdown
 from app.const import VERSION
-from core.errorHandler.excepthook import install
+from core.errorHandler.excepthook import installExcepthook
 from core.log import getConsoleLogger, getLogContext, getLogger
 from app.config import config, CONFIG
 from app.setup import setupApp
+from app.bininfo import bininfo, KEYS
 
-install()
-
+# 安装全局异常处理器
+installExcepthook() 
 
 if __name__ == "__main__":
 
     consoleLogger= getConsoleLogger("main")
+
     initTime = time.time()
 
     init()
@@ -44,7 +46,12 @@ if __name__ == "__main__":
         },  "StartServer")
 
     consoleLogger.info(f"启动成功({int((time.time() - initTime) * 1000)}ms)")
-    
+
+    bininfo[KEYS.IS_NORMAL_SHUTDOWN] = False # 先设置为False，等服务正常退出后再设置为True
+    bininfo[KEYS.STARTUP_COUNT] += 1
+    bininfo[KEYS.LAST_START_TIMESTAMP] = int(time.time())
+    bininfo.save()
+       
     if os.environ["ENV"] == "product":
 
         from waitress import serve
@@ -61,16 +68,9 @@ if __name__ == "__main__":
 
     logger.info('', "ServerStopped")
 
-
     shutdown()
 
-
-
-
-
-
-
-
     
 
-    
+
+

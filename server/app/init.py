@@ -1,5 +1,5 @@
 import logging
-import os
+from pathlib import Path
 import sys
 from typing import cast
 
@@ -12,6 +12,7 @@ from app.printer.service import PrintManager
 from app.config import config, CONFIG
 from core.log import getConsoleLogger
 from core.log import initLogger, getLogger, shutdownLogger
+from app.bininfo import bininfo, KEYS
 
 from app.cli import createParser, executeCommand
 from app.exceptions import UserError
@@ -54,7 +55,8 @@ def initRootUser(reset = False):
         consoleLogger.info("创建root用户，密码：%s" % password)
 
         
-        config.set(CONFIG.SERVER_FIRST_START, False)
+        bininfo[KEYS.IS_FIRST_START] = False
+        bininfo.save()
 
     finally:
         db.close()
@@ -66,15 +68,13 @@ def initLog():
 
     getLogger()
 
-def initConfig():
-    if not os.path.exists("data"):
-            os.makedirs("data")
+def initConfig(configPath: str):
+    path = Path(configPath)
 
-    # 加载配置文件
-    config.initConfig()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    config.initConfig(configPath)
     
-
-
 def initArguments():
     parser = createParser()
 
@@ -84,7 +84,6 @@ def initArguments():
         consoleLogger.info(f"命令行参数：{' '.join(sys.argv[1:])}")
 
     return executeCommand(args)
-
 
 def validateAppSettings():
     # 验证配置项
@@ -103,17 +102,7 @@ def validateAppSettings():
             consoleLogger.error(f"启动失败：{e} \n {e.hint}")
             sys.exit(1)
 
-def init():
-
-    consoleLogger.info("正在初始化...")
-
-    # 初始化设置
-    initConfig()
-
-    
-    # 初始化日志记录器
-    initLog()
-
+def initDatabase():
     # 初始化数据库的表结构
     db = Database(config.get(CONFIG.DATABASE_PATH))
     db.connect()
@@ -124,29 +113,46 @@ def init():
     # 关闭数据库连接
     db.close()
 
+def init():
 
-    if config.get(CONFIG.SERVER_FIRST_START):
+    consoleLogger.info("正在初始化...")
+
+    # 加载bininfo
+    bininfo.load()
+
+    consoleLogger.debug(f"上次启动是否正常退出：{bininfo[KEYS.IS_NORMAL_SHUTDOWN]}")
+    consoleLogger.debug(f"启动次数：{bininfo[KEYS.STARTUP_COUNT]}")
+
+
+    # 初始化设置
+    consoleLogger.info(f"正在加载从 {bininfo[KEYS.CONFIG]} 加载配置...")
+    initConfig(bininfo[KEYS.CONFIG])
+
+    # 初始化日志记录器
+    initLog()
+
+    # 初始化数据库
+    initDatabase()
+
+    # 判断是否为第一次启动，如果是则创建root用户
+    if bininfo[KEYS.IS_FIRST_START]:
         initRootUser()
 
-
-    stopRunning = initArguments()
-
-    if stopRunning:
+    # 初始化命令行参数
+    shouldExit = initArguments()
+    if shouldExit:
         shutdown()
         sys.exit(0)
 
-
-    
-
+    # 验证应用项
     validateAppSettings()
 
-
-    
+    # 初始化打印服务
     printManager = PrintManager()
+
 
 def shutdown():
     # 关闭数据库日志记录器线程
-    
     shutdownLogger()
 
 
@@ -155,3 +161,8 @@ def shutdown():
 
     # 关闭日志记录器
     logging.shutdown()
+
+    bininfo[KEYS.IS_NORMAL_SHUTDOWN] = True
+
+    # 保存bininfo
+    bininfo.save()

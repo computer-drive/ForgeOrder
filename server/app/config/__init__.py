@@ -3,7 +3,7 @@ from typing import Any
 from .validate import validateConfig
 from core.config.jsonConfig import JSONConfig
 from .base import setupConfig
-from .schema import CONFIG, CONFIG_PATH
+from .schema import CONFIG
 
 class ConfigManager:
     '''全局单例的配置管理器'''
@@ -16,7 +16,7 @@ class ConfigManager:
 
         return cls._instance
 
-    def initConfig(self, configPath: str = CONFIG_PATH):
+    def initConfig(self, configPath: str):
         '''
         加载配置。在调用`get`和`set`前需调用否则抛出异常。
         '''

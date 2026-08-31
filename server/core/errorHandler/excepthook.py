@@ -70,7 +70,7 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None):
 def threadExcepthook(args):
     excepthook(args.exc_type, args.exc_value, args.exc_traceback, args.thread)
 
-def install():
+def installExcepthook():
     sys.excepthook = excepthook
 
     threading.excepthook = threadExcepthook
