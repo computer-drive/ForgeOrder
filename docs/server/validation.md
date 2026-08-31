@@ -1,213 +1,179 @@
-[返回](../index.md)
-
-*本文档介绍后端[core.validation](/server/core/validation/)模块。*
-
 # 声明式数据验证
-声明式数据验证框架在ForgeOrder中被广泛使用，包括但不限于：
- - 系统设置项的验证
- - 应用设置项的验证
- - 路由参数的验证
 
-其内部实现了一个面向对象的表达式语言，用于描述验证规则。
+[返回文档首页](../index.md)
 
-验证器描述一个验证规则，其输入可以是单个值、多个值或运行时上下文中的值
+ForgeOrder 的 `core.validation` 是一个可组合的声明式验证框架，目前用于配置项、请求参数和其他业务输入的规则检查。
 
-## 示例
-> 一个字符串不能为空，且长度必须在4到10之间。
+## 1. 核心概念
+
+验证器实现 `Validator` 接口，通过 `validate(value)` 返回 `ValidationResult`。结果包含：
+
+- `success`：是否通过。
+- `error`：失败时的 `ValidationError`。
+
+验证失败的信息是“错误对象”，不是必须通过异常抛出的流程。
+
+## 2. FieldDefinition
+
+`core.validation.field.FieldDefinition` 用于描述一个值的字段定义：
+
+```python
+FieldDefinition(
+    key="server.port",
+    valueType=int,
+    default=5000,
+    validator=Interval(1, 65535),
+)
+```
+
+它负责：
+
+1. 保存字段名。
+2. 声明 Python 类型。
+3. 提供默认值。
+4. 可选地绑定 Validator。
+5. 在调用 `validate()` 时先做类型检查，再运行 Validator。
+
+应用配置 `CONFIG_ITEMS` 就采用了这种模式。
+
+## 3. 请求参数验证
+
+HTTP 层在此基础上提供：
+
+- `BodyField`：JSON Body 参数。
+- `PathField`：URL Path 参数。
+
+它们继承自 `RequestParameterField`。BodyField 额外声明 `required` 和非必填字段的 `default`；PathField 不提供可选参数语义。
+
+详见[请求参数验证](args_verify.md)。
+
+## 4. 基础验证器
+
+当前代码中常用的验证器包括：
+
+### `NotEmpty`
+
+拒绝空字符串、空字典、空列表和 `None`。
+
+### `Choices`
+
+限制值必须属于给定集合：
+
+```python
+Choices("dev", "product")
+```
+
+### `Interval`
+
+限制数字范围，并支持开区间 / 闭区间：
+
+```python
+Interval(1, 65535)
+Interval(Open(0), None)
+```
+
+### `Length`
+
+对字符串长度进行范围限制。
+
+### `ListOf` / `DictOf`
+
+用于描述集合元素或字典字段的结构。
+
+### `ForEach`
+
+对集合中的每个元素应用验证器。
+
+### `TypeOf`
+
+用于类型相关的验证场景。
+
+## 5. 组合验证器
+
+验证器可以继续组合，从而表达复杂规则：
+
 ```python
 AllOf(
     NotEmpty(),
-    Length(4, 10)
+    Length(4, 10),
 )
 ```
 
-> 满足条件`A`且满足条件`B`，或者不满足条件`C`。
-```python
-AnyOf(
-   AllOf(
-        A(), B()
-   ),
-   Not(C())
-)
-```
+常用逻辑组合：
 
-## 验证器
-验证器`Validator`用于描述验证规则，所有验证器均定义在`core.validation.validators`模块中。
+- `AllOf`：全部规则通过。
+- `AnyOf`：至少一个规则通过。
+- `Not`：反转规则结果。
 
-### 分类
+项目还提供基于逻辑表达式的其他组合能力；使用前应查看 `core.validation.validators` 当前实现，而不要依赖早期文档中的模块路径。
 
-验证器从模式上讲，可分为基础验证器与组合验证器。组合验证器可以传入其他验证器，实现更复杂的验证规则。所有验证器按模式分类的示意图如下：
- - 基础验证器
-    - NotEmpty
-    - Interval
-    - Length
-    - Choices
-    - FunctionHandler
- - 组合验证器
-    - AnyOf
-    - AllOf
-    - Not
-    - If
-    - Elif
-    - Else
+## 6. `bind`
 
-基础验证器位于`core.validation.validators.basic`模块中；组合验证器位于`core.validation.validators.composite`模块中。
+Validator 可以通过 `bind()` 指定验证值的来源：
 
-从功能上讲，可分为基础验证器、自定义验证器与逻辑验证器。所有验证器按功能分类的示意图如下：
- - 基础验证器
-    - NotEmpty
-    - Interval
-    - Length
-    - Choices
-    - FunctionHandler
- - 自定义验证器
-    - FunctionHandler
- - 逻辑验证器
-    - AnyOf
-    - AllOf
-    - Not
-    - If
-    - Elif
-    - Else
-
-在接下来的文档中，将按模式分类介绍验证器。
-
-### 类型判断
-各基础验证器均有其可处理的类型，例如`Length`仅能处理`str`类型。若传入一个验证器不能处理的类型，将抛出`UnsupportedTypeError`异常。
-
-*UnsupportedTypeError异常在core.validation.exceptions模块中定义。*
-
-### 调用验证器与结果
-调用验证器的`validate`方法，传入需要验证的值即可。该方法返回一个`ValidationResult`对象，其包含两个属性`success`，`error`。`success`属性表示验证是否成功，`error`属性表示验证失败时的错误信息。
-
-`error`属性的类型是`ValidationError`。`ValidationError`用于验证失败时获取错误信息，而不是一个异常。
-
-`ValidationResult`实现了`__bool__`方法，返回`success`属性的值。
-
-### 自定义验证器
-对于已有的验证器无法满足规则时，可继承`Validator`类，实现自定义验证器。
-
-不建议使用已弃用的`FunctionHandler`，其不能实现类型的验证。
-
-
-### 基础验证器
-
-#### NotEmpty
-允许传入的类型：`str`、`dict`、`list`、`None`
-限制值不能空字符串、空字典、空列表或None。
-错误类型：`EmptyError`
-
-#### Interval
-允许传入的类型：`int`、`float`
-限制值在一个区间内。
-初始化时，需传递两个参数表示最小值与最大值，传入的值可为`Boundary`对象、`int`类型或`float`类型，若传入None，则表示不限制该边界。
-`Boundary`对象可以通过`Open`、`Closed`工厂函数创建。`Closed`表示闭区间（允许边界值）；`Open`表示开区间（不允许边界值）。
-错误类型：`IntervalError`
-示例：
-```python
-Interval(1, 8)                 # 表示：(1,8)
-Interval(Open(1), Open(8))     # 表示：(1,8)
-Interval(Open(1), Closed(8))   # 表示：(1,8]
-Interval(Closed(1), Open(8))   # 表示：[1,8)
-Interval(Closed(1), Closed(8)) # 表示：[1,8]
-Interval(Closed(1), None)      # 表示：[1,+∞)
-Interval(None, Open(1))        # 表示:(-∞,1)
-Interval(Closed(1), 8)         # 表示：[1,8)
-```
-
-#### Length
-允许传入的类型：`str`
-限制值的长度在一个区间内。
-初始化时，需传递两个参数表示最小长度与最大长度，传入的值可为`int`类型。传入的值均包含边界。
-错误类型：`LengthError`
-
-#### Choices 
-允许传入的类型：`Any`
-限制值必须在指定的可选值列表中。
-初始化时，需传递多个参数表示可选值列表，传入的值可为任意类型。
-错误类型：`ChoicesError`
-示例：
-```python
-Choices(1, 2, 3) # 表示：限制值必须为1、2或3之一
-```
-
-
-#### ~~FunctionHandler~~ （已弃用）
-允许传入的类型：`Any`
-初始化时，需传递一个可调用对象。该对象必须允许传递一个参数，表示验证的值。返回值的类型必须为`ValidationResult`，否则将会抛出`UnsupportedVerifyHandlerError`。
-
-*UnsupportedVerifyHandlerError异常在core.validation.exceptions模块中定义。*
-
-### 组合验证器
-组合验证器允许验证所有类型的值，但其子验证器可能有类型的限制。
-
-#### AnyOf
-传入多个验证器，值必须通过其中任意一个验证器。
-错误类型：`AnyOfError`
-
-#### AllOf
-传入多个验证器，值必须通过其中所有验证器。
-错误类型：`AllOfError`
-
-#### Not
-值必须不通过指定的验证器。
-
-**`If`、`Elif`、`Else`验证器将在，`Condition`部分介绍。**
-
-
-### `Condition`与`If`、`Elif`、`Else`
-在处理复杂的条件时，可能希望一个值在某个条件下验证A条件，在其他条件下验证B条件。使用`If`、`Elif`、`Else`验证器和`Condition`可以实现。
-
-`Condition`表示一个条件，其实现一个`check`方法，返回一个`bool`值。
-
-`If`验证器是一个根据条件选择执行的验证器。使用`If`验证器时，会先判断`Condition`是否满足，若满足才进行验证。
-
-Condition用于描述逻辑判断，不直接产生验证错误；Validator用于描述验证失败后的规则结果。
-
-#### 内置的`Condition`
-截止到目前，`Condition`仅有一个`Equal`条件。
-
-##### Equal
-判断两个值是否相等。
-
-#### `If`、`Elif`、`Else`的组合使用
-`Elif`类继承于`If`。`Elif`与`Else`类不可单独使用，应使用`If`、`Elif`对象的`.Elif()`、`.Else()`方法使用。
-
-示例：
-```python
-If(Equal(1, 2), NotEmpty())\
-    Elif(Equal(3, 4), NotEmpty())\
-    Else(...)
-```
-
-
-### `ValueProvider`
-`ValueProvider`表示一个值提供器，其实现一个`get`方法。
-
-`ValueProvider`主要用于延迟获取值，例如通过上下文获取其他值。
-
-#### Ref
-`Ref`表示从`context`中获取一个值。
-
-初始化时提供`name`参数，表示要获取的值的名称。
-
-`context`表示验证器的上下文，在调用验证器时传递`context`参数即可传递上下文。`context`必须实现一个`get`方法以获取值。
-
-#### Computed
-`Computed`表示调用一个函数来获取一个值。
-
-初始化时提供`func`参数，表示要调用的函数。除此之外，还可以传递多个参数，表示函数的参数。
-
-## 带值的验证
-一般情况下，验证器只声明规则，不包含值。若遇到需要同时判断两个值的情况，例如：
-> 两个变量都不为空
-在这种情况下，可使用带值的验证器来实现。例如：
 ```python
 AllOf(
-   NotEmpty().bind(var_a),
-   NotEmpty().bind(var_b),
+    NotEmpty().bind(value_a),
+    NotEmpty().bind(value_b),
 )
 ```
-`bind`方法用于验证指定来源的值，而不是调用validate时传入的值。
 
+这使多个字段可以在同一个验证表达式中参与判断，而不必都使用 `validate()` 的直接输入。
 
+## 7. 验证上下文
+
+部分验证器支持从上下文或计算函数中取得值。项目中存在 Value Provider 机制，用于表达延迟读取的值。
+
+在需要依赖运行时数据的验证规则中，应优先使用项目已有的 Provider / `bind` 机制，而不是把数据库查询直接塞进 Validator。
+
+## 8. 路由中的典型用法
+
+订单创建接口使用组合 Validator 描述嵌套结构，例如：
+
+```python
+AllOf(
+    NotEmpty(),
+    ForEach(
+        DictOf()
+            .Field("id", int, True)
+            .Field("count", int, True, Interval(1, None))
+            .Field("choices", dict, True)
+    )
+)
+```
+
+这样 View 层不需要手工逐层检查 `dishes` 的类型和字段是否存在。
+
+## 9. 新增 Validator
+
+当现有规则不足时，可以继承 `Validator` 实现新的验证器。新验证器应：
+
+- 明确支持的输入类型。
+- 返回标准 `ValidationResult`。
+- 提供稳定的错误类型 / 消息。
+- 避免执行有副作用的业务操作。
+- 在适当的模块中导出，使路由和配置可以直接使用。
+
+旧版文档曾建议使用 `FunctionHandler`；当前实现中应优先使用正式 Validator 类，避免继续扩大旧 API 的依赖。
+
+## 10. 与 HTTP 层的边界
+
+验证框架负责“值是否满足规则”，HTTP 层负责“请求中的值从哪里来以及验证失败后如何返回 HTTP 响应”。
+
+```text
+JSON / Path
+    ↓
+BodyField / PathField
+    ↓
+FieldDefinition
+    ↓
+Validator
+    ↓
+ValidationResult
+    ↓
+RouteManager
+    ↓
+ArgumentError (HTTP 400)
+```
+
+这种边界可以让同一套 Validator 同时用于配置和 API 参数。
