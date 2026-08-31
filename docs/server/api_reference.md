@@ -2,7 +2,7 @@
 
 [返回文档首页](../index.md)
 
-本文记录当前后端 API 的实际接口约定。API 路由主要位于 `server/app/views/`，当前至少包含认证、店铺管理和订单接口。
+本文记录当前后端 API 的实际接口约定。API 路由主要位于 `server/app/views/`，当前包含认证、店铺管理和订单接口。
 
 ## 1. 通用约定
 
@@ -22,7 +22,7 @@ API 返回 JSON：
 - `data`：业务数据；没有数据时通常为 `null`。
 - `message`：状态名称。
 
-响应由 `ResponseInfo` 和 `ResponseGenerator` 管理，路由在声明时列出允许返回的响应。fileciteturn50file0turn51file0
+响应由 `ResponseInfo` 和 `ResponseGenerator` 管理，路由在声明时列出允许返回的响应。
 
 ## 2. HTTP 状态码
 
@@ -35,7 +35,7 @@ API 返回 JSON：
 | `401` | Token 无效、过期、旧设备或权限不足 |
 | `404` | `/api/` 路径没有对应的路由元数据 |
 
-业务成功/失败进一步由 JSON 中的 `status` 表示。认证和参数错误是在 View 执行前由 `beforeRequest` 处理的。fileciteturn47file0
+业务成功/失败进一步由 JSON 中的 `status` 表示。认证和参数错误是在 View 执行前由 `beforeRequest` 处理的。
 
 ## 3. 认证
 
@@ -45,7 +45,7 @@ API 返回 JSON：
 Authorization: Bearer <token>
 ```
 
-Token 由 `/api/auth/login` 返回。请求进入后端后，`beforeRequest` 会验证 Token，并检查 Token 状态、过期时间和绑定 IP；管理员接口还会检查用户的 `isAdmin`。fileciteturn47file0turn61file0
+Token 由 `/api/auth/login` 返回。请求进入后端后，`beforeRequest` 会验证 Token，并检查 Token 状态、过期时间和绑定 IP；管理员接口还会检查用户的 `isAdmin`。
 
 ## 4. 认证 API
 
@@ -71,7 +71,7 @@ Token 由 `/api/auth/login` 返回。请求进入后端后，`beforeRequest` 会
 | `password` | string | 是 | 密码 |
 | `cover` | boolean | 否 | 是否覆盖其他 IP 上的有效登录；默认 `false` |
 
-成功时返回 Token 和用户信息。密码字段会从返回的用户对象中移除。fileciteturn23file0turn61file0
+成功时返回 Token 和用户信息。密码字段会从返回的用户对象中移除。
 
 主要业务状态：
 
@@ -81,7 +81,7 @@ Token 由 `/api/auth/login` 返回。请求进入后端后，`beforeRequest` 会
 - `3003 RepeatLogin`
 - `3004 NewDeviceLogin`
 
-`NewDeviceLogin` 表示当前 Token 仍绑定在其他 IP；只有 `cover=true` 才会覆盖旧 Token。fileciteturn23file0turn61file0
+`NewDeviceLogin` 表示当前 Token 仍绑定在其他 IP；只有 `cover=true` 才会覆盖旧 Token。
 
 ### `POST /api/auth/logout`
 
@@ -93,11 +93,11 @@ Token 由 `/api/auth/login` 返回。请求进入后端后，`beforeRequest` 会
 Authorization: Bearer <token>
 ```
 
-如果 Token 不存在，返回 `3001 TokenInvalid`。fileciteturn23file0
+如果 Token 不存在，返回 `3001 TokenInvalid`。
 
 ## 5. 店铺 API
 
-店铺接口位于 `server/app/views/shop.py`。当前包含三类资源：店铺营业状态、菜品/分类、桌台。fileciteturn24file0
+店铺接口位于 `server/app/views/shop.py`。当前包含三类资源：店铺营业状态、菜品/分类、桌台。
 
 ### 营业状态
 
@@ -114,7 +114,7 @@ Authorization: Bearer <token>
 }
 ```
 
-配置实际保存为 `shop.isBusiness`。fileciteturn24file0
+配置实际保存为 `shop.isBusiness`。
 
 ### 菜品
 
@@ -140,7 +140,7 @@ Authorization: Bearer <token>
 }
 ```
 
-`price` 必须大于 `0`；`choices` 用于定义菜品选项。菜品删除采用软删除策略。fileciteturn24file0turn59file0
+`price` 必须大于 `0`；`choices` 用于定义菜品选项。菜品删除采用软删除策略。
 
 更新菜品 Body：
 
@@ -154,7 +154,7 @@ Authorization: Bearer <token>
 }
 ```
 
-`changedChoices` 当前支持 `new_choice`、`delete_choice`、`new_option`、`delete_option` 四类操作；相互抵消的新增/删除操作会被消除。fileciteturn24file0turn59file0
+`changedChoices` 当前支持 `new_choice`、`delete_choice`、`new_option`、`delete_option` 四类操作；相互抵消的新增/删除操作会被消除。
 
 ### 分类
 
@@ -175,11 +175,11 @@ Authorization: Bearer <token>
 | POST | `/api/shop/tables/update` | 管理员 | 修改桌台名称 |
 | POST | `/api/shop/tables/delete` | 管理员 | 删除桌台 |
 
-桌台创建后默认 `isAvailable=true`。桌台名称需要满足唯一性约束。fileciteturn24file0turn59file0
+桌台创建后默认 `isAvailable=true`。桌台名称需要满足唯一性约束。
 
 ## 6. 订单 API
 
-订单接口位于 `server/app/views/orders.py`，当前包含创建订单、获取今日订单和按 ID 获取订单。fileciteturn45file0
+订单接口位于 `server/app/views/orders.py`，当前包含创建订单、获取今日订单和按 ID 获取订单。
 
 ### `POST /api/order/new`
 
@@ -216,7 +216,7 @@ Authorization: Bearer <token>
 | `dishes[].choices` | object | 菜品选项 |
 | `note` | string | 备注 |
 
-创建时后端会重新读取菜品价格，不信任客户端传入的金额；同时验证菜品是否存在、是否可售，以及每个选项和选项值是否存在。fileciteturn46file0
+创建时后端会重新读取菜品价格，不信任客户端传入的金额；同时验证菜品是否存在、是否可售，以及每个选项和选项值是否存在。
 
 成功返回的数据为：
 
@@ -241,7 +241,7 @@ Authorization: Bearer <token>
 | `3031` | `OrderAlreadyExist` |
 | `3999` | `UnknownError` |
 
-注意：`OrderService` 当前还定义了 `INVALID_ORDER_TYPE`、`INVALID_PARTY_SIZE`、`CREATOR_NOT_FOUND`、`DISH_COUNT_NOT_AVAILABLE` 等结果，但 `orders.py` 的路由层没有将这些结果逐一映射成独立的 `ResponseInfo`。新增错误处理时应同步补齐这一层。fileciteturn46file0turn45file0
+注意：`OrderService` 当前还定义了 `INVALID_ORDER_TYPE`、`INVALID_PARTY_SIZE`、`CREATOR_NOT_FOUND`、`DISH_COUNT_NOT_AVAILABLE` 等结果，但 `orders.py` 的路由层没有将这些结果逐一映射成独立的 `ResponseInfo`。新增错误处理时应同步补齐这一层。
 
 ### `POST /api/order/getToday`
 
@@ -265,7 +265,7 @@ Authorization: Bearer <token>
 }
 ```
 
-当前实现将 `status != 3` 的订单放入 `unfinished`，`status == 3` 的订单放入 `finished`。fileciteturn45file0turn46file0
+当前实现将 `status != 3` 的订单放入 `unfinished`，`status == 3` 的订单放入 `finished`。
 
 ### `POST /api/order/get`
 
@@ -292,7 +292,7 @@ Authorization: Bearer <token>
 - `dishesCount`：已完成 / 总菜品项数。
 - `basicInfo`：订单基本信息和订单状态信息。
 
-接口允许返回 `PartialError`，因为部分查询可以失败而其他查询仍成功。例如打包订单没有桌台信息时，`tableName` 会记录 `NoTableInfo`。fileciteturn45file0turn46file0
+接口允许返回 `PartialError`，因为部分查询可以失败而其他查询仍成功。例如打包订单没有桌台信息时，`tableName` 会记录 `NoTableInfo`。
 
 ## 7. 全局状态码
 
@@ -313,4 +313,4 @@ Authorization: Bearer <token>
 | `9020` | `DatabaseError` | 数据库错误 |
 | `9021` | `DatabaseBusy` | 数据库繁忙 |
 
-定义来源为 `app.routes.schema.GLOBAL`。fileciteturn66file0
+定义来源为 `app.routes.schema.GLOBAL`。
