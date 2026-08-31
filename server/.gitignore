@@ -8,3 +8,5 @@ data/*
 
 app.dist/*
 app.build/*
+
+*.dat

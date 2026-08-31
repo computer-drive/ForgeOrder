@@ -21,16 +21,16 @@ class BinParser:
 
         offset = 0
         for field in self.fields:
-            # 计算起始下标
-            location = offset + field.fieldType.size
+            # 计算结束下标
+            endLocation = offset + field.fieldType.size
 
-            # 检查是否超出数据范围
-            if location >= len(data):
-                # 如果超出数据范围，使用默认值
+            # 检查数据是否足够
+            if endLocation >= len(data):
+                # 数据不够，用默认值填充
                 value = field.default
             else:
                 # 否则，根据偏移量和大小，获取数据并调用FieldType的decode方法
-                value = field.fieldType.decode(data[offset:location])
+                value = field.fieldType.decode(data[offset:endLocation])
 
             result[field.name] = value # 存储解析后的值
 
@@ -88,7 +88,7 @@ class BinParser:
         if key not in self.data:
             raise KeyError(key)
         
-        if isinstance(key, self.fieldsMap[key].fieldType.pythonType):
+        if isinstance(value, self.fieldsMap[key].fieldType.pythonType):
             self.data[key] = value
         else:
             raise UnsupportedValueTypeError(self.fieldsMap[key], value)

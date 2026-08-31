@@ -33,6 +33,9 @@ class String(FieldType[str]):
     pythonType: type[str] = str
 
     def __init__(self, length: int, encoding: str = "utf-8"):
+        '''
+        初始化字符串类型。注意：字符串长度是字符数，而不是字节数。
+        '''
         # 这里的length指的是字符串长度，而不是字节数
         self.encoding: str = encoding
 
@@ -62,6 +65,11 @@ class Integer(FieldType[int]):
     pythonType: type[int] = int
 
     def __init__(self, bits: int = 32):
+        '''
+        初始化整数类型。注意：整数类型必须占用8的倍数位。
+        '''
+        self.bits: int = bits
+
         # 这里的bits指的是整数占用的位数，而不是字节数
         self.bits: int = bits
 
@@ -79,7 +87,7 @@ class Integer(FieldType[int]):
 
     def encode(self, value: int) -> bytes:
         # 整数不进行加密，直接转换为字节序列
-        if not (-self.max <= value <= self.max):
+        if not (- (self.max + 1) <= value <= self.max):
             raise ValueExceededError(self, value, f"{self.max} bytes({self.bits} bits, {-self.max} <= value <= {self.max})")
 
 
