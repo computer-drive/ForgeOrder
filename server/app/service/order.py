@@ -323,7 +323,7 @@ class OrderService(Service):
                 result_ = dict(orderInfo.copy())
                 result_.update(orderStatusInfo)
 
-                print(result_)
+                # print(result_)
 
                 result["basicInfo"] = result_ 
 
