@@ -99,14 +99,16 @@
         try {
             const { unfinished, finished } = await fetchData(currentPage.value)
 
-            if (unfinished.length == 0 && finished.length == 0) {
-                hasMore.value = false
-            } else {
-                unfinishedOrders.value.push(...unfinished)
-                finishedOrders.value.push(...finished)
 
-                currentPage.value ++
+            unfinishedOrders.value.push(...unfinished)
+            finishedOrders.value.push(...finished)
+
+            if (unfinished.length < PAGE_SIZE) {
+                hasMore.value = false
             }
+            
+            currentPage.value ++
+            
         } catch (error){
             console.error("加载失败", error)
             hasMore.value = false
