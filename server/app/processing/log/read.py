@@ -18,6 +18,7 @@ def readLogQueue(logQueue: Queue, logger: Logger):
             log["action"],
             log["timestamp"],
             log["requestId"],
+            log["process"],
         )
 
       

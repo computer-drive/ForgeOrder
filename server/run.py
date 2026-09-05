@@ -1,6 +1,7 @@
 import time
 import os
 import threading
+from multiprocessing import current_process
 
 from app.init import init, shutdown
 from app.const import VERSION
@@ -14,8 +15,7 @@ from app.processing.log.read import readLogQueue
 # 安装全局异常处理器
 installExcepthook() 
 
-
-    
+current_process().name = "Master"
 
 if __name__ == "__main__":
 

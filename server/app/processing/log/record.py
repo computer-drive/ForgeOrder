@@ -1,4 +1,4 @@
-from multiprocessing import Queue
+from multiprocessing import Queue, current_process
 import logging
 from typing import Callable
 import time
@@ -17,6 +17,7 @@ class WorkerLogger:
             "category": category,
             "action": action,
             "requestId": requestId,
+            "process": current_process().name,
         })
 
     def debug(self, msg: str | dict | list, category: str, action: str, requestId: str = None): #type: ignore

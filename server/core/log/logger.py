@@ -2,6 +2,7 @@ import datetime
 import logging
 import queue
 import json
+import multiprocessing
 
 from .schema import *
 
@@ -25,13 +26,15 @@ class Logger(logging.Logger):
     def setIgnoreAction(self, action: str) -> None:
         self.ignoreActions.append(action)
 
-    def logWithTimestamp(self, msg: str | dict | list, level: int, category: str, action: str, timestamp: float, requestId: str = None): # type:ignore
+    def logWithTimestamp(self, msg: str | dict | list, level: int, category: str, action: str, timestamp: float, requestId: str = None, processName: str = ""): # type:ignore
         extra : dict = {"category": category, "action": action, "requestId": requestId}
                 
         extra["originMsg"] = msg
 
         extra["forceTimestamp"] = timestamp
 
+        extra["process_"] = processName if processName != "" else multiprocessing.current_process().name
+
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False, indent=2)
         elif msg is None:
@@ -46,13 +49,14 @@ class Logger(logging.Logger):
         super().log(level, msg, extra=extra)
 
 
-    def log(self, msg: str | dict | list , level: int, category: str, action: str, requestId: str = None): # type:ignore
+    def log(self, msg: str | dict | list , level: int, category: str, action: str, requestId: str = None, processName: str = ""): # type:ignore
         extra: dict = {"category": category, "action": action, "requestId": requestId}
         
         extra["originMsg"] = msg
 
         extra["forceTimestamp"] = None
 
+        extra["process_"] = processName
         
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False, indent=2)
@@ -67,24 +71,24 @@ class Logger(logging.Logger):
         
         super().log(level, msg, extra=extra)
 
-    def info(self, msg: str | dict | list , category: str, action: str, requestId: str = None):  # type:ignore
-        self.log(msg, logging.INFO, category, action, requestId)
+    def info(self, msg: str | dict | list , category: str, action: str, requestId: str = None, processName: str = ""):  # type:ignore
+        self.log(msg, logging.INFO, category, action, requestId, processName)
 
-    def warning(self, msg: str | dict | list , category: str, action: str, requestId: str = None):  # type:ignore
+    def warning(self, msg: str | dict | list , category: str, action: str, requestId: str = None, processName: str = ""):  # type:ignore
         self.log(msg, logging.WARNING, category, action, requestId)
 
-    def error(self, msg: str | dict | list , category: str, action: str, requestId: str = None):  # type:ignore
-        self.log(msg, logging.ERROR, category, action, requestId)
+    def error(self, msg: str | dict | list , category: str, action: str, requestId: str = None, processName: str = ""):  # type:ignore
+        self.log(msg, logging.ERROR, category, action, requestId, processName)
 
-    def critical(self, msg: str | dict | list , category: str, action: str, requestId: str = None):  # type:ignore
-        self.log(msg, logging.CRITICAL, category, action, requestId)
+    def critical(self, msg: str | dict | list , category: str, action: str, requestId: str = None, processName: str = ""):  # type:ignore
+        self.log(msg, logging.CRITICAL, category, action, requestId, processName)
 
-    def debug(self, msg: str | dict | list , category: str, action: str, requestId: str = None):  # type:ignore
+    def debug(self, msg: str | dict | list , category: str, action: str, requestId: str = None, processName: str = ""):  # type:ignore
         # print(category, self.debug_ignore)
         if category in self.ignoreDebug:
             return
         else:
-            self.log(msg, logging.DEBUG, category, action, requestId)
+            self.log(msg, logging.DEBUG, category, action, requestId, processName)
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, queue: queue.Queue):
@@ -98,6 +102,8 @@ class DatabaseHandler(logging.Handler):
             record.created = record.forceTimestamp
         
         time = datetime.datetime.fromtimestamp(record.created)
+
+        # record.process_ = record.process_ if record.process_ != "" else multiprocessing.current_process().name
 
         level = 0
 
@@ -125,8 +131,7 @@ class DatabaseHandler(logging.Handler):
 
             
             
-
-        self.q.put((time, level, record.category, record.action, msg, record.requestId))
+        self.q.put((time, level, record.category, record.action, msg, record.requestId, record.process_))
         
         
 
@@ -141,6 +146,8 @@ class Formatter(logging.Formatter):
 
         if record.forceTimestamp is not None:
             record.created = record.forceTimestamp
+
+        # record.process_ = record.process_ if record.process_ != "" else multiprocessing.current_process().name
       
         
         match record.levelname:

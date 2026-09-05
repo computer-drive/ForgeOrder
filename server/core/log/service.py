@@ -1,5 +1,6 @@
 from typing import TypedDict
 import datetime
+from multiprocessing import current_process
 
 from ..database.database import Database
 from ..database.repository import Repository, Column
@@ -18,11 +19,13 @@ class LogRepository(Repository[_Row]):
     columns = [
         Column("id", Integer(), primaryKey=True, autoIncrement=True),
         Column("time", DateTime(), notNull=True),
+        Column("process", String(), notNull=True),
         Column("level", Integer(), notNull=True),
         Column("category", String(), notNull=True),
         Column("action", String(), notNull=True),
         Column("message", JSON()),
-        Column("requestId", String(36))
+        Column("requestId", String(36)),
+        
     ]
 
     def __init__(self, db: Database, tableName: str):
@@ -58,10 +61,15 @@ class LogService:
                 category: str,
                 action: str,
                 message: dict,
-                requestId: str | None = None
+                requestId: str | None = None,
+                process: str  = "",
                 ):
 
         self._initRepository()
+
+        processName = process if process != ""  else current_process().name
+
+        print(current_process().name)
 
         self.repo.insert(
             time=time,
@@ -69,7 +77,8 @@ class LogService:
             category=category,
             action=action,
             message=message,
-            requestId=requestId
+            requestId=requestId,
+            process=processName,
         )
 
     def commit(self):
