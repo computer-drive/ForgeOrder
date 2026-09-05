@@ -6,12 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <link rel="stylesheet" href="/css.css" />
     <title>web</title>
-
+    <style>
+      .noscript {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100svh;
+      }
+    </style>
   </head>
-  <body style="margin: 0">
-    <noscript>请启用JavaScript以继续使用。</noscript>
+  <body>
+
+    <noscript class="noscript">
+      请启用JavaScript以继续使用。
+    </noscript>
     <div id="app" ></div>
 
     <script type="module" src="/src/main.js"></script>
   </body>
+
 </html>
