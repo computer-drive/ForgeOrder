@@ -58,12 +58,17 @@ if __name__ == "__main__":
     readLogThread.start()
     
     consoleLogger.info(f"启动了 {len(workers)} 个 Worker")
+    consoleLogger.info(f"用时 {(time.time() - initTime) * 1000:.2f}  ms")
 
     while True:
-        a = input("输入 'exit' 退出服务：")
-
-        if a.strip().lower() == "exit":
+        try:
+            a = input("输入 'exit' 退出服务：")
+        except KeyboardInterrupt:
             break
+
+            if a.strip().lower() == "exit":
+                break
+        
 
     stopEvent.set()
 
