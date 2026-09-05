@@ -25,11 +25,12 @@ class Logger(logging.Logger):
     def setIgnoreAction(self, action: str) -> None:
         self.ignoreActions.append(action)
 
-
-    def log(self, msg: str | dict | list , level: int, category: str, action: str, requestId: str = None): # type:ignore
-        extra = {"category": category, "action": action, "requestId": requestId}
-        
+    def logWithTimestamp(self, msg: str | dict | list, level: int, category: str, action: str, timestamp: float, requestId: str = None): # type:ignore
+        extra : dict = {"category": category, "action": action, "requestId": requestId}
+                
         extra["originMsg"] = msg
+
+        extra["forceTimestamp"] = timestamp
 
         if isinstance(msg, (dict, list)):
             msg = json.dumps(msg, ensure_ascii=False, indent=2)
@@ -38,8 +39,29 @@ class Logger(logging.Logger):
         else:
             msg = str(msg)
 
+    
+        if category in self.ignoreCategory or action in self.ignoreActions:
+            return
         
+        super().log(level, msg, extra=extra)
 
+
+    def log(self, msg: str | dict | list , level: int, category: str, action: str, requestId: str = None): # type:ignore
+        extra: dict = {"category": category, "action": action, "requestId": requestId}
+        
+        extra["originMsg"] = msg
+
+        extra["forceTimestamp"] = None
+
+        
+        if isinstance(msg, (dict, list)):
+            msg = json.dumps(msg, ensure_ascii=False, indent=2)
+        elif msg is None:
+            msg = ''
+        else:
+            msg = str(msg)
+
+    
         if category in self.ignoreCategory or action in self.ignoreActions:
             return
         
@@ -71,6 +93,9 @@ class DatabaseHandler(logging.Handler):
         self.q = queue
 
     def emit(self, record: logging.LogRecord):
+
+        if record.forceTimestamp is not None:
+            record.created = record.forceTimestamp
         
         time = datetime.datetime.fromtimestamp(record.created)
 
@@ -113,6 +138,9 @@ class Formatter(logging.Formatter):
         
         record.color = ""
         record.reset = "\033[0m"
+
+        if record.forceTimestamp is not None:
+            record.created = record.forceTimestamp
       
         
         match record.levelname:

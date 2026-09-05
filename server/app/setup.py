@@ -1,4 +1,3 @@
-import os
 import datetime
 
 from flask import Flask
@@ -8,6 +7,7 @@ from .hooks.beforeRequest import beforeRequest
 from .hooks.afterRequest import afterRequest
 from .hooks.errors import *
 from app.routes.manager import RouteManager
+lazy from app.processing.log.record import WorkerLogger
 
 class JSONProvider(DefaultJSONProvider):
     ensure_ascii = False
@@ -26,6 +26,8 @@ class MyFlaskApp(Flask):
 
         self.routeManager = RouteManager()
 
+
+        self.workerLogger : WorkerLogger | None  = None
 
 
 

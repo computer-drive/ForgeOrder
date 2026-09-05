@@ -57,6 +57,8 @@ class Range(Validator):
     def MaxEqual(self, value: Any):
         self.maxValue = value
         self.isMaxEqual = True
+
+        return self
         
     def _validate(self, value: Any, context: Any = None):
         if self.minValue is not None:

@@ -3,7 +3,7 @@ import logging
 
 
 
-class LogContext:
+class WorkerLogContext:
     def __init__(self, logger: Logger, category: str) -> None:
         self.logger = logger
         self.category = category
@@ -27,7 +27,5 @@ class LogContext:
         self.log(msg, logging.CRITICAL, action, requestId)
 
 def getLogContext(logger: Logger, category: str):
-
-    
-    return LogContext(logger, category)
+    return WorkerLogContext(logger, category)
 

@@ -58,8 +58,7 @@ def teardownAppContext(error):
 	
 		consoleLogger.warning('\n'.join(traceback.format_exception(type(error), error, error.__traceback__))) # type: ignore
 
-		logger = getLogger()
-		logger.error(
+		current_app.workerLogger.error(
 			logs
 		, "FLASK_APP", "RequestError")
         

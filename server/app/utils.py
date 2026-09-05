@@ -2,10 +2,11 @@ from typing import TypedDict, cast
 
 from flask import g as g_
 
-from .log import RequestLogContext
+from .processing.log.record import RequestLogContext
 from .routes.responseGenerator import ResponseGenerator
 from core.database.database import Database
 from app.db.repository import RepositoryManager
+from .processing.log.record import WorkerLogger
 
 class UserInfo(TypedDict):
     id: int
@@ -18,6 +19,7 @@ class GProxy:
     requestId: str
 
     logger: RequestLogContext
+    workerLogger: WorkerLogger
 
     startTime: float
     endTime: float | None

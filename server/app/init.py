@@ -151,7 +151,7 @@ def init():
     printManager = PrintManager()
 
 
-def shutdown():
+def shutdown(exitCode: int = 0):
     # 关闭数据库日志记录器线程
     shutdownLogger()
 
@@ -166,3 +166,6 @@ def shutdown():
 
     # 保存bininfo
     bininfo.save()
+
+
+    sys.exit(exitCode)

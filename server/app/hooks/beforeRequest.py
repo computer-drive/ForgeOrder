@@ -1,15 +1,14 @@
 import uuid
 import time
 
-from flask import request
+from flask import request, current_app
 
 
 from app.db.connections import getDatabase
 from app.service.users import UserService
 from app.routes import routeManager
 from core.utils.server import getClientIp
-from core.log import getLogger
-from app.log import RequestLogContext
+from app.processing.log.record import RequestLogContext
 from app.routes.responseGenerator import ResponseGenerator
 from app.routes.schema import GLOBAL
 from app.utils import g
@@ -191,7 +190,7 @@ def _handleArguments():
 def _handleRequestInfo():
     g.requestId = str(uuid.uuid4())
     
-    g.logger = RequestLogContext(getLogger(), "BeforeRequest")
+    g.logger = RequestLogContext(current_app.workerLogger, "BeforeRequest")
 
     g.startTime = time.time()
 
