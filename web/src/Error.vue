@@ -4,19 +4,16 @@
 
             <mdui-icon-error class="icon"></mdui-icon-error>
 
-            <p style="font-size: 24px; margin-top: 8px; margin-bottom: 8px;">{{  title  }}</p>
+            <p class="title">{{  title  }}</p>
 
-            <p style="font-size: 16px">{{ message }}</p>
+            <p class="message">{{ message }}</p>
             
             <div v-if="detail">
-                <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" >{{$t("error.actions.detail")}}</mdui-button>
+                <mdui-button class="detail-button" variant="text" @click="showDetail" >{{ pages.error.actions.detail }}</mdui-button>
             </div>
 
-            <!-- <mdui-button style="margin-top: 12px" variant="text" @click="showDetail" v-else-if="detail">详细信息</mdui-button> -->
 
-
-
-            <mdui-button style="margin-top: 12px" @click="backHome" v-if="showHome">{{$t("error.actions.back_home")}}</mdui-button>
+            <mdui-button class="home-button" @click="backHome" v-if="showHome">{{ pages.error.actions.back_home }}</mdui-button>
 
             
         </div>
@@ -25,22 +22,26 @@
 
 <script setup>
     import '@mdui/icons/error.js';
+
     import 'mdui/components/button.js';
+
     import { dialog } from 'mdui/functions/dialog.js'
     import { snackbar } from 'mdui/functions/snackbar.js';
+
     import { useRouter } from 'vue-router';
     import { onMounted, ref } from 'vue';
-    import { t } from './locales/index.js';
+
+    import { pages } from './locales/index.js';
 
     const router = useRouter();
     const props = defineProps({
         title: {
             type: String,
-            default: t("error.default.title")
+            default: pages.error.default.t
         },
         message: {
             type: String,
-            default: t("error.default.message")
+            default: pages.error.default.message
         },
         detail: {
             type: String,
@@ -68,28 +69,27 @@
 
     const showDetail = () => {
         dialog({
-            headline: t("error.dialog.headline"),
+            headline: pages.error.dialog.headline,
             description: detail.value,
             actions: [
                 {
-                    text: t("error.dialog.actions.clickboard"),
+                    text: pages.error.dialog.actions.clickboard,
                     onClick: async () => {
                         try {
                             await navigator.clipboard.writeText(detail.value);
                             snackbar({
-                                'message': t("error.snackbar.copy_success"),
-                                placement: 'bottom-end'
+                                'message': pages.error.snackbar.copy_success,
                             })
                         } catch (error) {
                             snackbar({
-                                'message': t("error.snackbar.copy_failed")
+                                'message': pages.error.snackbar.copy_failed
                             })
                             console.error(error);
                         } 
                     }
                 },
                 {
-                    text: t("common.text.confirm"),
+                    text: pages.common.text.confirm,
                     
                 },
             ]
@@ -98,7 +98,6 @@
 
     onMounted(() => {
         if (props.hasTopbar) {
-            // pageContainer.value.style['padding-top'] = '64px'
             pageContainer.value.style['height'] = 'calc(100vh - 80px)'
         }
     })
@@ -117,17 +116,14 @@
 
 </script>
 
-<style>
-    /* body {
-        padding: 0;
-        margin: 0;  
-    } */
+<style scoped>
 
     .page-container{
-        height: calc(100vh - 16px);
+        height: calc(100vh - 80px);
         display: flex;
         justify-content: center;
         align-items: center;
+        
         
     }
 
@@ -139,5 +135,23 @@
         display: flex;
         justify-content: space-between;
         gap:20px
+    }
+    
+    .title {
+        font-size: 24px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    .message {
+        font-size: 16px;
+    }
+
+    .detail-button {
+        margin-top: 12px;
+    }
+
+    .home-button {
+        margin-top: 12px;
     }
 </style>
