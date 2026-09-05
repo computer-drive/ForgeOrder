@@ -1,73 +1,83 @@
-[返回](../index.md)
+[返回文档首页](../index.md)
 
 # 配置文件
-ForgeOrder的系统配置文件位于`data`目录下的`config.json`。
-配置项以键值对的形式存在，对于不存在的键，系统将使用默认值。
-若需修改配置项，需要在`config.json`中手动添加需要更改的键。
-键名以`.`分隔。
 
-## `server`配置项
-此处的配置项为服务器的设置。
+ForgeOrder 的默认配置文件路径为后端工作目录下的：
 
-1. `server.host`
-   - 说明：服务器运行时的地址。
-   - 默认值：`0.0.0.0`。
+```text
+data/config.json
+```
 
-2. `server.port`
-   - 说明：服务器运行时的端口号。
-   - 默认值：`5000`。
+配置由后端的 `ConfigManager` 加载并进行验证。配置项使用 `.` 分隔的键名表示；未显式配置的项目使用代码中定义的默认值。
 
-3. `server.env`
-   - 说明：服务器运行时的环境。
-   - 默认值：`dev`。
-   - 可用值：`dev`、`product`。
+> **注意**：配置结构以 `server/app/config/schema.py` 为准。本文只记录当前代码中已经定义的配置项。
 
+## 配置项
 
-## `log`配置项
-此处的配置项为日志的设置。
+### `server`
 
-1. `log.level`：
-    - 说明：记录日志时的等级。
-    - 默认值：`info`。
-    - 可用值：`debug`、`info`、`warn`、`error`。
-2. `log.database`：
-    - 说明：记录日志的数据库文件路径。
-    - 默认值：`data/log.db`。
-    - 相对路径和绝对路径均可，相对路径将相对于后端的工作目录。
-    - 若为空，将不使用数据库日志记录器（生产环境不推荐）。
+服务器运行相关配置。
 
-3. `log.debug_ignore`：
-    - 说明：将日志等级设置为`debug`时，忽略的`class_name`的列表。在此列表中的`class_name`且等级为`debug`的日志将不被记录。
-       - 默认值：`[]`。
-    - 可用值：任意字符串。
+| 配置项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `server.host` | `string` | `0.0.0.0` | HTTP 服务监听地址 |
+| `server.port` | `integer` | `5000` | HTTP 服务监听端口，范围为 `1-65535` |
+| `server.env` | `string` | `dev` | 运行环境，可选 `dev` 或 `product` |
+| `server.first_start` | `boolean` | `true` | 是否视为首次启动 |
 
-4. `log.ignore_client_error`：
-    - 说明：是否记录客户端请求的错误日志。
-    - 默认值：`false`。
-    - 开启此选项后，将不记录任何`method`包含在`CLIENT_ERROR`（`CLIENT_ERROR`在`server\app\init_app\schema.py`被定义）中的日志。
+### `log`
 
-## `database`配置项
-此处的配置项为数据库的设置。
+日志系统相关配置。
 
-1. `database.path`：
-    - 说明：数据库文件路径。
-    - 默认值：`data/main.db`。
-    - 相对路径和绝对路径均可，相对路径将相对于后端的工作目录。
+| 配置项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `log.level` | `string` | `info` | 日志等级，可选 `debug`、`info`、`warning`、`error`、`critical` |
+| `log.database` | `string` | `data/log.db` | 日志数据库路径；相对路径相对于后端工作目录 |
+| `log.debug_ignore` | `array` | `[]` | Debug 日志中需要忽略的类别列表 |
+| `log.ignore_client_error` | `boolean` | `false` | 是否忽略客户端错误日志 |
 
-## `auth`配置项
-此处的配置项为有关用户认证的设置。
+### `database`
 
-1. `auth.secret_key`：
-    - 说明：生成用户认证时用的Token所用的密钥
-    - 默认值：`development_key`。
-    - 在生产环境中，建议以足够长的随机字符串作为密钥。
+数据库相关配置。
 
-2. `auth.available_time`：
-    - 说明：用户认证Token的可用时间，单位为分钟。
-    - 默认值：`60`。
-    - 可用值：任意正整数。
+| 配置项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `database.path` | `string` | `data/main.db` | 主数据库文件路径；相对路径相对于后端工作目录 |
 
+### `auth`
 
-    
+用户认证相关配置。
 
+| 配置项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `auth.available_time` | `integer` | `60` | Token 可用时间，单位为分钟，必须大于 `0` |
 
+> 当前版本的配置 Schema 中**没有 `auth.secret_key` 配置项**。旧版文档中关于 `secret_key` 的说明已经过时，请不要继续按照旧文档配置该字段。
+
+## 示例
+
+下面是一个最小的自定义配置示例：
+
+```json
+{
+  "server.host": "0.0.0.0",
+  "server.port": 5000,
+  "server.env": "dev",
+  "log.level": "info",
+  "database.path": "data/main.db",
+  "auth.available_time": 60
+}
+```
+
+未写入的配置项会继续使用默认值。
+
+## 修改配置后的建议
+
+修改监听地址、端口或运行环境后，建议重启 ForgeOrder 服务使配置重新加载。
+
+生产环境尤其应确认：
+
+- `server.env` 设置为 `product`；
+- `server.port` 未与其他服务冲突；
+- 数据库和日志文件路径具有正确的读写权限；
+- 不要把运行数据目录提交到 Git 仓库。
