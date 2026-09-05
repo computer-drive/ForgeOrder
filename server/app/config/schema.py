@@ -21,12 +21,17 @@ class CONFIG:
     LOG_DATABASE = "log.database"
     LOG_DEBUG_IGNORE = "log.debug_ignore"
     LOG_IGNORE_CLIENT_ERROR = "log.ignore_client_error"
+    LOG_FORMAT_JSON = "log.format_json"
     
     # Database
     DATABASE_PATH = "database.path"
     
     # Auth
     AUTH_AVAILABLE_TIME = "auth.available_time"
+
+    # WebSocket
+    WS_HOST = "websocket.host"
+    WS_PORT = "websocket.port"
 
 
     
@@ -52,7 +57,10 @@ CONFIG_ITEMS = [
     FieldDefinition(CONFIG.SERVER_ENV, str, "dev", Choices("dev", "product")),
     # FieldDefinition(CONFIG.SERVER_FIRST_START, bool, True), # 被弃用的
 
+    FieldDefinition(CONFIG.LOG_FORMAT_JSON, bool, True),
 
+    FieldDefinition(CONFIG.WS_HOST, str, "0.0.0.0", NotEmpty()),
+    FieldDefinition(CONFIG.WS_PORT, int, 8765, Interval(Open(0), None)), # 无上限，每个worker的线程数
 
 ]
 

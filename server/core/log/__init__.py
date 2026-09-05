@@ -14,22 +14,27 @@ dbLoggerQueue : Queue | None = None
 _loggerName : str  = ""
 _databaseName : str  = ""
 _level: Literal["info", "debug", "warning", "error", "critical", "_MISSING"]  = "_MISSING"
+_formatJson: bool = False
 
 
-def initLogger(loggerName: str, databaseName: str, level: Literal["info", "debug", "warning", "error", "critical"]):
-    global _loggerName, _databaseName, _level
+def initLogger(loggerName: str,
+            databaseName: str,
+            level: Literal["info", "debug", "warning", "error", "critical"],
+            formatJson: bool = True,    
+                  ):
+    global _loggerName, _databaseName, _level, _formatJson
 
-    _loggerName, _databaseName, _level = loggerName, databaseName, level
+    _loggerName, _databaseName, _level, _formatJson = loggerName, databaseName, level, formatJson
 
 def getLogger():
     global logger, dbLoggerThread, dbLoggerQueue
-    global _loggerName, _databaseName, _level
+    global _loggerName, _databaseName, _level, _formatJson
 
     if _level == "_MISSING" or _loggerName == "" or _databaseName == "":
         raise ValueError("Logger not initialized. Please call initLogger first.")
 
     if logger is None or dbLoggerThread is None or dbLoggerQueue is None:
-        logger, dbLoggerThread, dbLoggerQueue = setupLogger(_loggerName, _databaseName, _level)
+        logger, dbLoggerThread, dbLoggerQueue = setupLogger(_loggerName, _databaseName, _level, _formatJson)
 
     return logger
 

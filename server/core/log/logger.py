@@ -10,12 +10,13 @@ from .worker import createWorker
 
 
 class Logger(logging.Logger):
-    def __init__(self, name: str):
+    def __init__(self, name: str, formatJson: bool = True):
         super().__init__(name)
 
         self.ignoreCategory = []
         self.ignoreActions = []
         self.ignoreDebug = []
+        self.formatJson = formatJson
 
     def setLevel(self, level: int | str) -> None:
         return super().setLevel(level)
@@ -36,7 +37,10 @@ class Logger(logging.Logger):
         extra["process_"] = processName if processName != "" else multiprocessing.current_process().name
 
         if isinstance(msg, (dict, list)):
-            msg = json.dumps(msg, ensure_ascii=False, indent=2)
+            if self.formatJson:
+                msg = json.dumps(msg, ensure_ascii=False, indent=2)
+            else:
+                msg = json.dumps(msg, ensure_ascii=False)
         elif msg is None:
             msg = ''
         else:
@@ -59,7 +63,10 @@ class Logger(logging.Logger):
         extra["process_"] = processName
         
         if isinstance(msg, (dict, list)):
-            msg = json.dumps(msg, ensure_ascii=False, indent=2)
+            if self.formatJson:
+                msg = json.dumps(msg, ensure_ascii=False, indent=2)
+            else:
+                msg = str(msg)
         elif msg is None:
             msg = ''
         else:
@@ -135,8 +142,6 @@ class DatabaseHandler(logging.Handler):
         
         
 
-    
-
 class Formatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
@@ -171,8 +176,8 @@ class Formatter(logging.Formatter):
 
 
 
-def setupLogger(name: str, databaseName: str, level: str = "info"):
-    logger = Logger(name)
+def setupLogger(name: str, databaseName: str, level: str = "info", formatJson: bool = True):
+    logger = Logger(name, formatJson)
 
     formatter = Formatter(FORMAT)
 

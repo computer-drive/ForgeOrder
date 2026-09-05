@@ -11,7 +11,7 @@ from app.config import config, CONFIG
 from app.bininfo import bininfo, KEYS
 from app.processing.base import startWorkers
 from app.processing.log.read import readLogQueue
-
+from app.ws.startup import startWorker as startWebSocketWorker
 # 安装全局异常处理器
 installExcepthook() 
 
@@ -45,20 +45,28 @@ if __name__ == "__main__":
 
 
 
-    consoleLogger.info("正在启动HTTP服务...")
+    consoleLogger.info("正在启动应用程序...")
 
+    # 启动HTTP服务
     workers, logQueue, printerQueue, stopEvent = startWorkers(
         host=config.get(CONFIG.SERVER_HOST),
         ports=config.get(CONFIG.SERVER_WORKER_PORT),
         threads=config.get(CONFIG.SERVER_WORKER_THREADSS),
         config=config
     )
+    consoleLogger.info(f"HTTP服务：启动了 {len(workers)} 个 Worker")
+    
+    # 启动WebSocket服务
+    parentPipe, workerProcess = startWebSocketWorker(logQueue, config)
+    consoleLogger.info(f"WebSocket服务：启动了 Websocket Worker")
+
+
 
     # 启动日志读取线程
     readLogThread = threading.Thread(target=readLogQueue, args=(logQueue, getLogger()), daemon=True, name="ReadLogThread")
     readLogThread.start()
     
-    consoleLogger.info(f"启动了 {len(workers)} 个 Worker")
+    
     consoleLogger.info(f"用时 {(time.time() - initTime) * 1000:.2f}  ms")
 
     while True:

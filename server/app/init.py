@@ -64,7 +64,7 @@ def initRootUser(reset = False):
 def initLog():
 
 
-    initLogger(__name__, config.get(CONFIG.LOG_DATABASE), config.get(CONFIG.LOG_LEVEL))
+    initLogger(__name__, config.get(CONFIG.LOG_DATABASE), config.get(CONFIG.LOG_LEVEL), config.get(CONFIG.LOG_FORMAT_JSON))
 
     getLogger()
 
