@@ -7,6 +7,7 @@ from .log.record import WorkerLogger
 from ..utils import g
 from .excepthook import installProcessExcepthook
 lazy from ..setup import setupApp
+from ..config import ConfigManager
 
 if TYPE_CHECKING:
     from multiprocessing.synchronize import Event
@@ -26,7 +27,8 @@ def _worker(host: str, # 监听的host
             threads: int, # 每个worker的线程数
             logQueue: Queue, # 日志队列
             printerQueue: Queue, # 打印队列
-            stopEvent: Event
+            stopEvent: Event,
+            config: ConfigManager,
             ):
 
     # 初始化日志记录器
@@ -39,12 +41,13 @@ def _worker(host: str, # 监听的host
     app = setupApp()
 
     app.workerLogger = workerLogger
+    app.configManager = config
+    app.stopEvent = stopEvent
 
     workerLogger.info({
         "host": host,
         "port": port,
-        "threads": threads,
-    }, "Worker", "Start")
+    }, "Worker", "Started")
 
     
     server = AppServer(app, host=host, port=port, threads=threads)
@@ -57,8 +60,10 @@ def _worker(host: str, # 监听的host
 
     watcherThread.join()  # 等待关闭线程结束
 
+    workerLogger.info("", "Worker", "Stopped")
 
-def startWorkers(host: str, ports: list[int], threads: int):
+
+def startWorkers(host: str, ports: list[int], threads: int, config: ConfigManager, ):
     workers : list[Process]= []
 
     logQueue = Queue()  # 日志队列
@@ -69,7 +74,7 @@ def startWorkers(host: str, ports: list[int], threads: int):
     i = 0
     for port in ports:
         workerProcess = (
-            Process(target=_worker, args=(host, port, threads, logQueue, printerQueue, stopEvent), daemon=True, name=f"Worker-{i}")
+            Process(target=_worker, args=(host, port, threads, logQueue, printerQueue, stopEvent, config), daemon=True, name=f"Worker-{i}")
         )
 
         workerProcess.start()

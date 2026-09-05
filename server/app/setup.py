@@ -1,4 +1,5 @@
 import datetime
+from multiprocessing.synchronize import Event
 
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
@@ -8,6 +9,7 @@ from .hooks.afterRequest import afterRequest
 from .hooks.errors import *
 from app.routes.manager import RouteManager
 lazy from app.processing.log.record import WorkerLogger
+lazy from .config import ConfigManager
 
 class JSONProvider(DefaultJSONProvider):
     ensure_ascii = False
@@ -27,7 +29,11 @@ class MyFlaskApp(Flask):
         self.routeManager = RouteManager()
 
 
-        self.workerLogger : WorkerLogger | None  = None
+        self.workerLogger : WorkerLogger = None
+
+        self.configManager: ConfigManager  = None
+
+        self.stopEvent: Event  = None
 
 
 

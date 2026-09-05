@@ -52,6 +52,9 @@ class GLOBAL:
     DATABASE_BUSY = ResponseInfo(9021, "DatabaseBusy", None)
     # 数据库繁忙错误
 
+    SERVER_CLOSED = ResponseInfo(9011, "ServerClosed", None)
+    # 服务器已关闭
+
     
 
 

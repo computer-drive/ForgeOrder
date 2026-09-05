@@ -50,7 +50,8 @@ if __name__ == "__main__":
     workers, logQueue, printerQueue, stopEvent = startWorkers(
         host=config.get(CONFIG.SERVER_HOST),
         ports=config.get(CONFIG.SERVER_WORKER_PORT),
-        threads=config.get(CONFIG.SERVER_WORKER_THREADSS)
+        threads=config.get(CONFIG.SERVER_WORKER_THREADSS),
+        config=config
     )
 
     # 启动日志读取线程
@@ -63,23 +64,24 @@ if __name__ == "__main__":
     while True:
         try:
             a = input("输入 'exit' 退出服务：")
-        except KeyboardInterrupt:
-            break
 
             if a.strip().lower() == "exit":
                 break
-        
+        except KeyboardInterrupt:
+            break
+
 
     stopEvent.set()
 
-    # 等待日志读取线程退出
-    logQueue.put(None)
-    readLogThread.join()
 
     # 等待所有Worker退出
     for worker in workers:
         consoleLogger.info(f"等待 {worker.name} 退出...")
         worker.join()
+
+    # 等待日志读取线程退出
+    logQueue.put(None)
+    readLogThread.join()
     
     logger.info('', "Stopped")
         

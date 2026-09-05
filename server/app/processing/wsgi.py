@@ -38,7 +38,11 @@ class AppServer(TcpWSGIServer):
         # 不再接受新的TCP连接
         self.accepting = False  
 
-        # 判断是否有连接
+        # 遍历所有活动连接，设置为关闭状态
+        for channel in self.active_channels.values():
+            channel.will_close = True
+
+        # 判断是否有活动连接
         if not self.active_channels:
             self.finishedShutdown()
 

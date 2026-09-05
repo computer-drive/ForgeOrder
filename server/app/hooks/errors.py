@@ -37,11 +37,10 @@ def handleDatabaseLockedError(e: DatabaseLockedError):
 def databaseError(e):
 	return GLOBAL.DATABASE_ERROR(), 500
 
-def teardownAppContext(error): 
+def teardownRequest(error): 
 	if error is not None:
-		# 有错误，回滚事务
-		if g.database is not None:
-			g.database.rollback()
+		
+
 		logs = {
 					"error": {
 						"msg": str(error),
@@ -61,19 +60,20 @@ def teardownAppContext(error):
 		current_app.workerLogger.error(
 			logs
 		, "FLASK_APP", "RequestError")
+
+		# 有错误，回滚事务
+		if getattr(g, "database", None) is not None:
+			g.database.rollback()
         
 	else:
 		
 		# 无错误，提交事务，防止未提交事务
-		if g.database is not None:
+		if getattr(g, "database", None) is not None:
 			g.database.commit()
 
 	# 关闭数据库连接
 	closeDatabase()
                         
-
-	
-
 	return current_app
 
 
@@ -87,4 +87,4 @@ def setupErrorHandlers(app):
 
     app.errorhandler(DatabaseLockedError)(handleDatabaseLockedError)
 
-    app.teardown_appcontext(teardownAppContext)
+    app.teardown_request(teardownRequest)

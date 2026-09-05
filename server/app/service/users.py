@@ -5,7 +5,9 @@ from enum import Enum, auto
 from typing import cast 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.config import config, CONFIG
+from ..utils import currentApp
+from app.config import CONFIG
+
 from .base import Service, Result
 from ..db.repository import RepositoryManager
 from core.database.repository.exceptions import RecordNotFoundError
@@ -68,7 +70,7 @@ class UserService(Service):
 
 
         
-        self.availableTime = config.get(CONFIG.AUTH_AVAILABLE_TIME)
+        self.availableTime = currentApp.configManager.get(CONFIG.AUTH_AVAILABLE_TIME)
 
         
 

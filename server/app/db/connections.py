@@ -1,7 +1,8 @@
 from app.utils import g
 from .repository import RepositoryManager
 from core.database.database import Database
-from app.config import config, CONFIG
+from app.config import CONFIG, config
+lazy from ..utils import currentApp
 
 def getDatabase():
     '''
@@ -32,7 +33,12 @@ def getDatabase_():
     获取一个数据库连接，返回数据库连接对象。
     与`get_database`方法不同的是，此方法不一定需要请求上下文。
     '''
-    db =  Database(config.get(CONFIG.DATABASE_PATH))
+    try:
+        databaseName = currentApp.configManager.get(CONFIG.DATABASE_PATH)
+    except RuntimeError:
+        databaseName = config.get(CONFIG.DATABASE_PATH)
+
+    db =  Database(databaseName)
 
     try:
         db._isAvailable()

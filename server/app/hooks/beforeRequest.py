@@ -1,17 +1,17 @@
 import uuid
 import time
 
-from flask import request, current_app
+from flask import request
 
 
 from app.db.connections import getDatabase
-from app.service.users import UserService
+lazy from app.service.users import UserService
 from app.routes import routeManager
 from core.utils.server import getClientIp
 from app.processing.log.record import RequestLogContext
 from app.routes.responseGenerator import ResponseGenerator
 from app.routes.schema import GLOBAL
-from app.utils import g
+lazy from app.utils import g, currentApp
 
 def _handleAuth():
     # 获取日志上下文
@@ -188,11 +188,16 @@ def _handleArguments():
         return GLOBAL.ARGUMNET_ERROR(errorInfo), 400
 
 def _handleRequestInfo():
+    
+    
     g.requestId = str(uuid.uuid4())
     
-    g.logger = RequestLogContext(current_app.workerLogger, "BeforeRequest")
+    g.logger = RequestLogContext(currentApp.workerLogger, "BeforeRequest")
 
     g.startTime = time.time()
+
+    if currentApp.stopEvent.is_set():
+        return GLOBAL.SERVER_CLOSED(), 503
 
     g.logger.info({
         "requestId": g.requestId,
@@ -205,8 +210,6 @@ def _handleRequestInfo():
     responses = routeManager.getResponseInfo(request.endpoint)
 
     g.res = ResponseGenerator(responses)
-
-
 
     getDatabase()
 
