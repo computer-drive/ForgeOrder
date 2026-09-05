@@ -69,7 +69,7 @@ class LogService:
 
         processName = process if process != ""  else current_process().name
 
-        print(current_process().name)
+        # print(current_process().name)
 
         self.repo.insert(
             time=time,

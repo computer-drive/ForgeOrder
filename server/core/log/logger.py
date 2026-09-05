@@ -147,7 +147,7 @@ class Formatter(logging.Formatter):
         if record.forceTimestamp is not None:
             record.created = record.forceTimestamp
 
-        # record.process_ = record.process_ if record.process_ != "" else multiprocessing.current_process().name
+        record.process_ = record.process_ if record.process_ != "" else multiprocessing.current_process().name
       
         
         match record.levelname:
