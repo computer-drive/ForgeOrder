@@ -1,9 +1,0 @@
-{
-    "bottom_bar": {
-        "text": {
-            "main": "$home.topbar.text",
-            "orders": "$orders.topbar.text",
-            "me": "$me.topbar.text"
-        }
-    }
-}

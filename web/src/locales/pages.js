@@ -1,4 +1,4 @@
-{
+export default {
   "common": {
     "text": {
       "confirm": "确定",
@@ -378,3 +378,4 @@
 
   
 }
+

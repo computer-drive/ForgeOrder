@@ -1,4 +1,4 @@
-{
+export default  {
     "login": {
         "error": {
             "no_permission": "权限不足",
