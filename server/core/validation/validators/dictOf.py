@@ -3,7 +3,7 @@ from typing import Any
 from collections import Counter
 
 from .base import Validator, ValidationResult
-from .._errors import ValidationError
+from .._errors import ValidationError, ValueTypeError
 
 @dataclass
 class _Field:
@@ -72,7 +72,7 @@ class DictOf(Validator):
 
     允许的类型：dict
     '''
-    allowTypes = dict
+    allowTypes = None
 
     def __init__(self, strictMode: bool = False, *fields: _Field):
         self.fields: list[_Field] = list(fields)
@@ -92,6 +92,9 @@ class DictOf(Validator):
         errors = []
 
         fieldKeys = []
+
+        if not isinstance(value, dict):
+            return ValidationResult(False, ValueTypeError(dict))
 
         for field in self.fields:
             key = field.key

@@ -33,7 +33,7 @@
 
     import { computed } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
-    import { locale } from '@/locales/index.js'
+    // import { locale } from '@/locales/index.js'
 
     import { goBack } from '@/utils/routerHelper';
 

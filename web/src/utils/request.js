@@ -1,6 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
-import { t } from '@/locales/index.js'
+
 import { createLogger } from './log.js'
 import { snackbar } from 'mdui'
 

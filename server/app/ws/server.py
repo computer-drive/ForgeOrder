@@ -1,23 +1,43 @@
 from multiprocessing.connection import Connection
 import asyncio
-import json
+import sys
+import time
 
-import websockets
-import websockets.asyncio
-import websockets.asyncio.server
+import websockets.exceptions as websocketsExceptions
+from websockets import serve
+from websockets.asyncio.server import ServerConnection
 
 from ..processing.log import WorkerLogger
 from ..config import ConfigManager, CONFIG
-from .context import WebsocketServerContext
+lazy from .context import WebsocketServerContext, Client
 from .message import makeMessage
 from .schema import MESSAGEES
-from .handlers.base import handlerManager
+lazy from .handlers.base import handlerManager as hm_
+from ..processing.excepthook import _generateErrorMessage
+
+def addClient(ws: ServerConnection, ctx: 'WebsocketServerContext'):
+
+    def whenClosed(c: Client):
+        ctx.logger.info({
+            "client": c.address,
+        }, "Client", "Disconnected")
 
 
-async def websocketHandler(websocket: websockets.asyncio.server.ServerConnection, ctx: WebsocketServerContext):
+    return Client(
+        ws,
+        ws.remote_address,
+        time.time(),
+        whenClosed, 
+    )
+
+
+async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerContext'):
     ctx.logger.info({
         "client": websocket.remote_address,
     }, "Client", "Connected")
+
+    client = addClient(websocket, ctx)
+    ctx.clients.append(client)
 
     try:
         async for message in websocket:
@@ -25,43 +45,37 @@ async def websocketHandler(websocket: websockets.asyncio.server.ServerConnection
                 "message": message,
             }, "Client", "Received")
 
-            # 解析 JSON 消息
-            try:
-                data = json.loads(message)
-            except json.JSONDecodeError:
-                await websocket.send(makeMessage(MESSAGEES.MESSAGE_INVALID))
-                continue
-
-            # 验证消息格式
-            if "name" not in data or "data" not in data:
-                await websocket.send(makeMessage(MESSAGEES.MESSAGE_INVALID))
-                continue
-
-            # 处理消息逻辑
-            handler = handlerManager.match(data["name"])
-
-            if handler is None:
-                await websocket.send(makeMessage(MESSAGEES.NAME_NOT_FOUND))
-                continue
             
-            await handler(websocket, ctx)
-
+            # 调用处理函数
+            await ctx.handlerManager.handle(client, message)
 
     
-    except websockets.exceptions.ConnectionClosedOK:
-        ctx.logger.info({
+    except websocketsExceptions.ConnectionClosedOK:
+        pass
+
+    except websocketsExceptions.ConnectionClosedError:
+        ctx.logger.warning({
             "client": websocket.remote_address,
-        }, "Client", "Disconnected")
+        }, "Client", "ConnectionClosed")
+
+    except websocketsExceptions.InvalidState:
+        ctx.logger.warning({
+            "client": websocket.remote_address,
+        }, "Client", "ConnectionUnavailable")
 
     except Exception as e:
+        # 捕获除websocket连接异常以外的所有异常
         ctx.logger.error({
             "client": websocket.remote_address,
-            "error": str(e),
+            "error": _generateErrorMessage(*sys.exc_info()),
         }, "Client", "Error")
+
+        # 发送关闭消息
+        await websocket.send(makeMessage(MESSAGEES.SERVER_ERROR))
 
 
     finally:
-        await websocket.close()
+        await client.close()
 
 
 
@@ -69,12 +83,12 @@ async def websocketServer(childPipe: Connection, logger: WorkerLogger, config: C
     host = config.get(CONFIG.WS_HOST)
     port = config.get(CONFIG.WS_PORT)
 
-    context = WebsocketServerContext(childPipe, logger, config)
+    context = WebsocketServerContext(childPipe, logger, config, hm_)
 
     async def _websocketHandler(websocket):
         await websocketHandler(websocket, context)
 
-    async with websockets.serve(_websocketHandler, host, port) as server:
+    async with serve(_websocketHandler, host, port) as server:
 
         logger.info({
             "host": host,

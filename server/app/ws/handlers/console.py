@@ -1,9 +1,12 @@
-from websockets.asyncio.server import ServerConnection
-from ..context import WebsocketServerContext
 
-from .base import handlerManager
+from ..context import WebsocketServerContext, Client
+from ..handlerManager import HandlerManager
 
 
-@handlerManager.register("console")
-async def consoleHandler(ws: ServerConnection, ctx: WebsocketServerContext):
-    pass
+handler = HandlerManager()
+
+@handler.register("console")
+async def consoleHandler(client: Client, ctx: WebsocketServerContext):
+    await client.send("received", {
+        "data": "thank you"
+    })

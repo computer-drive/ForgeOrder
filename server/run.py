@@ -69,15 +69,20 @@ if __name__ == "__main__":
     
     consoleLogger.info(f"用时 {(time.time() - initTime) * 1000:.2f}  ms")
 
+    print("使用 'exit' 以退出服务，使用 'shell' 进入控制台")
     while True:
         try:
-            a = input("输入 'exit' 退出服务：")
+            a = input(">>>")
 
             if a.strip().lower() == "exit":
                 break
+            elif a.strip().lower() == "shell":
+                print("正在连接至Websocket...")
+            elif a.strip() != "":
+                print("未知的命令。")
+
         except KeyboardInterrupt:
             break
-
 
     stopEvent.set()
 

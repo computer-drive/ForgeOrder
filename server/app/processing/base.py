@@ -1,21 +1,30 @@
-from typing import TYPE_CHECKING
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, current_process, Event
 from threading import Thread
+import sys
+from multiprocessing.synchronize import Event as MPEvent
 
 from .wsgi import AppServer
 from .log.record import WorkerLogger
 from ..utils import g
-from .excepthook import installProcessExcepthook
+from .excepthook import installProcessExcepthook, processExcepthook
 lazy from ..setup import setupApp
 from ..config import ConfigManager
 
-if TYPE_CHECKING:
-    from multiprocessing.synchronize import Event
-else:
-    from multiprocessing import Event
+
+class MyProcess(Process):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.workerLogger : WorkerLogger = None
+
+    def run(self):
+        try:
+            super().run()
+        except Exception:
+            processExcepthook(*sys.exc_info(), self.workerLogger)
+
 
 # 监听关闭事件的一个线程
-def _shutdownWatcher(server: AppServer, stopEvent: Event):
+def _shutdownWatcher(server: AppServer, stopEvent: MPEvent):
     stopEvent.wait()  # 等待关闭事件
 
     server.trigger.pull_trigger(server.gracefulShutdown)  # 触发waitress的关闭事件 #type: ignore
@@ -27,15 +36,19 @@ def _worker(host: str, # 监听的host
             threads: int, # 每个worker的线程数
             logQueue: Queue, # 日志队列
             printerQueue: Queue, # 打印队列
-            stopEvent: Event,
+            stopEvent: MPEvent,
             config: ConfigManager,
             ):
 
     # 初始化日志记录器
     workerLogger = WorkerLogger(logQueue)
 
+    current_process().workerLogger = workerLogger
+
     # 安装进程异常处理器
     installProcessExcepthook(workerLogger)
+
+
 
     # 初始化flask app
     app = setupApp()
@@ -74,7 +87,7 @@ def startWorkers(host: str, ports: list[int], threads: int, config: ConfigManage
     i = 0
     for port in ports:
         workerProcess = (
-            Process(target=_worker, args=(host, port, threads, logQueue, printerQueue, stopEvent, config), daemon=True, name=f"Worker-{i}")
+            MyProcess(target=_worker, args=(host, port, threads, logQueue, printerQueue, stopEvent, config), daemon=True, name=f"Worker-{i}")
         )
 
         workerProcess.start()

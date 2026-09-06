@@ -12,5 +12,5 @@ export function format(text, params = {}) {
 }
 
 
-export { pages, utils, format }
+export { pages, utils }
 

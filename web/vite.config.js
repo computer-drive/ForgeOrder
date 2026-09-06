@@ -17,6 +17,23 @@ export default {
           '@': fileURLToPath(new URL('./src', import.meta.url)),
         }
       },
+    server : {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:80',
+        changeOrigin: true,
+        configure: (proxy) => {
+          // 获取真实ip并设置header
+          proxy.on('proxyReq', (proxyReq, req, res, options) => {
+            const ip = req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
+            const realIP = ip.replace(/^::ffff:/, '');
+            proxyReq.setHeader('X-Real-IP', realIP);
+            proxyReq.setHeader('X-Forwarded-For', realIP);
+          })
+        }
+      }
+    }
+  },
   build: {
     outDir: '../server/static',
   },
