@@ -87,10 +87,10 @@ if __name__ == "__main__":
 
     # 等待所有Worker退出
     try:
-        consoleLogger.info("正在等待所有Worker退出，按下Ctrl-C强制退出...")
+        consoleLogger.info("正在等待所有Worker退出，再次按下Ctrl-C强制退出...")
         for worker in manager._workers:
-            consoleLogger.info(f"等待 {worker.name} 退出...")
             worker.join()
+            consoleLogger.info(f"{worker.name} 已退出")
     except KeyboardInterrupt:
         manager.forceStop()
         
@@ -100,8 +100,10 @@ if __name__ == "__main__":
     readLogThread.join()
     
     logger.info('', "Stopped")
-        
+
     shutdown() 
+
+    
 
 
     

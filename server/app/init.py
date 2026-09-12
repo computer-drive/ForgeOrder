@@ -167,5 +167,9 @@ def shutdown(exitCode: int = 0):
     # 保存bininfo
     bininfo.save()
 
+    if exitCode == 0:
+        print("Bye! See you next Time.(＾▽＾)")
+    else:
+        print("Bye! But something seems went wrong... (╥﹏╥)")
 
     sys.exit(exitCode)
