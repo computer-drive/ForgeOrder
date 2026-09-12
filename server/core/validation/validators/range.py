@@ -4,7 +4,7 @@ from typing import Any
 from .base import Validator, ValidationResult
 from .._errors import ValidationError, ValueTypeError
 from ..exceptions import NonMergeableValidatorError
-
+from ...utils.common import getLanguage
 
 @dataclass
 class RangeError(ValidationError):
@@ -14,10 +14,14 @@ class RangeError(ValidationError):
         return f"Value must be in {self._range}"
 
 class UncomparableValueError(Exception):
+    MESSAGES = {
+        "en": "The type of value {} is not compareable.",
+        "zh": "类型{}不支持比较"
+    }
 
     def __init__(self, valueType: type):
 
-        super().__init__(f"The type of value {valueType} is not compareable.")
+        super().__init__(self.MESSAGES[getLanguage()].format(valueType))
 
 class Range(Validator):
     '''

@@ -17,7 +17,11 @@ class LengthError(ValidationError):
         return f"The length of value must be between {self.min} and {self.max}."
 
 class LengthIsUnavailableError(Exception):
-    
+    MESSAGES = {
+        "en": "Falied to get the length of {}",
+        "zh": "{}类型不能获取长度"
+
+    }
     def __init__(self, valueType: type):
         super().__init__(f"Failed to get the length of {valueType}.")
 

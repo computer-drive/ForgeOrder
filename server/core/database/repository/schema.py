@@ -95,7 +95,7 @@ class JSON(ColumnType):
         try:
             return json.dumps(value, ensure_ascii=False)
         except Exception as e:
-            raise InvalidJsonError(e)
+            raise InvalidJSONError(e)
 
     def convertFrom(self, value: str) -> dict | list:
         if value is None:
@@ -104,7 +104,7 @@ class JSON(ColumnType):
         try:
             return json.loads(value)
         except Exception as e:
-            raise InvalidJsonError(e)
+            raise InvalidJSONError(e)
 
 class DateTime(ColumnType):
     '''日期时间类型'''

@@ -1,5 +1,5 @@
 import sqlite3
-
+from ...utils.common import getLanguage
 
 class DatabaseError(Exception):
     '''数据库连接基类'''
@@ -14,55 +14,94 @@ class DatabaseError(Exception):
 class NotConnectedError(DatabaseError):
     '''数据库未连接异常'''
 
+    MESSAGES = {
+        'en': 'Database not connected or closed.',
+        'zh': '数据库尚未连接或连接已关闭'
+    }
+
     def __init__(self):
-        super().__init__("Database not connected or closed.")
+        super().__init__(self.MESSAGES[getLanguage()].format())
 
 
 class DatabaseLockedError(DatabaseError):
     '''数据库锁定异常'''
 
+    MESSAGES = {
+        'en': 'Database is locked.',
+        'zh': "数据库已被锁定"
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Database is locked.")
+        super().__init__(self.MESSAGES[getLanguage()].format())
 
 class ConstraintError(DatabaseError):
     '''约束错误基类'''  
+
 class UniqueConstraintError(ConstraintError):
     '''唯一(UNIQUE)约束错误'''
 
+    MESSAGES = {
+        'en': 'Unique constraint error: {}',
+        'zh': '唯一（UNIQUE）约束错误：{}'
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Unique constraint error. " + str(originError))
+        super().__init__(self.MESSAGES[getLanguage()].format())
+
 class ForeignKeyConstraintError(ConstraintError):
     '''外键约束错误'''
 
+    MESSAGE = {
+        'en': 'Foreign key constraint error:{}',
+        'zh': '外键（FOREIGN）约束错误:{}'
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Foreign key constraint error. " + str(originError))
+        super().__init__(self.MESSAGE[getLanguage()].format(originError))
+
 class PrimaryKeyConstraintError(ConstraintError):
     '''主键约束错误'''
 
+    MESSAGES = {
+        'en': 'Primary key constraint error:{}',
+        'zh': '主键（PRIMARY）约束错误:{}'
+    }
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Primary key constraint error. " + str(originError))
+        super().__init__(self.MESSAGES[getLanguage()].format(originError))
+        
 class NotNullConstraintError(ConstraintError):
     '''非空约束错误'''
 
+    MESSAGES = {
+        'en': 'Not null constraint error:{}',
+        'zh': '非空（NOT NULL）约束错误：{}'
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Not null constraint error. " + str(originError))
+        super().__init__(self.MESSAGES[getLanguage()].format(originError))
+
 class CheckConstraintError(ConstraintError):
     '''检查约束错误'''
 
+    MESSAGES = {
+        'en': 'Check constraint error:{}',
+        'zh': '检查（CHECK）约束错误：{}'
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("Check constraint error. " + str(originError))
+        super().__init__(self.MESSAGES[getLanguage()].format(originError))
 
 class DatabaseCannotOpenError(DatabaseError):
     '''数据库无法打开错误'''
@@ -74,11 +113,27 @@ class DatabaseCannotOpenError(DatabaseError):
 
 
 class DatabaseTypeError(DatabaseError):
+
+    MESSAGES = {
+        'en': 'Type mismatch. {}',
+        'zh': '类型不匹配：{}'
+    }
+
     def __init__(self, originError: Exception):
         self.originError = originError
 
-        super().__init__("type mismatch. " + str(originError))
+        super().__init__(self.MESSAGES[getLanguage()].format(originError))
 
+MESSAGES = {
+    "unknown": {
+        'en': "Unknown databse error: {}",
+        "zh": "未知数据库错误：{}"
+    },
+    "cannotOpen": {
+        'en': "Cannot open the databse: {}",
+        "zh": "无法打开数据库：{}"
+    }
+}
 
 def getBasicCode(code: int):
     '''获取SQLite错误码的基本码'''
@@ -91,7 +146,7 @@ def convertError(error: sqlite3.Error):
     sqliteErrorname = getattr(error, "sqlite_errorname", None)
 
     if sqliteErrorcode is None:
-        return  DatabaseError("Unknown database error. " + str(error), error)
+        return  DatabaseError(MESSAGES["unknown"][getLanguage()].format(error), error)
 
     match sqliteErrorcode:
         case 5:
@@ -121,8 +176,8 @@ def convertError(error: sqlite3.Error):
 
             match basicCode:
                 case 14:
-                    return DatabaseCannotOpenError(f"({sqliteErrorcode} {sqliteErrorname}) Cannot open database file. ", error)
+                    return DatabaseCannotOpenError(f"({sqliteErrorcode} {sqliteErrorname}) {MESSAGES["cannotOpen"][getLanguage()].format(error)}", error)
                 case _:
-                    return DatabaseError(f"({basicCode} {sqliteErrorcode} {sqliteErrorname}) Unknown database error. " + str(error), error)
+                    return DatabaseError(f"({basicCode} {sqliteErrorcode} {sqliteErrorname}) {MESSAGES['unknown'][getLanguage()].format(error)}", error)
 
         

@@ -5,17 +5,23 @@ from .base import Validator, ValidationResult
 from .._errors import ValidationError
 from .always import AlwaysPass
 from .logical import AllOf
+from ...utils.common import getLanguage
 
 class NotIterableError(Exception):
     '''
     传入的值不是可迭代对象
     '''
+
+    MESSAGES = {
+        "en": "Validator 'ForEach' requires an iterable value, but got {}.",
+        "zh": "类型{}时不可迭代的"
+    }
     def __init__(self, validatorClass: type, valueType: type):
         self.validatorClass = validatorClass
         self.valueType = valueType
 
         super().__init__(
-            f"Validator ' {self.validatorClass.__name__}' requires an iterable value, but got {self.valueType}."
+            self.MESSAGES[getLanguage()].format(self.valueType)
         )
 
 

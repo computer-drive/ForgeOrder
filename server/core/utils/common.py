@@ -1,7 +1,10 @@
 from uuid import UUID
 from typing import Literal
 import datetime
+import os
+import locale
 
+currentLanguage = None
 
 def padString(string: str,
                length: int,
@@ -52,3 +55,17 @@ def uuidToShortCode(uuid: UUID):
     dt = uuid7ToDatetime(uuid)
 
     return datetimeToShortCode(dt)
+
+def getLanguage():
+    global currentLanguage
+
+    if not currentLanguage:
+        currentLanguage = locale.getlocale()[0]
+        if currentLanguage is None:
+            currentLanguage = os.environ.get('LANG', 'en_US')
+
+        currentLanguage = currentLanguage.split("_")[0]
+
+    return currentLanguage
+
+        
