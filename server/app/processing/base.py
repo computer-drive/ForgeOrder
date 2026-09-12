@@ -2,10 +2,11 @@ from multiprocessing import Process, Queue
 import sys
 from typing import  cast
 from multiprocessing.synchronize import Event as MPEvent
-
+from multiprocessing import Pipe
+from multiprocessing.connection import Connection
 
 from .log.record import WorkerLogger
-from ..utils import g
+
 from .excepthook import  installProcessExcepthook, processExcepthook
 
 
@@ -18,7 +19,11 @@ class ProcessWorker:
         self.logQueue = logQueue
         self.stopEvent = stopEvent
 
+        # 子进程创建的变量
         self.workerLogger = None
+        self.pipe: Connection = None #type: ignore
+
+        self.parentPipe: Connection = None #type: ignore
 
         self._process = None
 
@@ -34,9 +39,12 @@ class ProcessWorker:
         '''子进程的主函数'''
         raise NotImplementedError
 
-    def _worker(self):
+    def _worker(self, pipe: Connection):
+
         try:
             installProcessExcepthook(self.getWorkerLogger())
+
+            self.pipe = pipe
 
             self.run()
         except Exception as e:
@@ -44,7 +52,11 @@ class ProcessWorker:
 
     def start(self):
 
-        self._process = Process(target=self._worker, name=self.name, args=(), daemon=self.daemon)
+        parent, children = Pipe()
+
+        self.parentPipe = parent
+
+        self._process = Process(target=self._worker, name=self.name, args=(children,), daemon=self.daemon)
 
         self._process.start()
 

@@ -1,34 +1,33 @@
 from multiprocessing import  Pipe, Queue, current_process
 from multiprocessing.connection import Connection
+from multiprocessing.synchronize import Event as MPEvent
 import asyncio
 
 from .server import websocketServer
 from ..processing.log import WorkerLogger
-from ..processing.excepthook import installProcessExcepthook
+from ..processing.base import ProcessWorker
 from ..config import ConfigManager
-from ..processing.base import MyProcess
-
-def workerMain(childPipe: Connection, logQueue: Queue, config: ConfigManager):
-    logger = WorkerLogger(logQueue)
-
-    installProcessExcepthook(logger)
-
-    current_process().workerLogger = logger
-
-    asyncio.run(websocketServer(childPipe, logger, config))
 
 
-def startWorker(logQueue: Queue, config: ConfigManager):
+class WebsocketWorker(ProcessWorker):
+    def __init__(self,
+                name: str,
+                logQueue: Queue,
+                stopEvent: MPEvent,
+                config: ConfigManager,
+                daemon: bool = True
+                ):
 
-    parentPipe, childPipe = Pipe()
+        super().__init__(name, logQueue, stopEvent, daemon)
 
-    workerProcess = MyProcess(target=workerMain,
-                            args=(childPipe, logQueue, config),
-                            daemon=True, 
-                            name='Worker-Websocket')
+        self.config = config
 
-    
+    def run(self):
+        asyncio.run(websocketServer(self.pipe,
+                                    self.getWorkerLogger(),
+                                    self.config))
 
-    workerProcess.start()
+    def waitToStart(self):
+        # 等待接受数据
+        self.parentPipe.recv()
 
-    return parentPipe, workerProcess

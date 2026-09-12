@@ -90,6 +90,8 @@ async def websocketServer(childPipe: Connection, logger: WorkerLogger, config: C
 
     async with serve(_websocketHandler, host, port) as server:
 
+        childPipe.send({"type": "started"})
+
         logger.info({
             "host": host,
             "port": port,

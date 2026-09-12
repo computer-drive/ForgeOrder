@@ -47,4 +47,14 @@ class HTTPWorkerManager:
         for worker in self._workers:
             worker.forceStop()
 
+    def waitProcessToStart(self):
+
+        for worker in self._workers:
+            # 等待worker发送一条消
+            data = worker.parentPipe.recv()
+
+
+            
+
+
     

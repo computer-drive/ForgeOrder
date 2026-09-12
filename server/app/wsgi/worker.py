@@ -48,6 +48,9 @@ class HTTPWorker(ProcessWorker):
         watcherThread = Thread(target=self._shutdownWatcher, daemon=True)
         watcherThread.start()
 
+
+        self.pipe.send({"type": "started"})
+
         self._server.run()
 
 
@@ -60,5 +63,3 @@ class HTTPWorker(ProcessWorker):
 
         self._server.trigger.pull_trigger(self._server.gracefulShutdown)  # 触发waitress的关闭事件 #type: ignore
 
-
-        
