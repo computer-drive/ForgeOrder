@@ -9,7 +9,7 @@ from core.errorHandler.excepthook import installExcepthook
 from core.log import getConsoleLogger, getLogContext, getLogger
 from app.config import config, CONFIG
 from app.bininfo import bininfo, KEYS
-from app.processing.base import startWorkers
+from app.wsgi.manager import HTTPWorkerManager
 from app.processing.log.read import readLogQueue
 from app.ws.startup import startWorker as startWebSocketWorker
 # 安装全局异常处理器
@@ -44,22 +44,28 @@ if __name__ == "__main__":
     bininfo.save()
 
 
-
     consoleLogger.info("正在启动应用程序...")
 
     # 启动HTTP服务
-    workers, logQueue, printerQueue, stopEvent = startWorkers(
-        host=config.get(CONFIG.SERVER_HOST),
-        ports=config.get(CONFIG.SERVER_WORKER_PORT),
-        threads=config.get(CONFIG.SERVER_WORKER_THREADSS),
-        config=config
-    )
-    consoleLogger.info(f"HTTP服务：启动了 {len(workers)} 个 Worker")
-    
-    # 启动WebSocket服务
-    parentPipe, workerProcess = startWebSocketWorker(logQueue, config)
-    consoleLogger.info(f"WebSocket服务：启动了 Websocket Worker")
+    # workers, logQueue, printerQueue, stopEvent = startWorkers(
+    #     host=config.get(CONFIG.SERVER_HOST),
+    #     ports=config.get(CONFIG.SERVER_WORKER_PORT),
+    #     threads=config.get(CONFIG.SERVER_WORKER_THREADSS),
+    #     config=config
+    # )
 
+    manager, logQueue, printerQueue = HTTPWorkerManager(
+        config.get(CONFIG.SERVER_HOST),
+        config.get(CONFIG.SERVER_WORKER_PORT),
+        config.get(CONFIG.SERVER_WORKER_THREADSS),
+    )()
+
+
+    consoleLogger.info(f"HTTP服务：启动了 {len(manager._workers)} 个 Worker")
+    
+    # # 启动WebSocket服务
+    # parentPipe, workerProcess = startWebSocketWorker(logQueue, config)
+    # consoleLogger.info(f"WebSocket服务：启动了 Websocket Worker")
 
 
     # 启动日志读取线程
@@ -68,29 +74,26 @@ if __name__ == "__main__":
     
     
     consoleLogger.info(f"用时 {(time.time() - initTime) * 1000:.2f}  ms")
+    consoleLogger.info("按下Ctrl-C退出")
 
-    print("使用 'exit' 以退出服务，使用 'shell' 进入控制台")
-    while True:
-        try:
-            a = input(">>>")
+    try:
+        while True:
+            input()
+    except KeyboardInterrupt:
+        pass
 
-            if a.strip().lower() == "exit":
-                break
-            elif a.strip().lower() == "shell":
-                print("正在连接至Websocket...")
-            elif a.strip() != "":
-                print("未知的命令。")
-
-        except KeyboardInterrupt:
-            break
-
-    stopEvent.set()
+    manager.stop()
 
 
     # 等待所有Worker退出
-    for worker in workers:
-        consoleLogger.info(f"等待 {worker.name} 退出...")
-        worker.join()
+    try:
+        consoleLogger.info("正在等待所有Worker退出，按下Ctrl-C强制退出...")
+        for worker in manager._workers:
+            consoleLogger.info(f"等待 {worker.name} 退出...")
+            worker.join()
+    except KeyboardInterrupt:
+        manager.forceStop()
+        
 
     # 等待日志读取线程退出
     logQueue.put(None)

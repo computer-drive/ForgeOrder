@@ -8,7 +8,7 @@ from .routes.responseGenerator import ResponseGenerator
 from core.database.database import Database
 from app.db.repository import RepositoryManager
 from .processing.log.record import WorkerLogger
-lazy from .setup import MyFlaskApp
+lazy from .wsgi.setup import MyFlaskApp
 
 class UserInfo(TypedDict):
     id: int
