@@ -45,7 +45,7 @@ class HTTPWorkerManager:
 
     def forceStop(self):
         for worker in self._workers:
-            worker.forceStop()
+            worker.terminate()
 
     def waitProcessToStart(self):
 

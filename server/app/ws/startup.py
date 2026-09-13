@@ -23,9 +23,15 @@ class WebsocketWorker(ProcessWorker):
         self.config = config
 
     def run(self):
+
         asyncio.run(websocketServer(self.pipe,
-                                    self.getWorkerLogger(),
-                                    self.config))
+                                        self.getWorkerLogger(),
+                                        self.config))
+
+    def stop(self):
+        super().stop()
+
+        self.parentPipe.send("stop")
 
     def waitToStart(self):
         # 等待接受数据

@@ -1,4 +1,3 @@
-from multiprocessing.connection import Connection
 import asyncio
 import sys
 import time
@@ -8,12 +7,13 @@ from websockets import serve
 from websockets.asyncio.server import ServerConnection
 
 from ..processing.log import WorkerLogger
+from ..processing.base import WorkerPipe
 from ..config import ConfigManager, CONFIG
-lazy from .context import WebsocketServerContext, Client
 from .message import makeMessage
 from .schema import MESSAGEES
-lazy from .handlers.base import handlerManager as hm_
 from ..processing.excepthook import _generateErrorMessage
+lazy from .handlers.base import handlerManager as hm_
+lazy from .context import WebsocketServerContext, Client
 
 def addClient(ws: ServerConnection, ctx: 'WebsocketServerContext'):
 
@@ -79,7 +79,49 @@ async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerCon
 
 
 
-async def websocketServer(childPipe: Connection, logger: WorkerLogger, config: ConfigManager):
+async def listenPipe(childPipe: WorkerPipe, context, logger):
+    loop = asyncio.get_running_loop()
+
+    fd = childPipe.pipe.fileno() #获取文件描述符
+
+    dataReady = asyncio.Event()
+
+    loop.add_reader(fd, dataReady.set)
+
+    try:
+        while True:
+            # 判断是否有数据可读
+            if not childPipe.poll():
+                # 等待
+                await dataReady.wait()
+
+                dataReady.clear()
+
+                # 可能出现多个消息积压，在判断一次
+                if not childPipe.poll():
+                    continue
+
+            message = childPipe.recv()
+            logger.debug({
+                "type": message.type,
+                "data": message.data
+            }, "WebsocketPipe", "Received")
+
+            if message.type == "stop":
+                break
+
+    except (EOFError, OSError) as e:
+        logger.warning({
+            "error": str(e)
+        }, "WebsocketPipe", "Closed")
+
+    finally:
+        loop.remove_reader(fd)
+
+
+
+
+async def websocketServer(childPipe: WorkerPipe, logger: WorkerLogger, config: ConfigManager):
     host = config.get(CONFIG.WS_HOST)
     port = config.get(CONFIG.WS_PORT)
 
@@ -90,13 +132,21 @@ async def websocketServer(childPipe: Connection, logger: WorkerLogger, config: C
 
     async with serve(_websocketHandler, host, port) as server:
 
-        childPipe.send({"type": "started"})
-
+        # 启动管道监听
+        pipeTask = asyncio.create_task(
+            listenPipe(childPipe, context, logger)
+        )
+        
         logger.info({
             "host": host,
             "port": port,
         }, "WebSocket", "Started")
+        childPipe.send("started")
 
-        await asyncio.Future()
+        # await asyncio.Future()
 
-        logger.info("", "WebSocket", "Stopped")
+        try:
+            await pipeTask
+        finally:
+            pipeTask.cancel()
+            logger.info("", "WebSocket", "Stopped")

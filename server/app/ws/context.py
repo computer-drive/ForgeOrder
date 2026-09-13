@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from multiprocessing.connection import Connection
 from typing import Callable
 
 from websockets.asyncio.server import ServerConnection
 from websockets.protocol import State
 
 from ..processing.log import WorkerLogger
+from ..processing.base import WorkerPipe
 from ..config import ConfigManager
 from .message import makeMessage
 from .handlerManager import HandlerManager
@@ -38,7 +38,7 @@ class Client:
     
 @dataclass
 class WebsocketServerContext:
-    pipe: Connection
+    pipe: WorkerPipe
     logger: WorkerLogger
     config: ConfigManager
 

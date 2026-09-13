@@ -49,14 +49,15 @@ class HTTPWorker(ProcessWorker):
         watcherThread.start()
 
 
-        self.pipe.send({"type": "started"})
+        self.pipe.send("started")
 
         self._server.run()
-
 
         watcherThread.join()  # 等待关闭线程结束
 
         workerLogger.info("", "Worker", "Stopped")
+
+        self.pipe.send("stop")
 
     def _shutdownWatcher(self):
         self.stopEvent.wait()

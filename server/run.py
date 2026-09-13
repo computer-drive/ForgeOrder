@@ -83,6 +83,7 @@ if __name__ == "__main__":
         pass
 
     manager.stop()
+    websocketWorker.stop()
 
 
     # 等待所有Worker退出
@@ -103,7 +104,6 @@ if __name__ == "__main__":
     logQueue.put(None)
     readLogThread.join()
     
-    logger.info('', "Stopped")
 
     shutdown() 
 

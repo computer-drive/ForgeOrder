@@ -159,13 +159,19 @@ def shutdown(exitCode: int = 0):
     # 关闭打印服务
     PrintManager.getInstance().shutdown()
 
+     # 保存bininfo
+    if exitCode == 0:
+        bininfo[KEYS.IS_NORMAL_SHUTDOWN] = True
+
+    bininfo.save()
+
+    getLogger().info("", "Main", "Stopped")
+        
+
     # 关闭日志记录器
     logging.shutdown()
 
-    bininfo[KEYS.IS_NORMAL_SHUTDOWN] = True
 
-    # 保存bininfo
-    bininfo.save()
 
     if exitCode == 0:
         print("Bye! See you next Time.(＾▽＾)")
