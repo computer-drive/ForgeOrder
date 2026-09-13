@@ -2,6 +2,7 @@ import time
 import os
 import threading
 from multiprocessing import current_process
+import multiprocessing
 
 from app.init import init, shutdown
 from app.const import VERSION
@@ -19,6 +20,7 @@ installExcepthook()
 current_process().name = "Master"
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method("spawn")
 
     consoleLogger= getConsoleLogger("main")
 
@@ -46,6 +48,8 @@ if __name__ == "__main__":
 
 
     consoleLogger.info("正在启动应用程序...")
+
+   
 
 
     manager, logQueue, printerQueue = HTTPWorkerManager(
