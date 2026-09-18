@@ -82,42 +82,48 @@ async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerCon
 async def listenPipe(childPipe: WorkerPipe, context, logger):
     loop = asyncio.get_running_loop()
 
-    fd = childPipe.pipe.fileno() #获取文件描述符
-
-    dataReady = asyncio.Event()
-
-    loop.add_reader(fd, dataReady.set)
-
     try:
-        while True:
-            # 判断是否有数据可读
-            if not childPipe.poll():
-                # 等待
-                await dataReady.wait()
-
-                dataReady.clear()
-
-                # 可能出现多个消息积压，在判断一次
-                if not childPipe.poll():
+        if sys.platform == "win32":
+            # Windows: ProactorEventLoop 不支持 add_reader，
+            # SelectorEventLoop 又不认管道句柄，只能用线程池轮询。
+            while True:
+                has_data = await loop.run_in_executor(None, childPipe.poll, 1.0)
+                if not has_data:
                     continue
 
-            message = childPipe.recv()
-            logger.debug({
-                "type": message.type,
-                "data": message.data
-            }, "WebsocketPipe", "Received")
+                message = childPipe.recv()
+                logger.debug({
+                    "type": message.type,
+                    "data": message.data,
+                }, "WebsocketPipe", "Received")
 
-            if message.type == "stop":
-                break
+                if message.type == "stop":
+                    break
+        else:
+            # Unix: 用 add_reader，零轮询开销
+            fd = childPipe.pipe.fileno()
+            dataReady = asyncio.Event()
+            loop.add_reader(fd, dataReady.set)
+            try:
+                while True:
+                    if not childPipe.poll():
+                        await dataReady.wait()
+                        dataReady.clear()
+                        continue
+
+                    message = childPipe.recv()
+                    logger.debug({
+                        "type": message.type,
+                        "data": message.data,
+                    }, "WebsocketPipe", "Received")
+
+                    if message.type == "stop":
+                        break
+            finally:
+                loop.remove_reader(fd)
 
     except (EOFError, OSError) as e:
-        logger.warning({
-            "error": str(e)
-        }, "WebsocketPipe", "Closed")
-
-    finally:
-        loop.remove_reader(fd)
-
+        logger.warning({"error": str(e)}, "WebsocketPipe", "Closed")
 
 
 
