@@ -23,7 +23,7 @@ def integerToBytes(number:int):
     
 class IntegerSerializer(Serializer[int]):
     '''
-    整数序列化器，支持32位整符号整数的序列化和反序列化。
+    整数序列化器，支持任意大小的整数的序列化和反序列化。
     '''
     typeId = 1
     pythonType = int
