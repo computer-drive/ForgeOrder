@@ -10,7 +10,10 @@ class Serializer(Generic[T]):
     typeId: int # 类型ID 1<=typeId<=1024
     pythonType: type # Python类型
 
-    def __init__(self, manager: 'SerializationManager'):
+    def __init__(self):
+        self.manager: 'SerializationManager' = None #type: ignore
+
+    def setManager(self, manager: 'SerializationManager'):
         self.manager = manager
 
     def serialize(self, value: T) -> bytes:

@@ -9,7 +9,7 @@ from app.const import VERSION
 from core.errorHandler.excepthook import installExcepthook
 from core.log import getConsoleLogger, getLogContext, getLogger
 from app.config import config, CONFIG
-from app.bininfo import bininfo, KEYS
+from app.bininfo import bininfo
 from app.wsgi.manager import HTTPWorkerManager
 from app.processing.log.read import readLogQueue
 from app.ws.startup import WebsocketWorker
@@ -41,9 +41,9 @@ if __name__ == "__main__":
         "host": config.get(CONFIG.SERVER_HOST)
     }, "RuntimeInfo")
 
-    bininfo[KEYS.IS_NORMAL_SHUTDOWN] = False # 先设置为False，等服务正常退出后再设置为True
-    bininfo[KEYS.STARTUP_COUNT] += 1
-    bininfo[KEYS.LAST_START_TIMESTAMP] = int(time.time())
+    bininfo.data.isNormalShutdown = False # 先设置为False，等服务正常退出后再设置为True
+    bininfo.data.startupCount += 1
+    bininfo.data.lastStartTimestamp = int(time.time())
     bininfo.save()
 
 

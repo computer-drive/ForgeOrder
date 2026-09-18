@@ -52,6 +52,21 @@ class SerializerAlreadyRegisteredError(Exception):
     def __init__(self, typeId: int):
         super().__init__(self.MESSAGES[getLanguage()].format(typeId))
 
+class ProxySerializeTypeError(Exception):
+    '''
+    代理序列化器类型异常。
+    '''
+    MESSAGES = {
+        'en': 'ProxySerializer type error:{} Actual type {}',
+        'zh': '代理序列化器的序列化方法必须返回{}类型的值，但实际类型是{}',
+    }
+
+    def __init__(self, valueType: type, proxyType: type):
+        super().__init__(self.MESSAGES[getLanguage()].format(
+            valueType.__name__,
+            proxyType.__name__,
+            ))
+
 
 class SerializationError(Exception):
     '''

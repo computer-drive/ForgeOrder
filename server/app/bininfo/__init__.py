@@ -1,44 +1,46 @@
 from typing import Any
 import os
 
-from .schema import SCHEMA, KEYS
-from core.binpack import BinParser
+from core.serialization import useSerializer
+from core.serialization.serializers.custom import ProxySerializer
+from .schema import Schema
 
 class BinInfo:
 
     def __init__(self, path: str):
         self.path = path    
 
-        self.parser = None
+
+        self.data : Schema = None
+
+        self.serializer = useSerializer()
+        self.serializer.register(
+            ProxySerializer(
+                            101, Schema, dict, 
+                lambda x: {attr: getattr(x, attr) for attr in dir(x) if not attr.startswith("__")},
+                lambda x: Schema(**x),
+            )
+        )
 
     def load(self):
-        if self.parser is not None:
+        if self.data is not None:
             return
 
-            
-
         with open(self.path, "rb") as f:
-            self.parser = BinParser(SCHEMA).parseFile(f)
+            fileData = f.read()
 
-    def __getitem__(self, key: str):
-        if self.parser is None:
-            self.load()
-
-        return self.parser[key] #type: ignore
-
-    def __setitem__(self, key: str, value: Any):
-        if self.parser is None:
-            self.load()
-
-        self.parser[key] = value #type: ignore
+        if fileData:
+            self.data = self.serializer.deserialize(fileData)
+        else:
+            self.data = Schema()
 
 
     def save(self):
-        if self.parser is None:
+        if self.data is None:
             raise ValueError("BinInfo is not loaded")
 
         with open(self.path, "wb") as f:
-            self.parser.saveFile(f)
+            f.write(self.serializer.serialize(self.data))
 
 if not os.path.exists("state.dat"):
     with open("state.dat", "w") as f:

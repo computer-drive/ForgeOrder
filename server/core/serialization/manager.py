@@ -11,27 +11,29 @@ class SerializationManager:
     '''
 
     def __init__(self):
-        self.serializers: dict[type, type[Serializer]] = {}
+        self.serializers: dict[type, Serializer] = {}
 
-        self.serializersTypeId: dict[int, type[Serializer]] = {}
+        self.serializersTypeId: dict[int, Serializer] = {}
 
 
-    def register(self, serializeClass: type[Serializer]):
-        if serializeClass.typeId in self.serializersTypeId:
-            raise SerializerAlreadyRegisteredError(serializeClass.typeId)
+    def register(self, serializer: Serializer):
+        if serializer.typeId in self.serializersTypeId:
+            raise SerializerAlreadyRegisteredError(serializer.typeId)
+
+        serializer.setManager(self)
         
-        self.serializers[serializeClass.pythonType] = serializeClass
-        self.serializersTypeId[serializeClass.typeId] = serializeClass
+        self.serializers[serializer.pythonType] = serializer
+        self.serializersTypeId[serializer.typeId] = serializer
 
     def getSerializerFromType(self, valueType: type) -> Serializer:
         if valueType in self.serializers:
-            return self.serializers[valueType](self)
+            return self.serializers[valueType]
         else:
             raise SerializerTypeNotFoundError(valueType)
 
     def getSerializerFromTypeId(self, typeId: int) -> Serializer:
         if typeId in self.serializersTypeId:
-            return self.serializersTypeId[typeId](self)
+            return self.serializersTypeId[typeId]
         else:
             raise SerializerIdNotFoundError(typeId)
 
@@ -73,8 +75,9 @@ class SerializationManager:
         except Exception as e:
             raise DeserializationError(e) from None
 
-serializerManager = None
 
+
+serializerManager = None
 def useSerializer():
     global serializerManager
 
@@ -82,14 +85,14 @@ def useSerializer():
         serializerManager = SerializationManager()
 
         for serializer in builtinSerializers:
-            serializerManager.register(serializer)
+            s = serializer()
+            
+            serializerManager.register(s)
 
     return serializerManager
 
 if __name__ == '__main__':
     serializerManager = useSerializer()
-
-
 
     data = (serializerManager.serialize({
         "data": "123",

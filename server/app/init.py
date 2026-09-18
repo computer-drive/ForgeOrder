@@ -12,7 +12,7 @@ from app.printer.service import PrintManager
 from app.config import config, CONFIG
 from core.log import getConsoleLogger
 from core.log import initLogger, getLogger, shutdownLogger
-from app.bininfo import bininfo, KEYS
+from app.bininfo import bininfo
 
 from app.cli import createParser, executeCommand
 from app.exceptions import UserError
@@ -55,7 +55,7 @@ def initRootUser(reset = False):
         consoleLogger.info("创建root用户，密码：%s" % password)
 
         
-        bininfo[KEYS.IS_FIRST_START] = False
+        bininfo.data.isFirstStart = False
         bininfo.save()
 
     finally:
@@ -120,13 +120,13 @@ def init():
     # 加载bininfo
     bininfo.load()
 
-    consoleLogger.debug(f"上次启动是否正常退出：{bininfo[KEYS.IS_NORMAL_SHUTDOWN]}")
-    consoleLogger.debug(f"启动次数：{bininfo[KEYS.STARTUP_COUNT]}")
+    consoleLogger.debug(f"上次启动是否正常退出：{bininfo.data.isNormalShutdown}")
+    consoleLogger.debug(f"启动次数：{bininfo.data.startupCount}")
 
 
     # 初始化设置
-    consoleLogger.info(f"正在加载从 {bininfo[KEYS.CONFIG]} 加载配置...")
-    initConfig(bininfo[KEYS.CONFIG])
+    consoleLogger.info(f"正在加载从 {bininfo.data.config} 加载配置...")
+    initConfig(bininfo.data.config)
 
     # 初始化日志记录器
     initLog()
@@ -135,7 +135,7 @@ def init():
     initDatabase()
 
     # 判断是否为第一次启动，如果是则创建root用户
-    if bininfo[KEYS.IS_FIRST_START]:
+    if bininfo.data.isFirstStart:
         initRootUser()
 
     # 初始化命令行参数
@@ -161,7 +161,7 @@ def shutdown(exitCode: int = 0):
 
      # 保存bininfo
     if exitCode == 0:
-        bininfo[KEYS.IS_NORMAL_SHUTDOWN] = True
+        bininfo.data.isNormalShutdown = True
 
     bininfo.save()
 
