@@ -40,10 +40,10 @@ class ProxySerializer(Serializer[T]):
 
     def deserialize(self, data: bytes):
         # 先使用反序列化方法反序列化为代理类型
-        proxyValue =  self.deserializeMethod(data)
+        proxyValue =self.manager.deserialize(data)
 
         # 再使用序列化管理器反序列化为实际类型
-        return self.manager.deserialize(proxyValue)
+        return self.deserializeMethod(proxyValue)
 
 
 class CustomSerializer(Serializer[T]):
