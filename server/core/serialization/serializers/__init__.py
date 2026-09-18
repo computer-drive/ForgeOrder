@@ -1,5 +1,5 @@
 from .base import Serializer
-from .integer import IntergerSerializer
+from .integer import IntegerSerializer
 from .float import FloatSerializer
 from .boolean import BooleanSerializer
 from .dict import DictSerializer
@@ -9,7 +9,7 @@ from .tuple import TupleSerializer
 from .none import NoneSerializer
 
 serializers = [
-    IntergerSerializer,
+    IntegerSerializer,
     FloatSerializer,
     BooleanSerializer,
     DictSerializer,

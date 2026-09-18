@@ -21,8 +21,7 @@ def integerToBytes(number:int):
     return number.to_bytes(length, byteorder='big', signed=True)
 
     
-
-class IntergerSerializer(Serializer[int]):
+class IntegerSerializer(Serializer[int]):
     '''
     整数序列化器，支持32位整符号整数的序列化和反序列化。
     '''

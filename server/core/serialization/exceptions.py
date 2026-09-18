@@ -40,6 +40,18 @@ class SerializationValueOverflowError(Exception):
     def __init__(self):
         super().__init__(self.MESSAGES[getLanguage()])
 
+class SerializerAlreadyRegisteredError(Exception):
+    '''
+    序列化器已注册异常。
+    '''
+    MESSAGES = {
+        'en': 'Serializer {} already registered',
+        'zh': 'ID为{}的序列化器已被注册',
+    }
+
+    def __init__(self, typeId: int):
+        super().__init__(self.MESSAGES[getLanguage()].format(typeId))
+
 
 class SerializationError(Exception):
     '''
@@ -88,4 +100,5 @@ __all__ = [
     'SerializationValueOverflowError',
     'SerializationError',
     'DeserializationError',
+    'SerializerAlreadyRegisteredError',
 ]

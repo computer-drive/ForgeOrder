@@ -13,9 +13,15 @@ class SerializationManager:
     def __init__(self):
         self.serializers: dict[type, type[Serializer]] = {}
 
+        self.serializersTypeId: dict[int, type[Serializer]] = {}
+
 
     def register(self, serializeClass: type[Serializer]):
+        if serializeClass.typeId in self.serializersTypeId:
+            raise SerializerAlreadyRegisteredError(serializeClass.typeId)
+        
         self.serializers[serializeClass.pythonType] = serializeClass
+        self.serializersTypeId[serializeClass.typeId] = serializeClass
 
     def getSerializerFromType(self, valueType: type) -> Serializer:
         if valueType in self.serializers:
@@ -24,11 +30,10 @@ class SerializationManager:
             raise SerializerTypeNotFoundError(valueType)
 
     def getSerializerFromTypeId(self, typeId: int) -> Serializer:
-        for serializerClass in self.serializers.values():
-            if serializerClass.typeId == typeId:
-                return serializerClass(self)
-            
-        raise SerializerIdNotFoundError(typeId)
+        if typeId in self.serializersTypeId:
+            return self.serializersTypeId[typeId](self)
+        else:
+            raise SerializerIdNotFoundError(typeId)
 
     def serialize(self, value: Any) -> bytes:
         try:
@@ -70,7 +75,7 @@ class SerializationManager:
 
 serializerManager = None
 
-def useSerializerManager():
+def useSerializer():
     global serializerManager
 
     if serializerManager is None:
@@ -82,7 +87,7 @@ def useSerializerManager():
     return serializerManager
 
 if __name__ == '__main__':
-    serializerManager = useSerializerManager()
+    serializerManager = useSerializer()
 
 
 
