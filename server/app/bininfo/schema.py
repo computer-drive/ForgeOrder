@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from ..pluglins.schema import PluglinInfo
+from ..plugins.schema import PluginInfo
 from core.serialization.serializers.custom import ProxySerializer
 from core.serialization.manager import useSerializer
 
@@ -14,7 +14,7 @@ class Schema:
     startupCount : int = 0
     config : str = "data/config.json"
 
-    pluglins: list[PluglinInfo] = field(default_factory=list)
+    plugins: list[PluginInfo] = field(default_factory=list)
 
 serializerManager = useSerializer()
 
@@ -27,8 +27,8 @@ serializerManager.register(
         )
 serializerManager.register(
             ProxySerializer(
-                102, PluglinInfo, dict, 
+                102, PluginInfo, dict, 
                 lambda x: x.toDict(),
-                lambda x: PluglinInfo(**x),
+                lambda x: PluginInfo(**x),
             )
 )

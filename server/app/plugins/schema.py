@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
 @dataclass(eq=False)
-class PluglinInfo:
+class PluginInfo:
     uuid: str
     path: str
     hashes: dict[str, str]
 
     def __eq__(self, other):
-        if not isinstance(other, PluglinInfo):
+        if not isinstance(other, PluginInfo):
             return NotImplemented
         return self.uuid == other.uuid
 

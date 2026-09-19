@@ -58,7 +58,7 @@ class LogService:
 
     def insertLog(self, 
                 record: LogRecord,
-                jsonifyMessage: dict,
+                jsonifyMessage: dict | None,
                 ):
 
         self._initRepository()

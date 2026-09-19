@@ -18,7 +18,7 @@ from .exceptions import PluginInitError
 class PluglinManager:
     def __init__(self, bininfo: BinInfo, path: str = PLUGLIN_PATH):
         self.bininfo = bininfo
-        self.registry = bininfo.data.pluglins
+        self.registry = bininfo.data.plugins
         self.path = path
 
         self.pluglins: dict[PluglinInfo, Pluglin] = {}
@@ -124,7 +124,7 @@ class PluglinManager:
 
         if newPluglins:
             # 保存registry到bininfo
-            self.bininfo.data.pluglins = self.registry
+            self.bininfo.data.plugins = self.registry
             self.bininfo.save()
 
             logger.info({
@@ -141,19 +141,22 @@ class PluglinManager:
                 manifest = json.load(f)
         except FileNotFoundError:
             logger.warning({
-                "path": pluglin.path
+                "path": pluglin.path,
+                "uuid": pluglin.uuid
             }, "SkipLoad.NoManifest")
             return False
         except json.JSONDecodeError:
             logger.warning({
-                "path": pluglin.path
+                "path": pluglin.path,
+                "uuid": pluglin.uuid
             }, "SkipLoad.InvalidManifest")
             return False
 
         # 验证manifest.json文件
         if not self.manifestValidator.validate(manifest):
             logger.warning({
-                "path": pluglin.path
+                "path": pluglin.path,
+                "uuid": pluglin.uuid
             }, "SkipLoad.InvalidManifest")
             return False
 
@@ -179,6 +182,7 @@ class PluglinManager:
                 logger.warning({
                     "path": pluglin.path,
                     "file": file,
+                    "uuid": pluglin.uuid
                 }, "SkipLoad.HashMismatch")
                 return False
             
@@ -190,7 +194,8 @@ class PluglinManager:
         if spec is None:
             logger.warning({
                 "path": pluglin.path,
-                "entry": manifest["entry"]["file"]
+                "entry": manifest["entry"]["file"],
+                "uuid": pluglin.uuid
             }, "SkipLoad.EntryModuleNotFound")
             return False
         
@@ -203,7 +208,8 @@ class PluglinManager:
         if pluglinInstance is None:
             logger.warning({
                 "path": pluglin.path,
-                "entry": manifest["entry"]
+                "entry": manifest["entry"],
+                "uuid": pluglin.uuid
             }, "SkipLoad.NoPluglinClass")
             return False
         
@@ -223,7 +229,6 @@ class PluglinManager:
 
         # 判断registry是否为空
         if not self.registry:
-            print("nihao !")
             # 注册插件
             self.scanPluglins()
 
@@ -241,11 +246,19 @@ class PluglinManager:
                     }, "LoadedPluglins")
         else:
             logger.info({}, "NoPluglinLoaded")
+
+    def run(self):
+        for plugin in self.pluglins.values():
+            plugin.run()
+
+    def shutdown(self):
+        for plugin in self.pluglins.values():
+            plugin.shutdown()
                 
 
 pluginManager = None
 
-def initPluglinManager(bininfo: BinInfo):
+def initPluginManager(bininfo: BinInfo):
     global pluginManager
 
     pluginManager = PluglinManager(bininfo)

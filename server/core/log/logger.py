@@ -27,7 +27,8 @@ class Logger:
         self.queue.put(record)
 
     def log(self, message: dict | None, level: int, category: str, action: str, requestId: str | None = None):
-        if level >= self.level:
+        if level > self.level:
+
             return
 
         record = LogRecord(

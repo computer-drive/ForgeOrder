@@ -11,6 +11,7 @@ from core.log import getConsoleLogger, getLogContext, getLogger, getQueue
 from app.config import config, CONFIG
 from app.bininfo import bininfo
 from app.wsgi.manager import HTTPWorkerManager
+from app.plugins.load import getPluginManager
 
 from app.ws.startup import WebsocketWorker
 
@@ -48,6 +49,8 @@ if __name__ == "__main__":
 
 
     consoleLogger.info("正在启动应用程序...")
+
+    getPluginManager().run()
 
     logQueue = cast(Queue, getQueue())
     manager, _, printerQueue = HTTPWorkerManager(
@@ -104,6 +107,8 @@ if __name__ == "__main__":
 
     # 等待日志读取线程退出
     logQueue.put(None)
+    
+    getPluginManager().shutdown()
     
 
     shutdown() 

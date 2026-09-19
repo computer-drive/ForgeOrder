@@ -17,8 +17,11 @@ def writeTextLog(record: LogRecord):
     with open("log.txt", "a") as f:
         f.write(formatConsole(record)[0])
 
-def formatJSONMessage(message: dict):
+def formatJSONMessage(message: dict | None) -> dict | None:
     jsonifyMessage = {}
+
+    if message is None:
+        return None
 
     for key, value in message.items():
         if isinstance(value, Formatter):
@@ -119,9 +122,15 @@ def worker(q: Queue, databaseName: str):
             except NameError:
                 pass
             
-
         except (KeyboardInterrupt, EOFError):
             break
+
+        except Exception as e:
+            try:
+                print(record)
+            except:
+                pass
+            logger.error(f"日志写入错误：{e}")
 
     service.commit()
 
