@@ -7,7 +7,7 @@ from typing import cast
 import traceback
 
 from app.plugins.schema import PluginInfo
-from .schema import PLUGLIN_PATH
+from .schema import PLUGIN_PATH
 from core.log import getLogger, getLogContext
 from core.validation.validators import (DictOf, NotEmpty, ListOf, TypeOf, Choices)
 from ..bininfo import BinInfo
@@ -15,8 +15,8 @@ from .base import Plugin
 from .exceptions import PluginInitError
 
 
-class PluglinManager:
-    def __init__(self, bininfo: BinInfo, path: str = PLUGLIN_PATH):
+class PluginManager:
+    def __init__(self, bininfo: BinInfo, path: str = PLUGIN_PATH):
         self.bininfo = bininfo
         self.registry = bininfo.data.plugins
         self.path = path
@@ -46,23 +46,23 @@ class PluglinManager:
         if not os.path.exists(self.path):
             os.makedirs(self.path)
             
-    def register(self, pluglinPath: str):
+    def register(self, pluginPath: str):
         logger = getLogContext(getLogger(), "Plugin")
 
-        pluglinPath = os.path.join(self.path, pluglinPath)
+        pluginPath = os.path.join(self.path, pluginPath)
         
-        if not os.path.isdir(pluglinPath):
+        if not os.path.isdir(pluginPath):
             logger.debug({
-                "path": pluglinPath
+                "path": pluginPath
             }, "SkipRegister.NotDirectory")
             return False, None
 
-        manifestPath = os.path.join(pluglinPath, "manifest.json")
+        manifestPath = os.path.join(pluginPath, "manifest.json")
 
         if not (os.path.exists(manifestPath) and os.path.isfile(manifestPath)):
             # 没有manifest.json文件
             logger.warning({
-                "path": pluglinPath
+                "path": pluginPath
             }, "SkipRegister.NoManifest")
             return False, None
 
@@ -70,22 +70,22 @@ class PluglinManager:
         with open(manifestPath, "r") as f:
             try:
                 manifest = json.load(f)
-            except:
+            except json.JSONDecodeError:
                 logger.warning({
-                    "path": pluglinPath
+                    "path": pluginPath
                 }, "SkipRegister.InvalidManifest")
                 return False, None
 
         # 验证manifest.json文件
         if not self.manifestValidator.validate(manifest):
             logger.warning({
-                "path": pluglinPath
+                "path": pluginPath
             }, "SkipRegister.InvalidManifest")
             return False, None
 
         if manifest["uuid"] in [p.uuid for p in self.registry]:
             logger.warning({
-                "path": pluglinPath
+                "path": pluginPath
             }, "SkipRegister.DuplicatedUUID")
             return False, None
 
@@ -93,6 +93,8 @@ class PluglinManager:
         files = []
 
         files.append(manifest["entry"]["file"]) 
+        files.append("manifest.json")
+
         for module in manifest["modules"]:
             files.append(module["entry"]["file"])
 
@@ -100,44 +102,51 @@ class PluglinManager:
         hashes = {}
         for file in files:
             # 拼接完整目录
-            filePath = os.path.join(pluglinPath, file)
-            
-            # 计算文件hash
-            with open(filePath, "rb") as f:
-                hashes[file] = hashlib.sha256(f.read()).hexdigest()
+            filePath = os.path.join(pluginPath, file)
+            try:
+                # 计算文件hash
+                with open(filePath, "rb") as f:
+                    hashes[file] = hashlib.sha256(f.read()).hexdigest()
+            except FileNotFoundError:
+                logger.info({
+                    "uuid": manifest["uuid"],
+                    "path": filePath
+                }, "SkipRegister.FileNotFound")
+
+                continue
 
         # 将插件信息添加到registry中
         self.registry.append(PluginInfo(
             uuid=manifest["uuid"],
-            path=pluglinPath,
+            path=pluginPath,
             hashes=hashes
         ))
 
         return True, manifest["uuid"]
         
     
-    def scanPluglins(self):
+    def scanPlugins(self):
         # 扫描插件目录
         logger = getLogContext(getLogger(), "Plugin")
 
-        newPluglins = []
+        newPlugins = []
         for file in os.listdir(self.path):
             # 注册插件信息
 
             result, uuid = self.register(file)
             if result:
-                newPluglins.append(uuid)
+                newPlugins.append(uuid)
 
-        if newPluglins:
+        if newPlugins:
             # 保存registry到bininfo
             self.bininfo.data.plugins = self.registry
             self.bininfo.save()
 
             logger.info({
-                "newPluglins": newPluglins
-            }, "RegisteredPluglins")
+                "newPlugins": newPlugins
+            }, "RegisteredPlugins")
   
-    def loadPluglin(self, plugin: PluglinInfo):
+    def loadPlugin(self, plugin: PluginInfo):
         logger = getLogContext(getLogger(), "Plugin")
 
         # 读取manifest
@@ -209,17 +218,17 @@ class PluglinManager:
 
         cast(Loader, spec.loader).exec_module(module) # 执行插件模块的启动代码
 
-        pluglinInstance = getattr(module, manifest["entry"]["class"], None)
+        pluginInstance = getattr(module, manifest["entry"]["class"], None)
 
-        if pluglinInstance is None:
+        if pluginInstance is None:
             logger.warning({
                 "path": plugin.path,
                 "entry": manifest["entry"],
                 "uuid": plugin.uuid
-            }, "SkipLoad.NoPluglinClass")
+            }, "SkipLoad.NoPluginClass")
             return False
         
-        self.plugins[plugin] = pluglinInstance()
+        self.plugins[plugin] = pluginInstance()
 
         try:
             self.plugins[plugin].init()
@@ -236,22 +245,22 @@ class PluglinManager:
         # 判断registry是否为空
         if not self.registry:
             # 注册插件
-            self.scanPluglins()
+            self.scanPlugins()
 
         # 加载插件
         loadedPlugins = []
         
         for plugin in self.registry:
-            result = self.loadPluglin(plugin)
+            result = self.loadPlugin(plugin)
             if result:
                 loadedPlugins.append(plugin.uuid)
 
         if loadedPlugins:
             logger.info({
-                        "loadedPluglins": loadedPlugins
-                    }, "LoadedPluglins")
+                        "loadedPlugins": loadedPlugins
+                    }, "LoadedPlugins")
         else:
-            logger.info({}, "NoPluglinLoaded")
+            logger.info({}, "NoPluginLoaded")
 
     def run(self):
         for plugin in self.plugins.values():
@@ -267,7 +276,7 @@ pluginManager = None
 def initPluginManager(bininfo: BinInfo):
     global pluginManager
 
-    pluginManager = PluglinManager(bininfo)
+    pluginManager = PluginManager(bininfo)
 
     return pluginManager
     

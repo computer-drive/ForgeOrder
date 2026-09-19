@@ -23,4 +23,4 @@ class PluginInfo:
             "hashes": self.hashes,
         }
 
-PLUGLIN_PATH = "data/plugins/"
+PLUGIN_PATH = "data/plugins/"
