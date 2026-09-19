@@ -139,6 +139,7 @@ def worker(q: Queue, databaseName: str):
 def createWorker(databaseName: str, queue: Queue):
 
     thread = threading.Thread(target=worker, args=(queue, databaseName), name="LogWorker")
+    thread.daemon = False
     thread.start()
 
     return thread

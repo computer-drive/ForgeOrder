@@ -76,6 +76,7 @@ def setupLogger(databaseName: str, level: str = "info" ):
     queue = multiprocessing.Queue()
 
     thread = createWorker(databaseName, queue)
+    
     logger = Logger(levelIntger, queue)
 
     return logger, thread, queue

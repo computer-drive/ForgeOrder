@@ -48,6 +48,7 @@ def shutdownLogger():
 
         dbLoggerQueue.put(None)
 
+
         dbLoggerThread.join()
 
 

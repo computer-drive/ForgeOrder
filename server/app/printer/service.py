@@ -60,11 +60,15 @@ class PrintManager:
         self.workerThread.join()
 
     @classmethod
+    def isAvailable(cls):
+        return cls._instance is not None
+
+    @classmethod
     def getInstance(cls):
         if cls._instance is None:
             raise ValueError("PrintManager not initialized")
         
-        return cls._instance 
+        return cls._instance
 
 
 

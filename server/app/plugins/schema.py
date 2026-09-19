@@ -6,6 +6,8 @@ class PluginInfo:
     path: str
     hashes: dict[str, str]
 
+    enabled: bool = True
+
     def __eq__(self, other):
         if not isinstance(other, PluginInfo):
             return NotImplemented
@@ -21,6 +23,7 @@ class PluginInfo:
             "uuid": self.uuid,
             "path": self.path,
             "hashes": self.hashes,
+            "enabled": self.enabled,
         }
 
 PLUGIN_PATH = "data/plugins/"

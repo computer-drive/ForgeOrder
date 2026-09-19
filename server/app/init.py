@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 import sys
 from typing import cast
@@ -13,9 +12,9 @@ from app.config import config, CONFIG
 from core.log import getConsoleLogger
 from core.log import initLogger, getLogger, shutdownLogger
 from app.bininfo import bininfo
-from app.plugins.load import initPluginManager, getPluginManager
+from app.plugins.load import initPluginManager
 
-from app.cli import createParser, executeCommand
+from app.cli import createParser, parseArguments
 from app.exceptions import UserError
 
 consoleLogger= getConsoleLogger("startup")
@@ -77,14 +76,12 @@ def initConfig(configPath: str):
     config.initConfig(configPath)
     
 def initArguments():
-    parser = createParser()
+    try:
+        shouldExit = parseArguments()
+    except SystemExit:
+        return True
 
-    args = parser.parse_args()
-
-    if len(sys.argv) > 1:
-        consoleLogger.info(f"命令行参数：{' '.join(sys.argv[1:])}")
-
-    return executeCommand(args)
+    return shouldExit
 
 def validateAppSettings():
     # 验证配置项
@@ -132,6 +129,11 @@ def init():
     # 初始化日志记录器
     initLog()
 
+    # 初始化命令行参数
+    shouldExit = initArguments()
+    if shouldExit:
+        shutdown(0, cli=True)
+
     # 加载插件
     manager = initPluginManager(bininfo)
     manager.load()
@@ -144,11 +146,6 @@ def init():
     if bininfo.data.isFirstStart:
         initRootUser()
 
-    # 初始化命令行参数
-    shouldExit = initArguments()
-    if shouldExit:
-        shutdown()
-        sys.exit(0)
 
     # 验证应用项
     validateAppSettings()
@@ -157,13 +154,14 @@ def init():
     printManager = PrintManager()
 
 
-def shutdown(exitCode: int = 0):
+def shutdown(exitCode: int = 0, cli: bool = False):
     # 关闭数据库日志记录器线程
     shutdownLogger()
 
 
     # 关闭打印服务
-    PrintManager.getInstance().shutdown()
+    if PrintManager.isAvailable():
+        PrintManager.getInstance().shutdown()
 
      # 保存bininfo
     if exitCode == 0:
@@ -172,16 +170,12 @@ def shutdown(exitCode: int = 0):
     bininfo.save()
 
     getLogger().info(None, "Main", "Stopped")
+
         
-
-    # 关闭日志记录器
-    logging.shutdown()
-
-
-
-    if exitCode == 0:
-        print("Bye! See you next Time.(＾▽＾)")
-    else:
-        print("Bye! But something seems went wrong... (╥﹏╥)")
+    if not cli: 
+        if exitCode == 0:
+            print("Bye! See you next Time.(＾▽＾)")
+        else:
+            print("Bye! But something seems went wrong... (╥﹏╥)")
 
     sys.exit(exitCode)

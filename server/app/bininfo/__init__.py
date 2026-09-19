@@ -25,13 +25,17 @@ class BinInfo:
 
         if fileData:
             self.data = self.serializer.deserialize(fileData)
+            # print(self.data)
         else:
             self.data = Schema()
 
+    
 
     def save(self):
         if self.data is None:
             raise ValueError("BinInfo is not loaded")
+        
+        # print(self.data)
 
         with open(self.path, "wb") as f:
             f.write(self.serializer.serialize(self.data))

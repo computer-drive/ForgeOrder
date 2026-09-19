@@ -269,14 +269,38 @@ class PluginManager:
     def shutdown(self):
         for plugin in self.plugins.values():
             plugin.shutdown()
+
+    def enablePlugin(self, plugin: PluginInfo):
+        if plugin in self.registry:
+            plugin.enabled = True
+
+            self.bininfo.data.plugins = self.registry
+            self.bininfo.save()
+
+    def disablePlugin(self, plugin: PluginInfo):
+        if plugin in self.registry:
+            self.registry.remove(plugin)
+
+            plugin.enabled = False
+
+            self.registry.append(plugin)
+
+            
+
+            self.bininfo.data.plugins = self.registry
+
+
+
+            self.bininfo.save()
                 
 
 pluginManager = None
 
 def initPluginManager(bininfo: BinInfo):
     global pluginManager
-
-    pluginManager = PluginManager(bininfo)
+    
+    if pluginManager is None:
+        pluginManager = PluginManager(bininfo)
 
     return pluginManager
     
