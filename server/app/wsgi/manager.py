@@ -5,10 +5,10 @@ from ..config import config
 
 class HTTPWorkerManager:
 
-    def __init__(self, host: str, ports: list[int], threads:int, daemon: bool = False):
-        self.logQueue = Queue()
+    def __init__(self, host: str, ports: list[int], threads:int, logLevel: str, logQueue: Queue, daemon: bool = False):
         self.printerQueue = Queue()
-
+        self.logQueue = logQueue
+        
         self.stopEvent = Event()
 
         self._workers: list[HTTPWorker] = []
@@ -16,7 +16,8 @@ class HTTPWorkerManager:
         i = 0
         for port in ports:
             self._workers.append(HTTPWorker(f"Worker-{i}",
-                        self.logQueue,
+                        logLevel,
+                        logQueue,
                         self.stopEvent,
                         config,
                         self.printerQueue,

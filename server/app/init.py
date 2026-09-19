@@ -64,7 +64,7 @@ def initRootUser(reset = False):
 def initLog():
 
 
-    initLogger(__name__, config.get(CONFIG.LOG_DATABASE), config.get(CONFIG.LOG_LEVEL), config.get(CONFIG.LOG_FORMAT_JSON))
+    initLogger( config.get(CONFIG.LOG_DATABASE), config.get(CONFIG.LOG_LEVEL))
 
     getLogger()
 
@@ -165,7 +165,7 @@ def shutdown(exitCode: int = 0):
 
     bininfo.save()
 
-    getLogger().info("", "Main", "Stopped")
+    getLogger().info(None, "Main", "Stopped")
         
 
     # 关闭日志记录器

@@ -4,7 +4,7 @@ from typing import Callable
 from websockets.asyncio.server import ServerConnection
 from websockets.protocol import State
 
-from ..processing.log import WorkerLogger
+from core.log import Logger
 from ..processing.base import WorkerPipe
 from ..config import ConfigManager
 from .message import makeMessage
@@ -39,7 +39,7 @@ class Client:
 @dataclass
 class WebsocketServerContext:
     pipe: WorkerPipe
-    logger: WorkerLogger
+    logger: Logger
     config: ConfigManager
 
     handlerManager: HandlerManager

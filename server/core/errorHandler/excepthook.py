@@ -4,6 +4,7 @@ import threading
 import traceback
 
 from core.log import getConsoleLogger, getLogger
+from core.log.formatter import Traceback
 
 
 def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
@@ -19,28 +20,25 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
     if not thread:
         thread = threading.current_thread()
 
-    isLoggerInitialized = True
-    try:
-        logger = getLogger()
-    except ValueError:
-        # 日志还未初始化
-        isLoggerInitialized = False
 
-    if isLoggerInitialized:
-        logger.error(
-                {
-                "type": type.__name__,
-                "value": str(value),
-                "traceback": traceback.format_exception(type, value, tb),
-                "thread": thread.name,
-            }, 
-            category="ErrorHandler",
-            action="UncaughtException",
-        )
+    logger = getLogger()
+
+
+    logger.error(
+                    {
+                    "type": type.__name__,
+                    "value": str(value),
+                    "traceback": Traceback(value, traceback.format_exception(type, value, tb)),
+                    "thread": thread.name,
+                }, 
+                category="ErrorHandler",
+                action="UncaughtException",
+            )
+
+
             
     consoleLogger = getConsoleLogger("errorHandler")
     consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
-    
 
 
 def threadExcepthook(args):

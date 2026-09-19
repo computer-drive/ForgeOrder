@@ -7,9 +7,11 @@ from ..config import ConfigManager
 from .setup import setupApp
 from .server import AppServer
 from .app import MyFlaskApp
+from core.log.schema import INFO, WARNING, ERROR, DEBUG
 
 class HTTPWorker(ProcessWorker):
     def __init__(self, name: str,
+                 logLevel: str,
                  logQueue: Queue,
                  stopEvent: MPEvent,
                  config: ConfigManager,
@@ -19,7 +21,19 @@ class HTTPWorker(ProcessWorker):
                  threads: int,
                  daemon: bool = False,
                  ):
-        super().__init__(name, logQueue, stopEvent, daemon)
+
+        logLevelInteger = 0
+        match logLevel.lower():
+            case "info":
+                logLevelInteger = INFO
+            case "warning":
+                logLevelInteger = WARNING
+            case "error":
+                logLevelInteger = ERROR
+            case _:
+                logLevelInteger = INFO
+        
+        super().__init__(name, logLevelInteger, logQueue,  stopEvent, daemon)
 
         self.config = config
         self.printerQueue = printerQueue
@@ -32,7 +46,7 @@ class HTTPWorker(ProcessWorker):
         self._server: AppServer = None #type: ignore 
 
     def run(self):
-        workerLogger = self.getWorkerLogger()
+        workerLogger = self.getLogger()
 
         self._app = setupApp(workerLogger, self.config, self.stopEvent)
 
@@ -55,7 +69,7 @@ class HTTPWorker(ProcessWorker):
 
         watcherThread.join()  # 等待关闭线程结束
 
-        workerLogger.info("", "Worker", "Stopped")
+        workerLogger.info(None, "Worker", "Stopped")
 
         self.pipe.send("stop")
 

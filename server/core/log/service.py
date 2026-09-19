@@ -5,7 +5,8 @@ from multiprocessing import current_process
 from ..database.database import Database
 from ..database.repository import Repository, Column
 from ..database.repository.schema import Integer, String, JSON, DateTime
-from ..database.service import ServiceBase
+from .schema import LogRecord
+
 class _Row(TypedDict):
     id: int
     time: datetime.datetime
@@ -56,29 +57,21 @@ class LogService:
         
 
     def insertLog(self, 
-                time: datetime.datetime,
-                level: int,
-                category: str,
-                action: str,
-                message: dict,
-                requestId: str | None = None,
-                process: str  = "",
+                record: LogRecord,
+                jsonifyMessage: dict,
                 ):
 
         self._initRepository()
 
-        processName = process if process != ""  else current_process().name
-
-        # print(current_process().name)
 
         self.repo.insert(
-            time=time,
-            level=level,
-            category=category,
-            action=action,
-            message=message,
-            requestId=requestId,
-            process=processName,
+            time=record.time,
+            level=record.level,
+            category=record.category,
+            action=record.action,
+            message=jsonifyMessage,
+            requestId=record.requestId,
+            process=record.process,
         )
 
     def commit(self):

@@ -6,7 +6,7 @@ import websockets.exceptions as websocketsExceptions
 from websockets import serve
 from websockets.asyncio.server import ServerConnection
 
-from ..processing.log import WorkerLogger
+
 from ..processing.base import WorkerPipe
 from ..config import ConfigManager, CONFIG
 from .message import makeMessage
@@ -14,6 +14,7 @@ from .schema import MESSAGEES
 from ..processing.excepthook import _generateErrorMessage
 lazy from .handlers.base import handlerManager as hm_
 lazy from .context import WebsocketServerContext, Client
+from core.log import Logger
 
 def addClient(ws: ServerConnection, ctx: 'WebsocketServerContext'):
 
@@ -127,7 +128,7 @@ async def listenPipe(childPipe: WorkerPipe, context, logger):
 
 
 
-async def websocketServer(childPipe: WorkerPipe, logger: WorkerLogger, config: ConfigManager):
+async def websocketServer(childPipe: WorkerPipe, logger: Logger, config: ConfigManager):
     host = config.get(CONFIG.WS_HOST)
     port = config.get(CONFIG.WS_PORT)
 
@@ -155,4 +156,4 @@ async def websocketServer(childPipe: WorkerPipe, logger: WorkerLogger, config: C
             await pipeTask
         finally:
             pipeTask.cancel()
-            logger.info("", "WebSocket", "Stopped")
+            logger.info({}, "WebSocket", "Stopped")

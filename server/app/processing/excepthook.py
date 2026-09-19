@@ -3,7 +3,7 @@ import multiprocessing
 import threading
 import sys
 
-from .log.record import WorkerLogger
+from core.log import Logger
 
 def _generateErrorMessage(type, value, tb):
     return {
@@ -14,11 +14,11 @@ def _generateErrorMessage(type, value, tb):
         "process": multiprocessing.current_process().name,
     }
 
-def processExcepthook(type, value, tb, logger: WorkerLogger):
+def processExcepthook(type, value, tb, logger: Logger):
     logger.error(_generateErrorMessage(type, value, tb), "ErrorHandler", "UncaughtException")
 
 
-def installProcessExcepthook(logger: WorkerLogger):
+def installProcessExcepthook(logger: Logger):
     sys.excepthook = lambda x, y, z: processExcepthook(x, y, z, logger)
 
 

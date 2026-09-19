@@ -8,9 +8,9 @@ from app.db.connections import getDatabase
 lazy from app.service.users import UserService
 from app.routes import routeManager
 from core.utils.server import getClientIp
-from app.processing.log.record import RequestLogContext
 from app.routes.responseGenerator import ResponseGenerator
 from app.routes.schema import GLOBAL
+from core.log.context import RequestLogContext
 lazy from app.utils import g, currentApp
 
 def _handleAuth():
@@ -192,7 +192,7 @@ def _handleRequestInfo():
     
     g.requestId = str(uuid.uuid4())
     
-    g.logger = RequestLogContext(currentApp.workerLogger, "BeforeRequest")
+    g.logger = RequestLogContext(currentApp.workerLogger, "BeforeRequest", g.requestId)
 
     g.startTime = time.time()
 

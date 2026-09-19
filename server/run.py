@@ -1,17 +1,16 @@
 import time
 import os
-import threading
 from multiprocessing import current_process
 import multiprocessing
 
 from app.init import init, shutdown
 from app.const import VERSION
 from core.errorHandler.excepthook import installExcepthook
-from core.log import getConsoleLogger, getLogContext, getLogger
+from core.log import getConsoleLogger, getLogContext, getLogger, getQueue
 from app.config import config, CONFIG
 from app.bininfo import bininfo
 from app.wsgi.manager import HTTPWorkerManager
-from app.processing.log.read import readLogQueue
+
 from app.ws.startup import WebsocketWorker
 
 # 安装全局异常处理器
@@ -49,27 +48,26 @@ if __name__ == "__main__":
 
     consoleLogger.info("正在启动应用程序...")
 
-   
-
 
     manager, logQueue, printerQueue = HTTPWorkerManager(
         config.get(CONFIG.SERVER_HOST),
         config.get(CONFIG.SERVER_WORKER_PORT),
         config.get(CONFIG.SERVER_WORKER_THREADSS),
+        config.get(CONFIG.LOG_LEVEL),
+        getQueue()
     )()
 
 
     consoleLogger.info(f"HTTP服务：启动了 {len(manager._workers)} 个 Worker")
+
+    1 + ["123"]
     
     # # 启动WebSocket服务
-    websocketWorker = WebsocketWorker("Worker-Websocket", logQueue, manager.stopEvent, config, False)
+    websocketWorker = WebsocketWorker("Worker-Websocket", config.get(CONFIG.LOG_LEVEL), logQueue, manager.stopEvent, config, False)
     websocketWorker.start()
     consoleLogger.info(f"WebSocket服务：启动了 Websocket Worker")
 
 
-    # 启动日志读取线程
-    readLogThread = threading.Thread(target=readLogQueue, args=(logQueue, getLogger()), daemon=True, name="ReadLogThread")
-    readLogThread.start()
 
 
     # 等待所有进程启动完毕
@@ -106,7 +104,6 @@ if __name__ == "__main__":
 
     # 等待日志读取线程退出
     logQueue.put(None)
-    readLogThread.join()
     
 
     shutdown() 

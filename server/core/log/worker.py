@@ -1,36 +1,77 @@
-import datetime
-import queue
+
 import threading
+from multiprocessing import Queue
 
 from .schema import BUFFER_SIZE
 from .service import initService
 from ..database.database.exceptions import DatabaseError
 from ..database.repository.exceptions import RepositoryError
 from .console import getConsoleLogger
+from .schema import LogRecord
+from . import schema
 
-def writeTextLog(entry):
-    now = datetime.datetime.now()
+from .formatter import Formatter
 
-    filePath = f"data/{now.strftime('%Y-%m-%d')}.log"
+
+def writeTextLog(record: LogRecord):
+    with open("log.txt", "a") as f:
+        f.write(format(record)[0])
+
+def format(record: LogRecord):
+    jsonifyMessage = record.message
+
+    levelname = ""
+    match record.level:
+        case schema.INFO:
+            levelname = "\033[92mINFO\033[0m"
+        case schema.WARNING:
+            levelname = "\033[93mWARNING\033[0m"
+        case schema.ERROR:
+            levelname = "\033[91mERROR\033[0m"
+        case schema.DEBUG:
+            levelname = "\033[94mDEBUG\033[0m"
+        case _:
+            levelname = "unknown"
+
     
-    try:
-        with open(filePath, "r") as f:
-            content = f.read()
-    except FileNotFoundError:
-        content = ""
-
     
-    with open(filePath, "a") as f:
-        if content != "":
-            f.write('''
-服务器无法将日志写入数据库。
-{entry}
-''')
-        else:
-            f.write(str(entry))
-        
+    text = f"[{record.time.strftime('%Y-%m-%d %H:%M:%S.%f')}/{record.process}] " 
 
-def worker(q: queue.Queue, databaseName: str):
+    indent = len(text)
+
+    text += f"{levelname} {record.category}.{record.action}"
+
+    if record.message is not None:
+        if not isinstance(record.message, dict):
+            print(f"WARNING: {record}")
+
+        if len(record.message) != 0:
+            text += "\n"
+
+        # 取key的最大值对齐
+        maxKeyLength = max(len(key) for key in record.message.keys())
+
+        textList = []
+
+        for key, value in record.message.items():
+            if isinstance(value, Formatter):
+                formatResult = value.format()
+
+                formatResult = formatResult.replace("\n", f"\n{indent * ' '}")
+
+                textList.append(f"{indent * ' '}{key.ljust(maxKeyLength)}: {formatResult}")
+
+                jsonifyMessage[key] = formatResult #type: ignore
+
+            else:
+                textList.append(f"{indent * ' '}{key.ljust(maxKeyLength)}: {value}")
+
+        text += "\n".join(textList)
+
+    return text, jsonifyMessage
+            
+
+def worker(q: Queue, databaseName: str):
     bufferCount = 0
 
     # 连接数据库
@@ -39,32 +80,30 @@ def worker(q: queue.Queue, databaseName: str):
 
     while True:
         try:
-            
-            entry = q.get()
+            # 获取日志消息
+            record: LogRecord = q.get()
 
-            if entry is None:
-                q.task_done()
+            if record is None:
                 break
 
+            text, jsonifyMessage = format(record)
+            print(text)
 
-            service.insertLog(*entry)
+            service.insertLog(record, jsonifyMessage)
 
             bufferCount += 1
-
             if bufferCount >= BUFFER_SIZE:
                 service.commit()
                 bufferCount = 0
 
-            q.task_done()
 
         except (DatabaseError, RepositoryError) as e:
             logger.warning(f"数据库错误：{e}")
-
             try:
-                writeTextLog(entry)
+                writeTextLog(record) #type: ignore
             except NameError:
-                # entry可能未定义
                 pass
+            
 
         except (KeyboardInterrupt, EOFError):
             break
@@ -73,14 +112,12 @@ def worker(q: queue.Queue, databaseName: str):
 
     database.close()
 
-def createWorker(databaseName: str):
-    q = queue.Queue()
+def createWorker(databaseName: str, queue: Queue):
 
-    thread = threading.Thread(target=worker, args=(q, databaseName), name="LogWorker")
-    thread.daemon = True
+    thread = threading.Thread(target=worker, args=(queue, databaseName), name="LogWorker")
     thread.start()
 
-    return q, thread
+    return thread
 
 
         

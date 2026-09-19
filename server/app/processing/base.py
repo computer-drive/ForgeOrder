@@ -5,8 +5,11 @@ from multiprocessing.synchronize import Event as MPEvent
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 from dataclasses import dataclass
+import traceback
 
-from .log.record import WorkerLogger
+from core.log import Logger
+
+
 
 from .excepthook import  installProcessExcepthook, processExcepthook
 
@@ -39,12 +42,16 @@ class WorkerPipe:
         return cls(parent), cls(child) 
 
 
-
-
 class ProcessWorker:
-    def __init__(self, name: str, logQueue: Queue, stopEvent: MPEvent, daemon: bool = True):
+    def __init__(self,
+                name: str,
+                logLevel: int,
+                logQueue: Queue,
+                stopEvent: MPEvent,
+                daemon: bool = True):
         self.name = name
         self.daemon = daemon
+        self.logLevel = logLevel
 
         # 父子共有的
         self.logQueue = logQueue
@@ -61,12 +68,12 @@ class ProcessWorker:
         self._process = None
 
 
-    def getWorkerLogger(self) -> WorkerLogger:
+    def getLogger(self) -> Logger:
         '''注意，本方法应在子进程执行'''
         if self.workerLogger is  None:
-            self.workerLogger = WorkerLogger(self.logQueue)
+            self.workerLogger = Logger(self.logLevel,self.logQueue)
 
-        return cast(WorkerLogger, self.workerLogger)
+        return cast(Logger, self.workerLogger)
 
     def run(self):
         '''子进程的主函数'''
@@ -75,13 +82,14 @@ class ProcessWorker:
     def _worker(self, pipe: WorkerPipe):
 
         try:
-            installProcessExcepthook(self.getWorkerLogger())
+            installProcessExcepthook(self.getLogger())
 
             self.pipe = pipe
 
             self.run()
         except Exception as e:
-            processExcepthook(*sys.exc_info(), self.getWorkerLogger())
+            print(traceback.format_exc())
+            processExcepthook(*sys.exc_info(), self.getLogger())
 
     def start(self):
 

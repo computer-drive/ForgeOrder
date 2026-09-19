@@ -6,7 +6,7 @@ from flask.json.provider import DefaultJSONProvider
 
 
 from app.routes.manager import RouteManager
-lazy from app.processing.log.record import WorkerLogger
+from core.log import Logger
 lazy from ..config import ConfigManager
 
 class JSONProvider(DefaultJSONProvider):
@@ -22,7 +22,7 @@ class MyFlaskApp(Flask):
     routeManager: 'RouteManager'
 
     def __init__(self, 
-                  workerLogger : WorkerLogger,
+                  workerLogger : Logger,
                   configManager : ConfigManager,
                   stopEvent : Event,
                   *args, **kwargs,
@@ -31,7 +31,7 @@ class MyFlaskApp(Flask):
 
         self.routeManager = RouteManager()
 
-        self.workerLogger : WorkerLogger = workerLogger
+        self.workerLogger : Logger = workerLogger
         self.configManager: ConfigManager = configManager
         self.stopEvent = stopEvent
 
