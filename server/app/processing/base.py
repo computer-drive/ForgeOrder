@@ -88,7 +88,6 @@ class ProcessWorker:
 
             self.run()
         except Exception as e:
-            print(traceback.format_exc())
             processExcepthook(*sys.exc_info(), self.getLogger())
 
     def start(self):

@@ -17,6 +17,7 @@ def setupApp(workerLogger, configManager, stopEvent):
     for bp in blueprints:
         bp.registerForApp(app, app.routeManager)
 
+
     
     app.before_request(beforeRequest)
     app.after_request(afterRequest)

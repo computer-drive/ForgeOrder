@@ -15,11 +15,32 @@ from .formatter import Formatter
 
 def writeTextLog(record: LogRecord):
     with open("log.txt", "a") as f:
-        f.write(format(record)[0])
+        f.write(formatConsole(record)[0])
 
-def format(record: LogRecord):
-    jsonifyMessage = record.message
+def formatJSONMessage(message: dict):
+    jsonifyMessage = {}
 
+    for key, value in message.items():
+        if isinstance(value, Formatter):
+            jsonifyMessage[key] = value.formatJSON()
+        else:
+            jsonifyMessage[key] = value
+
+    
+    return jsonifyMessage
+
+def formatConsoleMessage(message: dict) -> dict[str, str]:
+    newMessage = {}
+
+    for key, value in message.items():
+        if isinstance(value, Formatter):
+            newMessage[key] = value.format()
+        else:
+            newMessage[key] = str(value)
+
+    return newMessage
+
+def formatConsole(record: LogRecord):
     levelname = ""
     match record.level:
         case schema.INFO:
@@ -33,19 +54,20 @@ def format(record: LogRecord):
         case _:
             levelname = "unknown"
 
-    
-    
+
     text = f"[{record.time.strftime('%Y-%m-%d %H:%M:%S.%f')}/{record.process}] " 
 
     indent = len(text)
 
     text += f"{levelname} {record.category}.{record.action}"
 
-    if record.message is not None:
+    if record.message is not None :
         if not isinstance(record.message, dict):
             print(f"WARNING: {record}")
 
-        if len(record.message) != 0:
+        if len(record.message) == 0:
+            return text
+        else:
             text += "\n"
 
         # 取key的最大值对齐
@@ -53,23 +75,17 @@ def format(record: LogRecord):
 
         textList = []
 
-        for key, value in record.message.items():
-            if isinstance(value, Formatter):
-                formatResult = value.format()
+        for key, value in formatConsoleMessage(record.message).items():
+            formatResult = value.replace("\n", f"\n{indent * ' '}")
 
-                formatResult = formatResult.replace("\n", f"\n{indent * ' '}")
+            textList.append(f"{indent * ' '}{key.ljust(maxKeyLength)}: {formatResult}")
 
-                textList.append(f"{indent * ' '}{key.ljust(maxKeyLength)}: {formatResult}")
-
-                jsonifyMessage[key] = formatResult #type: ignore
-
-            else:
-                textList.append(f"{indent * ' '}{key.ljust(maxKeyLength)}: {value}")
 
         text += "\n".join(textList)
 
-    return text, jsonifyMessage
-            
+    return text
+
+
 
 def worker(q: Queue, databaseName: str):
     bufferCount = 0
@@ -86,10 +102,9 @@ def worker(q: Queue, databaseName: str):
             if record is None:
                 break
 
-            text, jsonifyMessage = format(record)
-            print(text)
+            print(formatConsole(record))
 
-            service.insertLog(record, jsonifyMessage)
+            service.insertLog(record, formatJSONMessage(record.message))
 
             bufferCount += 1
             if bufferCount >= BUFFER_SIZE:

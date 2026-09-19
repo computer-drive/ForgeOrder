@@ -1,7 +1,8 @@
 import time
 import os
-from multiprocessing import current_process
+from multiprocessing import current_process, Queue
 import multiprocessing
+from typing import cast
 
 from app.init import init, shutdown
 from app.const import VERSION
@@ -48,19 +49,18 @@ if __name__ == "__main__":
 
     consoleLogger.info("正在启动应用程序...")
 
-
-    manager, logQueue, printerQueue = HTTPWorkerManager(
+    logQueue = cast(Queue, getQueue())
+    manager, _, printerQueue = HTTPWorkerManager(
         config.get(CONFIG.SERVER_HOST),
         config.get(CONFIG.SERVER_WORKER_PORT),
         config.get(CONFIG.SERVER_WORKER_THREADSS),
         config.get(CONFIG.LOG_LEVEL),
-        getQueue()
+        logQueue
     )()
 
 
     consoleLogger.info(f"HTTP服务：启动了 {len(manager._workers)} 个 Worker")
 
-    1 + ["123"]
     
     # # 启动WebSocket服务
     websocketWorker = WebsocketWorker("Worker-Websocket", config.get(CONFIG.LOG_LEVEL), logQueue, manager.stopEvent, config, False)

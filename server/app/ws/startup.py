@@ -35,10 +35,12 @@ class WebsocketWorker(ProcessWorker):
         self.config = config
 
     def run(self):
-
-        asyncio.run(websocketServer(self.pipe,
+        try:
+            asyncio.run(websocketServer(self.pipe,
                                         self.getLogger(),
                                         self.config))
+        except KeyboardInterrupt:
+            pass
 
     def stop(self):
         super().stop()

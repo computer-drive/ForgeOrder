@@ -9,7 +9,10 @@ class Formatter:
     '''
     message: Any
 
-    def format(self):
+    def format(self) -> str:
+        raise NotImplementedError
+
+    def formatJSON(self) -> dict | list | str | int | float | None:
         raise NotImplementedError
 
 @dataclass
@@ -21,7 +24,9 @@ class Traceback(Formatter):
     traceback: list[str]
 
     def format(self):
-        print(self.message.__traceback__)
         return "\n".join(self.traceback)
+
+    def formatJSON(self):
+        return self.traceback
 
 

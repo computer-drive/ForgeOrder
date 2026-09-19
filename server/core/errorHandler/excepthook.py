@@ -21,26 +21,30 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
         thread = threading.current_thread()
 
 
-    logger = getLogger()
-
-
-    logger.error(
-                    {
-                    "type": type.__name__,
-                    "value": str(value),
-                    "traceback": Traceback(value, traceback.format_exception(type, value, tb)),
-                    "thread": thread.name,
-                }, 
-                category="ErrorHandler",
-                action="UncaughtException",
-            )
-
-
-            
     consoleLogger = getConsoleLogger("errorHandler")
-    consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
+    # consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
+    
+    consoleLogger.error("".join(traceback.format_exception(type, value, tb)))
 
-
+    try:
+        logger = getLogger()
+    except ValueError:
+            pass
+        
+    else:
+        logger.error(
+                        {
+                        "type": type.__name__,
+                        "value": str(value),
+                        "traceback": Traceback(value, traceback.format_exception(type, value, tb)),
+                        "thread": thread.name,
+                    }, 
+                    category="ErrorHandler",
+                    action="UncaughtException",
+                )
+    
+            
+    
 def threadExcepthook(args):
     excepthook(args.exc_type, args.exc_value, args.exc_traceback, args.thread)
 
