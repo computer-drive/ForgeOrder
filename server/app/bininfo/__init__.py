@@ -14,13 +14,7 @@ class BinInfo:
         self.data : Schema = None
 
         self.serializer = useSerializer()
-        self.serializer.register(
-            ProxySerializer(
-                            101, Schema, dict, 
-                lambda x: {attr: getattr(x, attr) for attr in dir(x) if not attr.startswith("__")},
-                lambda x: Schema(**x),
-            )
-        )
+        
 
     def load(self):
         if self.data is not None:

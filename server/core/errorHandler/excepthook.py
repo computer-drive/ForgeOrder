@@ -36,7 +36,7 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
                         {
                         "type": type.__name__,
                         "value": str(value),
-                        "traceback": Traceback(value, traceback.format_exception(type, value, tb)),
+                        "traceback": Traceback(traceback.format_exception(type, value, tb)),
                         "thread": thread.name,
                     }, 
                     category="ErrorHandler",

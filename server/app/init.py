@@ -13,6 +13,7 @@ from app.config import config, CONFIG
 from core.log import getConsoleLogger
 from core.log import initLogger, getLogger, shutdownLogger
 from app.bininfo import bininfo
+from app.pluglins.load import initPluglinManager, getPluginManager
 
 from app.cli import createParser, executeCommand
 from app.exceptions import UserError
@@ -130,6 +131,11 @@ def init():
 
     # 初始化日志记录器
     initLog()
+
+    # 加载插件
+    manager = initPluglinManager(bininfo)
+    manager.load()
+
 
     # 初始化数据库
     initDatabase()

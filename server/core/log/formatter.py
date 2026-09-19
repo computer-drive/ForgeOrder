@@ -20,13 +20,12 @@ class Traceback(Formatter):
     '''
     格式化Traceback消息
     '''
-    message: Exception
-    traceback: list[str]
+    message: list[str]
 
     def format(self):
-        return "\n".join(self.traceback)
+        return "\n".join(self.message)
 
     def formatJSON(self):
-        return self.traceback
+        return self.message
 
 
