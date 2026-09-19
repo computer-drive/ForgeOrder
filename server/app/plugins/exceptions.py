@@ -6,8 +6,8 @@ from core.utils.common import getLanguage
 class PluginInitError(Exception):
     MESSAGES = {
         "zh": "插件{}初始化时出错，原始异常：{}",
-        "en": "Pluglin {} init error, original error: {}"
+        "en": "Plugin {} init error, original error: {}"
     }
-    def __init__(self, pluglinUUID: str, originalTraceback: str):
+    def __init__(self, pluginUUID: str, originalTraceback: str):
         super().__init__(self.MESSAGES[getLanguage()].\
-                format(pluglinUUID, originalTraceback))
+                format(pluginUUID, originalTraceback))

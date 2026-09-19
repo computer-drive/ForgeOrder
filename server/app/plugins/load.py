@@ -6,12 +6,12 @@ import hashlib
 from typing import cast
 import traceback
 
-from app.pluglins.schema import PluglinInfo
+from app.plugins.schema import PluginInfo
 from .schema import PLUGLIN_PATH
 from core.log import getLogger, getLogContext
 from core.validation.validators import (DictOf, NotEmpty, ListOf, TypeOf, Choices)
 from ..bininfo import BinInfo
-from .base import Pluglin
+from .base import Plugin
 from .exceptions import PluginInitError
 
 
@@ -21,7 +21,7 @@ class PluglinManager:
         self.registry = bininfo.data.plugins
         self.path = path
 
-        self.pluglins: dict[PluglinInfo, Pluglin] = {}
+        self.plugins: dict[PluginInfo, Plugin] = {}
 
         self.manifestValidator = DictOf().\
         Field("uuid", str, True, NotEmpty()).\
@@ -47,7 +47,7 @@ class PluglinManager:
             os.makedirs(self.path)
             
     def register(self, pluglinPath: str):
-        logger = getLogContext(getLogger(), "Pluglin")
+        logger = getLogContext(getLogger(), "Plugin")
 
         pluglinPath = os.path.join(self.path, pluglinPath)
         
@@ -83,6 +83,12 @@ class PluglinManager:
             }, "SkipRegister.InvalidManifest")
             return False, None
 
+        if manifest["uuid"] in [p.uuid for p in self.registry]:
+            logger.warning({
+                "path": pluglinPath
+            }, "SkipRegister.DuplicatedUUID")
+            return False, None
+
         # 获取需要计算hash的文件
         files = []
 
@@ -101,7 +107,7 @@ class PluglinManager:
                 hashes[file] = hashlib.sha256(f.read()).hexdigest()
 
         # 将插件信息添加到registry中
-        self.registry.append(PluglinInfo(
+        self.registry.append(PluginInfo(
             uuid=manifest["uuid"],
             path=pluglinPath,
             hashes=hashes
@@ -112,7 +118,7 @@ class PluglinManager:
     
     def scanPluglins(self):
         # 扫描插件目录
-        logger = getLogContext(getLogger(), "Pluglin")
+        logger = getLogContext(getLogger(), "Plugin")
 
         newPluglins = []
         for file in os.listdir(self.path):
@@ -131,48 +137,48 @@ class PluglinManager:
                 "newPluglins": newPluglins
             }, "RegisteredPluglins")
   
-    def loadPluglin(self, pluglin: PluglinInfo):
-        logger = getLogContext(getLogger(), "Pluglin")
+    def loadPluglin(self, plugin: PluglinInfo):
+        logger = getLogContext(getLogger(), "Plugin")
 
         # 读取manifest
-        manifestPath = os.path.join(pluglin.path, "manifest.json")
+        manifestPath = os.path.join(plugin.path, "manifest.json")
         try:
             with open(manifestPath, "r") as f:
                 manifest = json.load(f)
         except FileNotFoundError:
             logger.warning({
-                "path": pluglin.path,
-                "uuid": pluglin.uuid
+                "path": plugin.path,
+                "uuid": plugin.uuid
             }, "SkipLoad.NoManifest")
             return False
         except json.JSONDecodeError:
             logger.warning({
-                "path": pluglin.path,
-                "uuid": pluglin.uuid
+                "path": plugin.path,
+                "uuid": plugin.uuid
             }, "SkipLoad.InvalidManifest")
             return False
 
         # 验证manifest.json文件
         if not self.manifestValidator.validate(manifest):
             logger.warning({
-                "path": pluglin.path,
-                "uuid": pluglin.uuid
+                "path": plugin.path,
+                "uuid": plugin.uuid
             }, "SkipLoad.InvalidManifest")
             return False
 
         # 验证uuid是否相同
-        if manifest["uuid"] != pluglin.uuid:
+        if manifest["uuid"] != plugin.uuid:
             logger.warning({
-                "path": pluglin.path,
-                "registryUUID": pluglin.uuid,
+                "path": plugin.path,
+                "registryUUID": plugin.uuid,
                 "manifestUUID": manifest["uuid"]
             }, "SkipLoad.InvalidUUID")
             return False
 
         # 验证hash
-        for file, hash in pluglin.hashes.items():
+        for file, hash in plugin.hashes.items():
             # 拼接完整目录
-            filePath = os.path.join(pluglin.path, file)
+            filePath = os.path.join(plugin.path, file)
 
             # 计算文件hash
             with open(filePath, "rb") as f:
@@ -180,22 +186,22 @@ class PluglinManager:
 
             if hashlib.sha256(data).hexdigest() != hash:
                 logger.warning({
-                    "path": pluglin.path,
+                    "path": plugin.path,
                     "file": file,
-                    "uuid": pluglin.uuid
+                    "uuid": plugin.uuid
                 }, "SkipLoad.HashMismatch")
                 return False
             
         # 开始加载插件
         # 生成插件模块的完整路径
-        entryPath = os.path.join(pluglin.path, manifest["entry"]["file"])
+        entryPath = os.path.join(plugin.path, manifest["entry"]["file"])
         
-        spec = importlib.util.spec_from_file_location(pluglin.uuid, entryPath)
+        spec = importlib.util.spec_from_file_location(plugin.uuid, entryPath)
         if spec is None:
             logger.warning({
-                "path": pluglin.path,
+                "path": plugin.path,
                 "entry": manifest["entry"]["file"],
-                "uuid": pluglin.uuid
+                "uuid": plugin.uuid
             }, "SkipLoad.EntryModuleNotFound")
             return False
         
@@ -207,25 +213,25 @@ class PluglinManager:
 
         if pluglinInstance is None:
             logger.warning({
-                "path": pluglin.path,
+                "path": plugin.path,
                 "entry": manifest["entry"],
-                "uuid": pluglin.uuid
+                "uuid": plugin.uuid
             }, "SkipLoad.NoPluglinClass")
             return False
         
-        self.pluglins[pluglin] = pluglinInstance()
+        self.plugins[plugin] = pluglinInstance()
 
         try:
-            self.pluglins[pluglin].init()
+            self.plugins[plugin].init()
         except Exception as e:
-            raise PluginInitError(pluglin.uuid, traceback.format_exc()) from None
+            raise PluginInitError(plugin.uuid, traceback.format_exc()) from None
 
         return True
         
     
 
     def load(self):
-        logger = getLogContext(getLogger(), "Pluglin")
+        logger = getLogContext(getLogger(), "Plugin")
 
         # 判断registry是否为空
         if not self.registry:
@@ -233,26 +239,26 @@ class PluglinManager:
             self.scanPluglins()
 
         # 加载插件
-        loadedPluglins = []
+        loadedPlugins = []
         
-        for pluglin in self.registry:
-            result = self.loadPluglin(pluglin)
+        for plugin in self.registry:
+            result = self.loadPluglin(plugin)
             if result:
-                loadedPluglins.append(pluglin.uuid)
+                loadedPlugins.append(plugin.uuid)
 
-        if loadedPluglins:
+        if loadedPlugins:
             logger.info({
-                        "loadedPluglins": loadedPluglins
+                        "loadedPluglins": loadedPlugins
                     }, "LoadedPluglins")
         else:
             logger.info({}, "NoPluglinLoaded")
 
     def run(self):
-        for plugin in self.pluglins.values():
+        for plugin in self.plugins.values():
             plugin.run()
 
     def shutdown(self):
-        for plugin in self.pluglins.values():
+        for plugin in self.plugins.values():
             plugin.shutdown()
                 
 
