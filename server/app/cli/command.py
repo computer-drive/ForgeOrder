@@ -24,47 +24,56 @@ def parsePluginCommand(args: argparse.Namespace):
             return True
 
         case "enable":
-            pluginInfo = next((plugin for plugin in pluginManager.registry if args.uuid == plugin.uuid or plugin.path == args.path), None)
+            pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
-                print(f"找不到插件 {args.uuid if args.uuid else args.path} ！")
-                return False
+                print(f"找不到插件 {args.plugin} ！")
+                return True
 
             if pluginInfo.enabled:
-                print(f"插件 {pluginInfo.uuid if pluginInfo.uuid else pluginInfo.path} 已经是启用状态了。")
-                return False
+                print(f"插件 {pluginInfo.uuid} 已经是启用状态了。")
+                return True
 
             pluginManager.enablePlugin(pluginInfo)
 
-            print(f"插件 {pluginInfo.uuid if pluginInfo.uuid else pluginInfo.path} 已启用。")
+            print(f"插件 {pluginInfo.uuid} 已启用。")
             return True
 
         case "disable":
-            pluginInfo = next((plugin for plugin in pluginManager.registry if args.uuid == plugin.uuid or plugin.path == args.path), None)
+            pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
-                print(f"找不到插件 {args.uuid if args.uuid else args.path} ！")
+                print(f"找不到插件 {args.plugin} ！")
                 return True
 
             if not pluginInfo.enabled:
-                print(f"插件 {args.uuid if args.uuid else args.path} 已经是禁用状态了。")
+                print(f"插件 {pluginInfo.uuid} 已经是禁用状态了。")
                 return True
             
 
             pluginManager.disablePlugin(pluginInfo)
 
-            print(f"插件 {args.uuid if args.uuid else args.path} 已禁用。")
+            print(f"插件 {pluginInfo.uuid} 已禁用。")
             return True
 
         case "info":
-            pluginInfo = next((plugin for plugin in pluginManager.registry if args.uuid == plugin.uuid or plugin.path == args.path), None)
+            pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
-                print(f"找不到插件 {args.uuid if args.uuid else args.path} ！")
+                print(f"找不到插件 {args.plugin} ！")
                 return True
 
-            print(f"插件 {pluginInfo.uuid if pluginInfo.uuid else pluginInfo.path} 位于 {pluginInfo.path}。")
+            print(f"插件 {pluginInfo.uuid} 位于 {pluginInfo.path}。")
+
+        case "register":
+            if args.plugin is None:
+                print("请指定插件名称。")
+                return True
+
+            pluginManager.registerPlugin(args.plugin)
 
             
 
     return True
+
+

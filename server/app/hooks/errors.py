@@ -8,7 +8,7 @@ from core.log import getConsoleLogger, getLogger
 from ..db.connections import closeDatabase
 from core.database.database.exceptions import DatabaseLockedError
 from app.routes.schema import GLOBAL
-from app.utils import g
+lazy from app.utils import g
 
 # 415
 def unsupportedMediaType(e: UnsupportedMediaType):

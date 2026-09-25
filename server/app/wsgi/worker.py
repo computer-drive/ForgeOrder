@@ -6,7 +6,7 @@ from ..processing.base import ProcessWorker
 from ..config import ConfigManager
 from .setup import setupApp
 from .server import AppServer
-from .app import MyFlaskApp
+lazy from .app import MyFlaskApp
 from core.log.schema import INFO, WARNING, ERROR, DEBUG
 
 class HTTPWorker(ProcessWorker):

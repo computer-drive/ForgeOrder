@@ -8,15 +8,11 @@ def parsePlugins(parser: argparse.ArgumentParser):
     common = argparse.ArgumentParser(add_help=False)
 
     common.add_argument(
-                "--path", "-p",
-                type=str,
-                dest="path",
-                help="使用插件目录的路径（相对路径或绝对路径）")
-    common.add_argument(
-                "--uuid", "-u",
-                type=str,
-                dest="uuid",
-                help="使用插件的UUID")
+                "plugin",
+                nargs="?",
+                default=None,
+                help="插件名称")
+
     
 
     command = parser.add_subparsers(dest="plugin_command", help="插件命令")
@@ -68,15 +64,24 @@ def parseArguments():
 
     args = parser.parse_args()
 
+    # 判断是否是cli模式
+    if args.command is None:
+        return args, False
+    else:
+        return args, True
+
+
+
+def runCommand(args: argparse.Namespace):
     match args.command:
-        case "plugin":
-            if args.plugin_command is None:
-                print("插件命令不能为空！")
-                return True
-                
-            return parsePluginCommand(args)
-
-        case _:
-            return False
-
+            case "plugin":
+                if args.plugin_command is None:
+                    print("插件命令不能为空！")
+                    return True
+                    
+                return parsePluginCommand(args)
+    
+            case _:
+                return  False
+    
     return False

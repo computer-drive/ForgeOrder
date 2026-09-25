@@ -1,33 +1,49 @@
 import time
 import os
-from multiprocessing import current_process, Queue
 import multiprocessing
 from typing import cast
 
-from app.init import init, shutdown
-from app.const import VERSION
-from core.errorHandler.excepthook import installExcepthook
-from core.log import getConsoleLogger, getLogContext, getLogger, getQueue
-from app.config import config, CONFIG
-from app.bininfo import bininfo
-from app.wsgi.manager import HTTPWorkerManager
-from app.plugins.load import getPluginManager
+lazy from app.init import initServer, shutdown, initBasic
+from app.cli import parseArguments
+lazy from app.cli import runCommand
+lazy from app.const import VERSION
+lazy from core.errorHandler.excepthook import installExcepthook
+lazy from core.log import getConsoleLogger, getLogContext, getLogger, getQueue
+lazy from app.config import config, CONFIG
+lazy from app.bininfo import bininfo
+lazy from app.wsgi.manager import HTTPWorkerManager
+lazy from app.plugins.load import getPluginManager
 
-from app.ws.startup import WebsocketWorker
+lazy from app.ws.startup import WebsocketWorker
 
 # 安装全局异常处理器
 installExcepthook() 
 
-current_process().name = "Master"
-
 if __name__ == "__main__":
+    multiprocessing.current_process().name = "Master"
+
     multiprocessing.set_start_method("spawn")
+
+    initBasic()
+
+    initTime = time.time()
+    try:
+        args, isCli = parseArguments()
+    except SystemExit:
+        shutdown(0, True)
+        exit(0)
+
+    if isCli:
+        runCommand(args)
+        shutdown(0, True)
+        # 退出程序
+
+    initServer()
+    
+
 
     consoleLogger= getConsoleLogger("main")
 
-    initTime = time.time()
-
-    init()
 
     ## 设置环境变量
     os.environ["ENV"] = config.get(CONFIG.SERVER_ENV)
@@ -52,7 +68,7 @@ if __name__ == "__main__":
 
     getPluginManager().run()
 
-    logQueue = cast(Queue, getQueue())
+    logQueue = cast(multiprocessing.Queue, getQueue())
     manager, _, printerQueue = HTTPWorkerManager(
         config.get(CONFIG.SERVER_HOST),
         config.get(CONFIG.SERVER_WORKER_PORT),

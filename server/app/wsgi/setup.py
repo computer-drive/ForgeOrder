@@ -1,12 +1,10 @@
 
-from ..hooks.beforeRequest import beforeRequest
-from ..hooks.afterRequest import afterRequest
-from ..hooks.errors import *
+lazy from ..hooks.beforeRequest import beforeRequest
+lazy from ..hooks.afterRequest import afterRequest
+lazy from ..hooks.errors import setupErrorHandlers
 
-from .app import MyFlaskApp
+lazy from .app import MyFlaskApp
 lazy from ..views import blueprints
-
-from flask import Flask
 
 
 def setupApp(workerLogger, configManager, stopEvent):

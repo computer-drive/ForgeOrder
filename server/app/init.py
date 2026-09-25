@@ -1,23 +1,23 @@
 from pathlib import Path
 import sys
+from traceback import print_last
 from typing import cast
 
-from app.db.repository import RepositoryManager
-from app.service import initService
-from app.service.settings import SettingsService
-from core.database.database import Database
+lazy from app.db.repository import RepositoryManager
+lazy from app.service import initService
+lazy from app.service.settings import SettingsService
+lazy from core.database.database import Database
 
-from app.printer.service import PrintManager
-from app.config import config, CONFIG
+lazy from app.printer.service import PrintManager
+lazy from app.config import config, CONFIG
 from core.log import getConsoleLogger
-from core.log import initLogger, getLogger, shutdownLogger
-from app.bininfo import bininfo
-from app.plugins.load import initPluginManager
+lazy from core.log import initLogger, getLogger, shutdownLogger
+lazy from app.bininfo import bininfo
+lazy from app.plugins.load import initPluginManager
 
-from app.cli import createParser, parseArguments
-from app.exceptions import UserError
+lazy from app.cli import createParser, parseArguments
+lazy from app.exceptions import UserError
 
-consoleLogger= getConsoleLogger("startup")
 
 def initRootUser(reset = False):
 
@@ -43,16 +43,16 @@ def initRootUser(reset = False):
 
                 service.forceChangePassword(rootUserId, password)
 
-                consoleLogger.info("重置root用户密码：%s" % password)
+                print("重置root用户密码：%s" % password)
                 return
 
             else:
-                consoleLogger.warning("root用户不存在，无法重置密码")
+                print("root用户不存在，无法重置密码")
 
         service.create("root", password, True, True)
 
 
-        consoleLogger.info("创建root用户，密码：%s" % password)
+        print("创建root用户，密码：%s" % password)
 
         
         bininfo.data.isFirstStart = False
@@ -62,8 +62,7 @@ def initRootUser(reset = False):
         db.close()
 
 def initLog():
-
-
+    
     initLogger( config.get(CONFIG.LOG_DATABASE), config.get(CONFIG.LOG_LEVEL))
 
     getLogger()
@@ -97,7 +96,7 @@ def validateAppSettings():
             db.close()
 
     except UserError as e:
-            consoleLogger.error(f"启动失败：{e} \n {e.hint}")
+            print(f"启动失败：{e} \n {e.hint}")
             sys.exit(1)
 
 def initDatabase():
@@ -111,28 +110,19 @@ def initDatabase():
     # 关闭数据库连接
     db.close()
 
-def init():
 
-    consoleLogger.info("正在初始化...")
-
+def initBasic():
     # 加载bininfo
     bininfo.load()
 
-    consoleLogger.debug(f"上次启动是否正常退出：{bininfo.data.isNormalShutdown}")
-    consoleLogger.debug(f"启动次数：{bininfo.data.startupCount}")
-
-
     # 初始化设置
-    consoleLogger.info(f"正在加载从 {bininfo.data.config} 加载配置...")
+    print(f"正在加载从 {bininfo.data.config} 加载配置...")
     initConfig(bininfo.data.config)
 
     # 初始化日志记录器
     initLog()
 
-    # 初始化命令行参数
-    shouldExit = initArguments()
-    if shouldExit:
-        shutdown(0, cli=True)
+def initServer():
 
     # 加载插件
     manager = initPluginManager(bininfo)

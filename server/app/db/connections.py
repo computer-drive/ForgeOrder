@@ -1,4 +1,4 @@
-from app.utils import g
+lazy from app.utils import g
 from .repository import RepositoryManager
 from core.database.database import Database
 from app.config import CONFIG, config

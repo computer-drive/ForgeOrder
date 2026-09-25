@@ -1,1 +1,1 @@
-from .parser import createParser, parseArguments
+from .parser import createParser, parseArguments, runCommand
