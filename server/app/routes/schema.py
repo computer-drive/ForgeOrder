@@ -1,17 +1,23 @@
-from typing import TypedDict, Any
 from dataclasses import dataclass
+from typing import Callable
 
-from .field import BodyField, PathField
+
+from .field import RequestParameterField
 from .responseGenerator import ResponseInfo
 
 
-class RoutesInfo(TypedDict):
-    isAdmin: bool
+@dataclass
+class Route:
+    rule: str
+    paramaters: list[RequestParameterField] | None
     requiresAuth: bool
-    bodyParams: dict[str, BodyField]
-    pathParams: dict[str, PathField]
-    responses: list[ResponseInfo]
+    requiresAdmin : bool
+    responses: list[ResponseInfo] | None
+    cached: bool
 
+    viewFunction: Callable
+
+    endpoint: str
 
 class GLOBAL:
     ARGUMNET_ERROR = ResponseInfo(1001, "ArgumentError", None)

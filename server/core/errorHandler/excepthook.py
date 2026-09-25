@@ -9,27 +9,21 @@ from core.log.formatter import Traceback
 
 def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
 
-
     if issubclass(type, KeyboardInterrupt):
-        logger = getConsoleLogger("errorHandler")
-        logger.error("KeyboardInterrupt")
-        return 
+        print("用户中止了运行。")
 
-    
-    
+        
     if not thread:
         thread = threading.current_thread()
 
 
-    consoleLogger = getConsoleLogger("errorHandler")
-    # consoleLogger.error(f"Uncaught exception: {type.__name__}: {value}  in thread {thread.name}")
     
-    consoleLogger.error("".join(traceback.format_exception(type, value, tb)))
 
     try:
         logger = getLogger()
     except ValueError:
-            pass
+        consoleLogger = getConsoleLogger("errorHandler")
+        consoleLogger.error("".join(traceback.format_exception(type, value, tb)))
         
     else:
         logger.error(

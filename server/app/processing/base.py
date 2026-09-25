@@ -1,3 +1,4 @@
+import asyncio
 from multiprocessing import Process, Queue
 import sys
 from typing import  cast, Any
@@ -34,6 +35,39 @@ class WorkerPipe:
 
     def recv(self) -> PipeInfo:
         return self.pipe.recv()
+
+    async def recvAsync(self):
+        loop = asyncio.get_running_loop()
+
+        if sys.platform == "win32":
+            # run_in_executor 轮询
+            while True:
+                hasData = await loop.run_in_executor(None, self.pipe.poll, 0.5)
+
+                if not hasData:
+                    continue
+
+                return self.recv()
+
+        else:
+            # 用 add_reader 监听
+
+            fd = self.pipe.fileno() # 获取文件描述符
+            dataReady = asyncio.Event() # 数据就绪事件
+
+            loop.add_reader(fd, dataReady.set)
+
+            try:
+                while True:
+                    if not self.pipe.poll():
+                        await dataReady.wait()
+                        dataReady.clear()
+                        continue
+
+                    return self.recv()
+            finally:
+                loop.remove_reader(fd)
+
 
     
 
@@ -82,13 +116,13 @@ class ProcessWorker:
     def _worker(self, pipe: WorkerPipe):
 
         try:
-            installProcessExcepthook(self.getLogger())
+            installProcessExcepthook(self.getLogger(), pipe)
 
             self.pipe = pipe
 
             self.run()
         except Exception as e:
-            processExcepthook(*sys.exc_info(), self.getLogger())
+            processExcepthook(*sys.exc_info(), self.getLogger(), pipe)
 
     def start(self):
 

@@ -49,4 +49,9 @@ class WebsocketWorker(ProcessWorker):
 
     def waitToStart(self):
         # 等待接受数据
-        self.parentPipe.recv()
+        try:
+            self.parentPipe.recv()
+        except EOFError:
+            return False
+        else:
+            return True

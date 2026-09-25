@@ -88,7 +88,7 @@ async def listenPipe(childPipe: WorkerPipe, context, logger):
             # Windows: ProactorEventLoop 不支持 add_reader，
             # SelectorEventLoop 又不认管道句柄，只能用线程池轮询。
             while True:
-                has_data = await loop.run_in_executor(None, childPipe.poll, 1.0)
+                has_data = await loop.run_in_executor(None, childPipe.poll, 0.5)
                 if not has_data:
                     continue
 

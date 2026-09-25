@@ -2,6 +2,8 @@
 import threading
 from multiprocessing import Queue
 
+
+
 from .schema import BUFFER_SIZE
 from .service import initService
 from ..database.database.exceptions import DatabaseError
@@ -15,7 +17,7 @@ from .formatter import Formatter
 
 def writeTextLog(record: LogRecord):
     with open("log.txt", "a") as f:
-        f.write(formatConsole(record)[0])
+        f.write(formatConsole(record))
 
 def formatJSONMessage(message: dict | None) -> dict | None:
     jsonifyMessage = {}
@@ -116,21 +118,11 @@ def worker(q: Queue, databaseName: str):
 
 
         except (DatabaseError, RepositoryError) as e:
-            logger.warning(f"数据库错误：{e}")
-            try:
-                writeTextLog(record) #type: ignore
-            except NameError:
-                pass
+            print(f"数据库错误，无法将日志写入数据库：{e}")
+            exit(1)
             
         except (KeyboardInterrupt, EOFError):
             break
-
-        except Exception as e:
-            try:
-                print(record)
-            except:
-                pass
-            logger.error(f"日志写入错误：{e}")
 
     service.commit()
 

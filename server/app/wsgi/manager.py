@@ -29,6 +29,7 @@ class HTTPWorkerManager:
 
             i += 1
 
+
     def __call__(self):
 
         self.start()
@@ -52,7 +53,12 @@ class HTTPWorkerManager:
 
         for worker in self._workers:
             # 等待worker发送一条消
-            data = worker.parentPipe.recv()
+            try:
+                data = worker.parentPipe.recv()
+            except EOFError:
+                return False
+
+        return True
 
 
             

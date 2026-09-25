@@ -1,8 +1,6 @@
 # 验证配置项的有效性
 import os
 
-
-from .exceptions import ConfigError
 from .schema import CONFIG_ITEMS
 from core.validation.base import ValidationResult
 from core.validation.errors import *
@@ -70,5 +68,5 @@ def validateConfig(config: JSONConfig, fix=False):
         if fix:
             return errors
         else:
-            raise ConfigError(errorsToString(errors))
+            raise Exception(errorsToString(errors))
     

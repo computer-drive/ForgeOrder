@@ -2,6 +2,7 @@ import time
 import os
 import multiprocessing
 from typing import cast
+import asyncio
 
 lazy from app.init import initServer, shutdown, initBasic
 from app.cli import parseArguments
@@ -13,8 +14,9 @@ lazy from app.config import config, CONFIG
 lazy from app.bininfo import bininfo
 lazy from app.wsgi.manager import HTTPWorkerManager
 lazy from app.plugins.load import getPluginManager
-
 lazy from app.ws.startup import WebsocketWorker
+lazy from app.listen import startListen
+    
 
 # 安装全局异常处理器
 installExcepthook() 
@@ -23,6 +25,8 @@ if __name__ == "__main__":
     multiprocessing.current_process().name = "Master"
 
     multiprocessing.set_start_method("spawn")
+
+    ### 初始化部分
 
     initBasic()
 
@@ -39,7 +43,7 @@ if __name__ == "__main__":
         # 退出程序
 
     initServer()
-    
+
 
 
     consoleLogger= getConsoleLogger("main")
@@ -64,11 +68,15 @@ if __name__ == "__main__":
     bininfo.save()
 
 
-    consoleLogger.info("正在启动应用程序...")
 
+
+    ## 启动worker
+
+    # 运行插件
     getPluginManager().run()
 
     logQueue = cast(multiprocessing.Queue, getQueue())
+
     manager, _, printerQueue = HTTPWorkerManager(
         config.get(CONFIG.SERVER_HOST),
         config.get(CONFIG.SERVER_WORKER_PORT),
@@ -77,55 +85,22 @@ if __name__ == "__main__":
         logQueue
     )()
 
-
-    consoleLogger.info(f"HTTP服务：启动了 {len(manager._workers)} 个 Worker")
-
     
     # # 启动WebSocket服务
     websocketWorker = WebsocketWorker("Worker-Websocket", config.get(CONFIG.LOG_LEVEL), logQueue, manager.stopEvent, config, False)
     websocketWorker.start()
-    consoleLogger.info(f"WebSocket服务：启动了 Websocket Worker")
+
+    
 
 
-
-
-    # 等待所有进程启动完毕
-    manager.waitProcessToStart()
-    websocketWorker.waitToStart()
-
-
-    consoleLogger.info(f"用时 {(time.time() - initTime) * 1000:.2f}  ms，按下Ctrl-C退出")
-
-
-    try:
-        while True:
-            if input() == "exit": print("exit"); break
-    except KeyboardInterrupt:
-        pass
-
-    manager.stop()
-    websocketWorker.stop()
-
-
-    # 等待所有Worker退出
-    try:
-        consoleLogger.info("正在等待所有Worker退出，再次按下Ctrl-C强制退出...")
-        for worker in manager._workers+ [websocketWorker]:
-            worker.join()
-            consoleLogger.info(f"{worker.name} 已退出")
-
-
-    except KeyboardInterrupt:
-        manager.forceStop()
-
-        worker._process.terminate() #type: ignore
-        
+    asyncio.run(startListen(manager, websocketWorker))
+    
+    logger.info({}, "Stopped", "Main")
 
     # 等待日志读取线程退出
     logQueue.put(None)
     
     getPluginManager().shutdown()
-    
 
     shutdown() 
 

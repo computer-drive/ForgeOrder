@@ -1,4 +1,6 @@
-from .schema import RoutesInfo
+from typing import Any
+
+from .schema import Route
 from .responseGenerator import ResponseGenerator, ResponseInfo
 from .exceptions import *
 from .field import BodyField, PathField, RequestParameterField
@@ -7,24 +9,20 @@ from .field import BodyField, PathField, RequestParameterField
 class RouteManager:
     def __init__(self):
 
-        self.routes: dict[str, RoutesInfo] = {}
+        self.routes: dict[str, dict[str, Any]] = {}
 
-    def register(self, endpoint: str,
-                 requiresAuth: bool= False,
-                 isAdmin: bool = False,
-                 params: list[RequestParameterField] | None = None,
-                 responses: list[ResponseInfo] | None = None):
+    def register(self, route: Route):
 
-        if params is None:
-            params = []
+        if route.paramaters is None:
+            route.paramaters = []
 
-        if endpoint in self.routes:
-            raise RouteAlreadyRegisteredError(endpoint)
+        if route.endpoint in self.routes:
+            raise RouteAlreadyRegisteredError(route.endpoint)
         
         bodyParams_ = {}
         pathParams_ = {}
 
-        for field in params:
+        for field in route.paramaters:
             if isinstance(field, BodyField):
                 bodyParams_[field.key] = field
             elif isinstance(field, PathField):
@@ -32,12 +30,12 @@ class RouteManager:
             else:
                 raise ValueError(f"Invalid parameter type: {type(field)}")
 
-        self.routes[endpoint] = { # type: ignore
-            "isAdmin": isAdmin,
-            "requiresAuth": requiresAuth,
+        self.routes[route.endpoint] = { # type: ignore
+            "isAdmin": route.requiresAdmin,
+            "requiresAuth": route.requiresAuth,
             "bodyParams": bodyParams_,
             "pathParams": pathParams_,
-            "responses": responses,
+            "responses": route.responses,
         }
 
 
