@@ -19,6 +19,7 @@ class Document:
 
         return ref
 
+
     @property
     def ref(self):
         return lambda x: self._ref(Reference, x)
@@ -32,11 +33,13 @@ class Document:
         return ReferenceWithValue
 
 
-    def __add__(self, other: list[Component] | Component):
+    def __iadd__(self, other: list[Component] | Component):
         if isinstance(other, list):
             self.add(*other)
         else:
             self.add(other)
+
+        return self
 
 
     def format(self, **kwargs):
@@ -53,7 +56,7 @@ if __name__ == "__main__":
     v = doc.value
     ref = doc.ref
 
-    doc + Text(ref("hello"))
+    doc += Text(ref("hello"))
 
     doc.format(hello="hello")
 
