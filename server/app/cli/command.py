@@ -24,6 +24,10 @@ def parsePluginCommand(args: argparse.Namespace):
             return True
 
         case "enable":
+            if args.plugin is None:
+                print("请指定插件名称。")
+                return True
+            
             pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
@@ -40,6 +44,10 @@ def parsePluginCommand(args: argparse.Namespace):
             return True
 
         case "disable":
+            if args.plugin is None:
+                print("请指定插件名称。")
+                return True
+            
             pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
@@ -57,6 +65,10 @@ def parsePluginCommand(args: argparse.Namespace):
             return True
 
         case "info":
+            if args.plugin is None:
+                print("请指定插件名称。")
+                return True
+            
             pluginInfo = next((plugin for plugin in pluginManager.registry if args.plugin == plugin.uuid), None)
 
             if not pluginInfo:
@@ -67,10 +79,16 @@ def parsePluginCommand(args: argparse.Namespace):
 
         case "register":
             if args.plugin is None:
-                print("请指定插件名称。")
+                print("请指定插件路径。")
                 return True
 
-            pluginManager.registerPlugin(args.plugin)
+            result, data = pluginManager.register(args.plugin)
+
+            if result:
+                print(f"注册了插件 {data} （位于{args.plugin}）。")
+
+            else:
+                print("注册失败。")
 
             
 

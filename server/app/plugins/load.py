@@ -16,6 +16,27 @@ from .exceptions import PluginInitError
 
 
 class PluginManager:
+    manifestValidator = DictOf().\
+            Field("uuid", str, True, NotEmpty()).\
+            Field("name", str, True, NotEmpty()).\
+            Field("version", str, True, NotEmpty()).\
+            Field("author", str, False).\
+            Field("description", str, False).\
+            Field("dependencies", list, False, ListOf(
+                TypeOf(str), NotEmpty()
+            )).\
+            Field("entry", dict, True, DictOf().\
+                   Field("file", str, True, NotEmpty()).\
+                   Field("class", str, True, NotEmpty())
+                ).\
+            Field("modules", list, False, ListOf(
+                DictOf().\
+                Field("type", str, True, Choices("printer")).\
+                Field("entry", str, True, NotEmpty()).\
+                Field("config", str, False)
+            ))
+
+    
     def __init__(self, bininfo: BinInfo, path: str = PLUGIN_PATH):
         self.bininfo = bininfo
         self.registry = bininfo.data.plugins
@@ -23,25 +44,7 @@ class PluginManager:
 
         self.plugins: dict[PluginInfo, Plugin] = {}
 
-        self.manifestValidator = DictOf().\
-        Field("uuid", str, True, NotEmpty()).\
-        Field("name", str, True, NotEmpty()).\
-        Field("version", str, True, NotEmpty()).\
-        Field("author", str, False).\
-        Field("description", str, False).\
-        Field("dependencies", list, False, ListOf(
-            TypeOf(str), NotEmpty()
-        )).\
-        Field("entry", dict, True, DictOf().\
-               Field("file", str, True, NotEmpty()).\
-               Field("class", str, True, NotEmpty())
-            ).\
-        Field("modules", list, False, ListOf(
-            DictOf().\
-            Field("type", str, True, Choices("printer")).\
-            Field("entry", str, True, NotEmpty()).\
-            Field("config", str, False)
-        ))
+        
         
         if not os.path.exists(self.path):
             os.makedirs(self.path)
