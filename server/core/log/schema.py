@@ -2,6 +2,9 @@ import datetime
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from ..serialization.serializers.base import Serializer
+from ..serialization.serializers.custom import ProxySerializer
+
 BUFFER_SIZE = 100
 
 @dataclass
@@ -18,10 +21,38 @@ NOTICE  = LogLevel("NOTICE", 30, "95")
 DEBUG   = LogLevel("DEBUG", 40, "94")
 
 
+
+class ValueFormatter:
+    serializer: Serializer 
+    def format(self, value: Any) -> str:
+        raise NotImplemented
+
+class ListFormatter(ValueFormatter):
+
+    def __init__(self, char: str = "\n"):
+        self.connecter = char
+
+        self.serializer = ProxySerializer(
+                501, type(self), str,
+                lambda x: x.connecter,
+                lambda x: ListFormatter(x)
+            )
+        
+    def format(self, value: list) -> str:
+        return self.connecter.join(str(v) for v in value)
+
+
 @dataclass
 class Formatter:
     message: str
-    formatter: dict[str, Callable] | None = None
+    formatter: dict[str, ValueFormatter] | None = None
+
+    def __post_init__(self):
+        self.serializer = ProxySerializer(
+                    500, type(self), list,
+                    lambda x: [x.message, x.formatter],
+                    lambda x: Formatter(x[0], x[1])
+                )
 
     def format(self, data: dict[str, str | int | float | list | dict] | None = None):
         if data is None:
@@ -30,12 +61,10 @@ class Formatter:
         if self.formatter is not None:
             for key, func in self.formatter.items():
                 if key in data:
-                    data[key] = func(data[key])
+                    data[key] = func.format(data[key])
 
         return self.message.format(**data)
 
-
-        
 
 @dataclass
 class LogRecord:

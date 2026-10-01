@@ -4,6 +4,7 @@ from peewee import Database, IntegrityError
 
 from ..schema import LogRecord
 from .model import Logs, LogIndex, BaseModel
+from ...serialization import useSerializer
 
 class LogService:
     def __init__(self, database: Database):
@@ -19,6 +20,8 @@ class LogService:
 
         # 创建LogIndex表
         self.database.create_tables([LogIndex])
+
+        self.serializer = useSerializer()
 
     @staticmethod
     def getLogTable(date: str) -> type[Logs]:
@@ -40,8 +43,10 @@ class LogService:
         # 创建表
         self.database.create_tables([self.currentLogTable[1]], safe=True)
         
-        
+    
         currentTime = int(logRecord.time.timestamp() * 1000) * 1000 
+
+        message = self.serializer.serialize(logRecord.message)
 
         for _ in range(10000):
             try:
@@ -52,7 +57,7 @@ class LogService:
                     category=logRecord.category,
                     action=logRecord.action,
                     data=logRecord.data,
-                    message=logRecord.message,
+                    message=message,
                     requestId=logRecord.requestId
                 )
             except IntegrityError:
@@ -65,8 +70,8 @@ class LogService:
                 defaults={
                     'date': currentDate,
                     'name': f'logs_{currentDate}',
-                    'first': logs,
-                    'last': logs,
+                    'first': logs.time,
+                    'last': logs.time,
                     'count': 1,
                 }
             )
@@ -75,7 +80,12 @@ class LogService:
             if not created:
                 index = cast(LogIndex, index)
 
-                index.last = logs
+                if logs.time < index.first:
+                    index.first = logs.time
+
+                if logs.time > index.last:
+                    index.last = logs.time
+
                 index.count += 1
                 index.save()
 

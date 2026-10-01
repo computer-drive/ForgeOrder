@@ -15,7 +15,7 @@ def printConsole(record: LogRecord):
     if message != '':
         message = ': ' + message
 
-    return f'[{time}/{record.process}] \033[{record.level.color}m{record.level.name}m\033[0m] {record.category}.{record.action}{message}'
+    return f'[{time}/{record.process}] \033[{record.level.color}m{record.level.name}\033[0m] {record.category}.{record.action}{message}'
 
 def worker(q: Queue, databaseName: str):
     # 初始化基本变量

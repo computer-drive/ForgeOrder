@@ -39,7 +39,15 @@ class SerializationManager:
 
     def serialize(self, value: Any) -> bytes:
         try:
-            serializer = self.getSerializerFromType(type(value))
+            try:
+                serializer = self.getSerializerFromType(type(value))
+            except SerializerTypeNotFoundError:
+                # 尝试获取对象的serializer属性
+                serializer = getattr(value, "serializer", None)
+
+                if serializer is None or not isinstance(serializer, Serializer):
+                    raise SerializerTypeNotFoundError(type(value))
+
 
             typeId = serializer.typeId.to_bytes(2, byteorder='big') # 转换为2字节大端字节序(1-1024)
             result = serializer.serialize(value)

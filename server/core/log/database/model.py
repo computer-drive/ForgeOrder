@@ -1,5 +1,5 @@
 from peewee import (Model,
-    IntegerField, CharField, JSONField, ForeignKeyField
+    IntegerField, CharField, JSONField, ForeignKeyField, BlobField
 )
 
 class BaseModel(Model):
@@ -14,7 +14,7 @@ class Logs(BaseModel):
     action = CharField()
     data = JSONField(null=True)
 
-    message = CharField()
+    message = BlobField(null=True)
 
     requestId = CharField(null=True)
 
@@ -26,8 +26,8 @@ class LogIndex(BaseModel):
     date = CharField(unique=True)
     name = CharField(unique=True)
 
-    first = ForeignKeyField(Logs, field="time")
-    last = ForeignKeyField(Logs, field="time")
+    first = IntegerField()
+    last = IntegerField()
 
     count = IntegerField(default=0,)
 
