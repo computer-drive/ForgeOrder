@@ -56,14 +56,16 @@ class Formatter:
 
     def format(self, data: dict[str, str | int | float | list | dict] | None = None):
         if data is None:
-            data = {}
+            data_ = {}
+        else:
+            data_ = data.copy()
 
         if self.formatter is not None:
             for key, func in self.formatter.items():
-                if key in data:
-                    data[key] = func.format(data[key])
+                if key in data_:
+                    data_[key] = func.format(data_[key])
 
-        return self.message.format(**data)
+        return self.message.format(**data_)
 
 
 @dataclass
