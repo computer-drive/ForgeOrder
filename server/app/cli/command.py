@@ -1,11 +1,10 @@
 import argparse
 
-from core.log.console import getConsoleLogger
+
 from ..plugins.load import initPluginManager
 from ..bininfo import bininfo
 
 def parsePluginCommand(args: argparse.Namespace):
-    logger = getConsoleLogger("CLI")
 
     pluginManager = initPluginManager(bininfo)
 

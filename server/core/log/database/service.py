@@ -16,18 +16,17 @@ class LogService:
         self.database.connect()
 
         # 绑定model
-        self.database.bind(BaseModel)
+        self.database.bind([LogIndex])
 
         # 创建LogIndex表
         self.database.create_tables([LogIndex])
 
         self.serializer = useSerializer()
 
-    @staticmethod
-    def getLogTable(date: str) -> type[Logs]:
+    def getLogTable(self, date: str) -> type[Logs]:
         tableName = f'logs_{date}'
 
-        Meta = type('Meta', (), {'table_name': tableName})
+        Meta = type('Meta', (), {'table_name': tableName, 'database': self.database})
 
         return type(f'Logs_{date}', (Logs, ), {'Meta': Meta})
 
@@ -53,7 +52,7 @@ class LogService:
                 logs = self.currentLogTable[1].create(
                     time = currentTime,
                     process=logRecord.process,
-                    level=logRecord.level,
+                    level=logRecord.level.value,
                     category=logRecord.category,
                     action=logRecord.action,
                     data=logRecord.data,

@@ -10,7 +10,7 @@ lazy from core.database.database import Database
 
 lazy from app.printer.service import PrintManager
 lazy from app.config import config, CONFIG
-from core.log import getConsoleLogger
+
 lazy from core.log import initLogger, getLogger, shutdownLogger
 lazy from app.bininfo import bininfo
 lazy from app.plugins.load import initPluginManager
@@ -159,7 +159,7 @@ def shutdown(exitCode: int = 0, cli: bool = False):
 
     bininfo.save()
 
-    getLogger().info(None, "Main", "Stopped")
+    getLogger().info("程序已停止", {}, "Main", "Stopped")
 
         
     if not cli: 

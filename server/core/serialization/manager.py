@@ -48,6 +48,8 @@ class SerializationManager:
                 if serializer is None or not isinstance(serializer, Serializer):
                     raise SerializerTypeNotFoundError(type(value))
 
+                self.register(serializer)
+
 
             typeId = serializer.typeId.to_bytes(2, byteorder='big') # 转换为2字节大端字节序(1-1024)
             result = serializer.serialize(value)

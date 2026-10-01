@@ -13,6 +13,7 @@ from core.validation.validators import (DictOf, NotEmpty, ListOf, TypeOf, Choice
 from ..bininfo import BinInfo
 from .base import Plugin
 from .exceptions import PluginInitError
+from core.log.schema import Formatter, ListFormatter
 
 
 class PluginManager:
@@ -55,7 +56,7 @@ class PluginManager:
         pluginPath = os.path.join(self.path, pluginPath)
         
         if not os.path.isdir(pluginPath):
-            logger.debug({
+            logger.debug("跳过注册插件 {path}：未找到插件路径", {
                 "path": pluginPath
             }, "SkipRegister.NotDirectory")
             return False, None
@@ -64,7 +65,7 @@ class PluginManager:
 
         if not (os.path.exists(manifestPath) and os.path.isfile(manifestPath)):
             # 没有manifest.json文件
-            logger.warning({
+            logger.warning("跳过注册插件 {path}：未找到清单文件",{
                 "path": pluginPath
             }, "SkipRegister.NoManifest")
             return False, None
@@ -74,20 +75,20 @@ class PluginManager:
             try:
                 manifest = json.load(f)
             except json.JSONDecodeError:
-                logger.warning({
+                logger.warning("跳过注册插件 {path}：清单文件格式错误",{
                     "path": pluginPath
                 }, "SkipRegister.InvalidManifest")
                 return False, None
 
         # 验证manifest.json文件
         if not self.manifestValidator.validate(manifest):
-            logger.warning({
+            logger.warning("跳过注册插件 {path}：清单文件格式错误",{
                 "path": pluginPath
             }, "SkipRegister.InvalidManifest")
             return False, None
 
         if manifest["uuid"] in [p.uuid for p in self.registry]:
-            logger.warning({
+            logger.warning("跳过注册插件 {path}：UUID已存在",{
                 "path": pluginPath
             }, "SkipRegister.DuplicatedUUID")
             return False, None
@@ -111,7 +112,7 @@ class PluginManager:
                 with open(filePath, "rb") as f:
                     hashes[file] = hashlib.sha256(f.read()).hexdigest()
             except FileNotFoundError:
-                logger.info({
+                logger.info("跳过注册插件 {uuid}：找不到文件 {path}", {
                     "uuid": manifest["uuid"],
                     "path": filePath
                 }, "SkipRegister.FileNotFound")
@@ -145,9 +146,12 @@ class PluginManager:
             self.bininfo.data.plugins = self.registry
             self.bininfo.save()
 
-            logger.info({
-                "newPlugins": newPlugins
-            }, "RegisteredPlugins")
+            logger.info(
+                Formatter("注册了新的插件：{newPlugins}", {"newPlugins": ListFormatter()}),
+                {
+                    "newPlugins": newPlugins
+                }, "RegisteredPlugins"
+            )
   
     def loadPlugin(self, plugin: PluginInfo):
         logger = getLogContext(getLogger(), "Plugin")
@@ -158,13 +162,13 @@ class PluginManager:
             with open(manifestPath, "r") as f:
                 manifest = json.load(f)
         except FileNotFoundError:
-            logger.warning({
+            logger.warning("跳过加载插件 {uuid}：未找到清单文件", {
                 "path": plugin.path,
                 "uuid": plugin.uuid
             }, "SkipLoad.NoManifest")
             return False
         except json.JSONDecodeError:
-            logger.warning({
+            logger.warning("跳过加载插件 {uuid}：清单文件格式错误", {
                 "path": plugin.path,
                 "uuid": plugin.uuid
             }, "SkipLoad.InvalidManifest")
@@ -172,7 +176,7 @@ class PluginManager:
 
         # 验证manifest.json文件
         if not self.manifestValidator.validate(manifest):
-            logger.warning({
+            logger.warning("跳过加载插件 {uuid}：清单文件格式错误", {
                 "path": plugin.path,
                 "uuid": plugin.uuid
             }, "SkipLoad.InvalidManifest")
@@ -180,8 +184,8 @@ class PluginManager:
 
         # 验证uuid是否相同
         if manifest["uuid"] != plugin.uuid:
-            logger.warning({
-                "path": plugin.path,
+            logger.warning("跳过加载插件 {uuid}：UUID不匹配（注册表UUID：{uuid}，清单UUID：{manifestUUID}）", {
+                "uuid": plugin.uuid,
                 "registryUUID": plugin.uuid,
                 "manifestUUID": manifest["uuid"]
             }, "SkipLoad.InvalidUUID")
@@ -197,8 +201,7 @@ class PluginManager:
                 data = f.read()
 
             if hashlib.sha256(data).hexdigest() != hash:
-                logger.warning({
-                    "path": plugin.path,
+                logger.warning("跳过加载插件 {uuid}：文件 {file} 完整性验证失败", {
                     "file": file,
                     "uuid": plugin.uuid
                 }, "SkipLoad.HashMismatch")
@@ -210,8 +213,7 @@ class PluginManager:
         
         spec = importlib.util.spec_from_file_location(plugin.uuid, entryPath)
         if spec is None:
-            logger.warning({
-                "path": plugin.path,
+            logger.warning("跳过加载插件 {uuid}：未找到入口模块 {entry}", {
                 "entry": manifest["entry"]["file"],
                 "uuid": plugin.uuid
             }, "SkipLoad.EntryModuleNotFound")
@@ -224,9 +226,8 @@ class PluginManager:
         pluginInstance = getattr(module, manifest["entry"]["class"], None)
 
         if pluginInstance is None:
-            logger.warning({
-                "path": plugin.path,
-                "entry": manifest["entry"],
+            logger.warning("跳过加载插件 {uuid}：未找到插件类 {entry}", {
+                "entry": manifest["entry"]["class"],
                 "uuid": plugin.uuid
             }, "SkipLoad.NoPluginClass")
             return False
@@ -259,11 +260,13 @@ class PluginManager:
                 loadedPlugins.append(plugin.uuid)
 
         if loadedPlugins:
-            logger.info({
+            logger.info(Formatter("加载了新的插件：{loadedPlugins}", {
+                        "loadedPlugins": ListFormatter()
+                    }), {
                         "loadedPlugins": loadedPlugins
                     }, "LoadedPlugins")
         else:
-            logger.info({}, "NoPluginLoaded")
+            logger.info("没有加载任何插件", {}, "NoPluginLoaded")
 
     def run(self):
         for plugin in self.plugins.values():

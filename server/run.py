@@ -8,8 +8,8 @@ lazy from app.init import initServer, shutdown, initBasic
 from app.cli import parseArguments
 lazy from app.cli import runCommand
 lazy from app.const import VERSION
-lazy from core.errorHandler.excepthook import installExcepthook
-lazy from core.log import getConsoleLogger, getLogContext, getLogger, getQueue
+lazy from core.errors.excepthook import installExcepthook
+lazy from core.log import getLogContext, getLogger, getQueue
 lazy from app.config import config, CONFIG
 lazy from app.bininfo import bininfo
 lazy from app.wsgi.manager import HTTPWorkerManager
@@ -27,7 +27,6 @@ if __name__ == "__main__":
     multiprocessing.set_start_method("spawn")
 
     ### 初始化部分
-
     initBasic()
 
     initTime = time.time()
@@ -45,29 +44,16 @@ if __name__ == "__main__":
     initServer()
 
 
-
-    consoleLogger= getConsoleLogger("main")
-
-
     ## 设置环境变量
     os.environ["ENV"] = config.get(CONFIG.SERVER_ENV)
 
     logger = getLogContext(getLogger(), "Main")
 
-    
-    logger.debug({
-        "version": VERSION,
-        "environment": os.environ["ENV"],
-        "workersPort": config.get(CONFIG.SERVER_WORKER_PORT),
-        "host": config.get(CONFIG.SERVER_HOST)
-    }, "RuntimeInfo")
 
     bininfo.data.isNormalShutdown = False # 先设置为False，等服务正常退出后再设置为True
     bininfo.data.startupCount += 1
     bininfo.data.lastStartTimestamp = int(time.time())
     bininfo.save()
-
-
 
 
     ## 启动worker
@@ -91,11 +77,9 @@ if __name__ == "__main__":
     websocketWorker.start()
 
     
-
-
     asyncio.run(startListen(manager, websocketWorker))
     
-    logger.info({}, "Stopped", "Main")
+    logger.info("程序已停止", {}, "Stopped", "Main")
 
     # 等待日志读取线程退出
     logQueue.put(None)

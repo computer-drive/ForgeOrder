@@ -14,19 +14,19 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
     if issubclass(type, KeyboardInterrupt):
         print("用户中止了运行。")
 
-        sys.exit(130)
+        os._exit(1)
 
     if issubclass(type, CrashException):
         print("程序已崩溃：")
         print("".join(traceback.format_exception(type, value, tb)))
 
-        sys.exit(1)
-        
+        os._exit(1)
 
+    traceback.print_exception(type, value, tb)
+        
         
     if not thread:
         thread = threading.current_thread()
-
 
     try:
         logger = getLogger()

@@ -1,7 +1,6 @@
 import argparse
 
 from app.const import VERSION
-from core.log.console import getConsoleLogger
 from .command import parsePluginCommand
 
 def parsePlugins(parser: argparse.ArgumentParser):

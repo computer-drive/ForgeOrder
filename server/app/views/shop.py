@@ -44,7 +44,7 @@ def setBusinessState():
 
     g.logger.setCategory("Shop")
 
-    g.logger.info({
+    g.logger.info("用户 {operator} 更新营业状态：{isBusiness}", {
         "isBusiness": isBusiness,
         "operator": g.userInfo["id"]
     },  "UpdateBusinessState")
@@ -135,7 +135,7 @@ def updateDish():
     match status:
         case service.RESULT.SUCCESS:
 
-            g.logger.info({
+            g.logger.info("用户 {operator} 更新菜品 {id} 的信息", {
                 "id": dishId,
                 "changedItems": changedItems,
                 "changedChoices": changedChoices
@@ -345,15 +345,17 @@ def newTable():
 
     g.logger.setCategory("Shop")
 
-
     status, data = service.tables.create(name)
 
     if status == service.RESULT.TABLE_ALREADY_EXIST:
         return g.res.TableNameExist()
 
-    g.logger.info({
+    operator = g.userInfo["id"]
+
+    g.logger.info("用户 {operator} 创建桌台 {name}", {
             "id": data,
-            "name": name
+            "name": name,
+            "operator": operator
         }, "NewTable")
         
     return g.res.OK()
@@ -384,9 +386,10 @@ def updateTable():
     elif status == service.RESULT.TABLE_ALREADY_EXIST:
         return g.res.TableNameExist()
     else:
-        g.logger.info({
+        g.logger.info("用户 {operator} 更新桌台 {id} 的名称为 {name}", {
                 "id": tableId,
-                "name": newName
+                "name": newName,
+                "operator": g.userInfo["id"]
             }, "UpdateTable")
         
         return g.res.OK()

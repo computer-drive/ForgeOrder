@@ -4,7 +4,7 @@ import traceback
 from flask import current_app
 from werkzeug.exceptions import UnsupportedMediaType
 
-from core.log import getConsoleLogger, getLogger
+from core.log.schema import SubItemFormatter, Formatter
 from ..db.connections import closeDatabase
 from core.database.database.exceptions import DatabaseLockedError
 from app.routes.schema import GLOBAL
@@ -29,7 +29,9 @@ def internalServerError(e):
 
 # 数据库错误处理
 def handleDatabaseLockedError(e: DatabaseLockedError):
-	g.logger.warning({
+	g.logger.warning(
+	"数据库被锁定",
+	{
 			"traceback": traceback.format_exception(type(e), e, e.__traceback__)
 	}, "DatabaseBusy")
 	return GLOBAL.DATABASE_BUSY(), 503
@@ -53,11 +55,8 @@ def teardownRequest(error):
 		if isinstance(error, Exception):
 			logs["traceback"] = traceback.format_exception(type(error), error, error.__traceback__) # type: ignore
 	
-		consoleLogger = getConsoleLogger("flask")
-	
-		consoleLogger.warning('\n'.join(traceback.format_exception(type(error), error, error.__traceback__))) # type: ignore
-
-		current_app.workerLogger.error(
+		g.logger.error(
+			Formatter("处理请求时发生错误：{error}", {"error": SubItemFormatter("error", "msg")}),
 			logs
 		, "FLASK_APP", "RequestError")
 

@@ -4,20 +4,20 @@ import threading
 import sys
 
 from core.log import Logger
-from core.log.formatter import Traceback
+from core.log.schema import Formatter, ListFormatter
 lazy from .base import WorkerPipe
 
-def _generateErrorMessage(type, value, tb):
-    return {
-        "type": type.__name__,
-        "value": str(value),
-        "traceback": Traceback(traceback.format_exception(type, value, tb)),
-        "thread": threading.current_thread().name,
-        "process": multiprocessing.current_process().name,
-    }
 
 def processExcepthook(type, value, tb, logger: Logger, pipe: 'WorkerPipe'):
-    logger.error(_generateErrorMessage(type, value, tb), "ErrorHandler", "UncaughtException")
+    logger.error(Formatter("未捕获的异常：{value} \n {traceback}", {
+        "traceback": ListFormatter()
+    }), {
+        "type": type.__name__,
+        "value": str(value),
+        "traceback": traceback.format_exception(type, value, tb),
+        "thread": threading.current_thread().name,
+        "process": multiprocessing.current_process().name,
+    }, "ErrorHandler", "UncaughtException")
 
     pipe.send(
         "uncaughtException",

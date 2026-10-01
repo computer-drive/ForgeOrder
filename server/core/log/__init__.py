@@ -25,7 +25,7 @@ def initLogger(
 
     _databaseName, _level = databaseName, level
 
-def getLogger():
+def getLogger() -> Logger:
     global logger, dbLoggerThread, dbLoggerQueue
     global _loggerName, _databaseName, _level, _formatJson
 

@@ -119,6 +119,6 @@ def getOrder():
     else:
         g.logger.setCategory("Orders")
 
-        g.logger.warning(str(status), "UnknownError")
+        # g.logger.warning(str(status), "UnknownError")
 
         return g.res.UnknownError()

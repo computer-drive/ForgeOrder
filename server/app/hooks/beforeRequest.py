@@ -21,10 +21,12 @@ def _handleAuth():
         checkResult, routeData = routeManager.getAuthConfig(request.endpoint)
         
         if not checkResult:
-            logger.debug({
-                "path": request.path,
-                "endpoint": request.endpoint
-            }, "NotFoundAuthConfig")
+            logger.debug(
+                "未找到路由 {path}（当前匹配到的路由 {endpoint}）的认证配置",
+                {
+                    "path": request.path,
+                    "endpoint": request.endpoint
+                }, "NotFoundAuthConfig")
             # 路由不存在
             return GLOBAL.NOT_FOUND(), 404
         
@@ -64,39 +66,51 @@ def _handleAuth():
         match result.code:
             case service.AUTH.TOKEN_INVALID:
                 # Token无效
-                logger.warning({
-                    "ip": getClientIp(),
-                    "error": "InvalidToken"
-                }, "AuthError")
+                logger.warning(
+                    "Token {token} 无效",
+                    {
+                        "ip": getClientIp(),
+                        "token": token
+                    }, "AuthError"
+                )
 
                 return GLOBAL.TOKEN_INVALID_ERROR(), 401
             
             case service.AUTH.TOKEN_EXPIRED:
                 # Token过期
-                logger.warning({
-                    "ip": getClientIp(),
-                    "error": "TokenExpire"
-                }, "AuthError")
+                logger.warning(
+                    "Token {token} 已过期",
+                    {
+                        "ip": getClientIp(),
+                        "token": token
+                    }, "AuthError"
+                )
                 
 
                 return GLOBAL.TOKEN_EXPIRED_ERROR(), 401
             
             case service.AUTH.TOKEN_LOGOUT:
                 # 用户已退出登录
-                logger.warning({
-                    "ip": getClientIp(),
-                    "error": "TokenLogout"
-                }, "AuthError")
+                logger.warning(
+                    "Token {token} 已退出登录",
+                    {
+                        "ip": getClientIp(),
+                        "token": token
+                    }, "AuthError"
+                )
                 # 用户退出登录
 
                 return GLOBAL.TOKEN_INVALID_ERROR(), 401
             
             case service.AUTH.TOKEN_OLD_DEVICE:
                 # 旧设备登录
-                logger.warning({
-                    "ip": getClientIp(),
-                    "error": "OldDevice"
-                }, "AuthError")
+                logger.warning(
+                    "Token {token} 旧设备登录",
+                    {
+                        "ip": getClientIp(),
+                        "token": token
+                    }, "AuthError"
+                )
 
                 return GLOBAL.OLD_DEVICE_TOKEN(), 401
     else:
@@ -106,11 +120,13 @@ def _handleAuth():
         tokenInfo: dict = result.data #type: ignore
         if tokenInfo["ip"] != getClientIp(): # type: ignore
             # ip不一致
-            logger.warning({
-                "ip": getClientIp(),
-                "tokenIp": tokenInfo["ip"],
-                "error": "IPNotMatch"
-            }, "AuthError") # type: ignore
+            logger.warning(
+                f"Token {token} 记录的IP与请求的IP不一致",
+                {
+                    "ip": getClientIp(),
+                    "tokenIp": tokenInfo["ip"],
+                }, "AuthError"
+            )
             
             return GLOBAL.TOKEN_INVALID_ERROR(), 401
 
@@ -123,11 +139,11 @@ def _handleAuth():
             if not tokenInfo["user"]["isAdmin"] == True: # type: ignore
                 # 非管理员用户，记录日志
                 logger.warning(
+                    f"Token {token} 非管理员用户 {tokenInfo['user']['id']} 访问管理员页面 {request.path}",
                     {
-                        "path": request.path,
-                        "userId": tokenInfo["user"]["id"], # type: ignore
+                        "ip": tokenInfo["user"]["id"], # type: ignore
                         "ip": getClientIp(),
-                    },  "NonAdminUserAccess"
+                    }, "NonAdminUserAccess"
                 )
                 return GLOBAL.PERMISSION_ERROR(), 401
             
@@ -144,7 +160,7 @@ def _handleArguments():
         g.args = {}
 
         if request.view_args:
-            g.logger.warning(request.view_args, "RouteParametersRuleMissing") #type: ignore
+            g.logger.warning("未找到路由参数规则", request.view_args, "RouteParametersRuleMissing") #type: ignore
 
     errors = {}
 
@@ -183,7 +199,7 @@ def _handleArguments():
             })
 
         # 失败
-        logger.info(errorInfo, "ArgumentsError")
+        logger.info("参数验证失败", errorInfo, "ArgumentsError")
 
         return GLOBAL.ARGUMNET_ERROR(errorInfo), 400
 
@@ -199,7 +215,7 @@ def _handleRequestInfo():
     if currentApp.stopEvent.is_set():
         return GLOBAL.SERVER_CLOSED(), 503
 
-    g.logger.info({
+    g.logger.info("收到来自 {ip} 向 {method} {path} 的请求",{
         "requestId": g.requestId,
         "ip": request.remote_addr,
         "path": request.path,

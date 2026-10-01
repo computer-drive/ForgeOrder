@@ -9,7 +9,7 @@ from .database.worker import createWorker
 
 class Logger:
     def __init__(self, level: int, queue: multiprocessing.Queue):
-        self.level = level
+        self.level: int  = level
         self.queue = queue
 
     def logWithTime(self, message: str | Formatter, data: dict, level: LogLevel, category: str, action: str,  time: datetime.datetime, requestId: str | None = None):
@@ -62,8 +62,8 @@ class Logger:
 
 
 def setupLogger(databaseName: str, level: str = "info" ):
-    level_ = None
-
+    level_: LogLevel | None = None
+    
     match level:
         case "debug":
             level_ = DEBUG
@@ -79,6 +79,7 @@ def setupLogger(databaseName: str, level: str = "info" ):
     queue = multiprocessing.Queue()
 
     thread = createWorker(databaseName, queue)
+
     
     logger = Logger(level_.value, queue)
 

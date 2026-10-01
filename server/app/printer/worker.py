@@ -77,7 +77,7 @@ def printWorker(q: Queue, logger: Logger):
     printer: Escpos | None = None
     retryConnectCount = 0
 
-    logContext.info({
+    logContext.info("启动成功", {
         "connectInfo": connectInfo,
         "qrInfo": qrInfo,
     }, "WorkerStarted")

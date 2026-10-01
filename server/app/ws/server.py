@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import time
+import traceback
 
 import websockets.exceptions as websocketsExceptions
 from websockets import serve
@@ -11,7 +12,6 @@ from ..processing.base import WorkerPipe
 from ..config import ConfigManager, CONFIG
 from .message import makeMessage
 from .schema import MESSAGEES
-from ..processing.excepthook import _generateErrorMessage
 lazy from .handlers.base import handlerManager as hm_
 lazy from .context import WebsocketServerContext, Client
 from core.log import Logger
@@ -19,7 +19,7 @@ from core.log import Logger
 def addClient(ws: ServerConnection, ctx: 'WebsocketServerContext'):
 
     def whenClosed(c: Client):
-        ctx.logger.info({
+        ctx.logger.info("客户端 {client} 断开连接", {
             "client": c.address,
         }, "Client", "Disconnected")
 
@@ -33,7 +33,7 @@ def addClient(ws: ServerConnection, ctx: 'WebsocketServerContext'):
 
 
 async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerContext'):
-    ctx.logger.info({
+    ctx.logger.info("客户端 {client} 连接成功", {
         "client": websocket.remote_address,
     }, "Client", "Connected")
 
@@ -42,7 +42,7 @@ async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerCon
 
     try:
         async for message in websocket:
-            ctx.logger.debug({
+            ctx.logger.debug("客户端 {client} 收到消息：{message}", {
                 "message": message,
             }, "Client", "Received")
 
@@ -55,20 +55,27 @@ async def websocketHandler(websocket: ServerConnection, ctx: 'WebsocketServerCon
         pass
 
     except websocketsExceptions.ConnectionClosedError:
-        ctx.logger.warning({
+        ctx.logger.warning("客户端 {client} 连接异常关闭", {
             "client": websocket.remote_address,
         }, "Client", "ConnectionClosed")
 
     except websocketsExceptions.InvalidState:
-        ctx.logger.warning({
+        ctx.logger.warning("客户端 {client} 连接不可用", {
             "client": websocket.remote_address,
         }, "Client", "ConnectionUnavailable")
 
     except Exception as e:
         # 捕获除websocket连接异常以外的所有异常
-        ctx.logger.error({
+        type, value, tb = sys.exc_info()
+
+        ctx.logger.error("客户端 {client} 发生错误：{error}", {
             "client": websocket.remote_address,
-            "error": _generateErrorMessage(*sys.exc_info()),
+            "error": {
+                "type": type.__name__, #type: ignore
+                "value": str(value),
+                "traceback": traceback.format_exception(type, value, tb),
+    
+            },
         }, "Client", "Error")
 
         # 发送关闭消息
@@ -93,7 +100,7 @@ async def listenPipe(childPipe: WorkerPipe, context, logger):
                     continue
 
                 message = childPipe.recv()
-                logger.debug({
+                logger.debug("收到消息：{type} {data}", {
                     "type": message.type,
                     "data": message.data,
                 }, "WebsocketPipe", "Received")
@@ -113,7 +120,7 @@ async def listenPipe(childPipe: WorkerPipe, context, logger):
                         continue
 
                     message = childPipe.recv()
-                    logger.debug({
+                    logger.debug("收到消息：{type} {data}", {
                         "type": message.type,
                         "data": message.data,
                     }, "WebsocketPipe", "Received")
@@ -124,7 +131,9 @@ async def listenPipe(childPipe: WorkerPipe, context, logger):
                 loop.remove_reader(fd)
 
     except (EOFError, OSError) as e:
-        logger.warning({"error": str(e)}, "WebsocketPipe", "Closed")
+        logger.warning("管道已关闭：{error}", {
+            "error": str(e),
+        }, "WebsocketPipe", "Closed")
 
 
 
@@ -144,7 +153,7 @@ async def websocketServer(childPipe: WorkerPipe, logger: Logger, config: ConfigM
             listenPipe(childPipe, context, logger)
         )
         
-        logger.info({
+        logger.info("WebSocket服务正在监听 {host}:{port}", {
             "host": host,
             "port": port,
         }, "WebSocket", "Started")
@@ -156,4 +165,4 @@ async def websocketServer(childPipe: WorkerPipe, logger: Logger, config: ConfigM
             await pipeTask
         finally:
             pipeTask.cancel()
-            logger.info({}, "WebSocket", "Stopped")
+            logger.info("WebSocket服务已停止", {}, "WebSocket", "Stopped")

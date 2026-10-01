@@ -17,20 +17,21 @@ class WebsocketWorker(ProcessWorker):
                 config: ConfigManager,
                 daemon: bool = True
                 ):
-        logLevelInteger = 0
+        logLevel_ = 0
+        
         match logLevel.lower():
             case "info":
-                logLevelInteger = INFO
+                logLevel_ = INFO
             case "warning":
-                logLevelInteger = WARNING
+                logLevel_ = WARNING
             case "error":
-                logLevelInteger = ERROR
+                logLevel_ = ERROR
             case "debug":
-                logLevelInteger = DEBUG
+                logLevel_ = DEBUG
             case _:
-                logLevelInteger = INFO
+                logLevel_ = INFO
 
-        super().__init__(name, logLevelInteger, logQueue, stopEvent, daemon)
+        super().__init__(name, logLevel_.value, logQueue, stopEvent, daemon)
 
         self.config = config
 

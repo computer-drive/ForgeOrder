@@ -33,7 +33,7 @@ class HTTPWorker(ProcessWorker):
             case _:
                 logLevelInteger = INFO
         
-        super().__init__(name, logLevelInteger, logQueue,  stopEvent, daemon)
+        super().__init__(name, logLevelInteger.value, logQueue,  stopEvent, daemon)
 
         self.config = config
         self.printerQueue = printerQueue
@@ -50,7 +50,7 @@ class HTTPWorker(ProcessWorker):
 
         self._app = setupApp(workerLogger, self.config, self.stopEvent)
 
-        workerLogger.info({
+        workerLogger.info("HTTP 服务正在监听 {host}:{port}", {
                 "host": self.host,
                 "port": self.port,
             }, "Worker", "Started")
@@ -69,7 +69,7 @@ class HTTPWorker(ProcessWorker):
 
         watcherThread.join()  # 等待关闭线程结束
 
-        workerLogger.info(None, "Worker", "Stopped")
+        workerLogger.info("HTTP 服务已停止", {}, "Worker", "Stopped")
 
         self.pipe.send("stop")
 

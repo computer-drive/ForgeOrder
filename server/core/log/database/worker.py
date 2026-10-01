@@ -1,5 +1,7 @@
 import threading
 import os
+import sys
+import traceback
 from multiprocessing import Queue
 
 from peewee import SqliteDatabase, IntegrityError, OperationalError
@@ -15,7 +17,7 @@ def printConsole(record: LogRecord):
     if message != '':
         message = ': ' + message
 
-    return f'[{time}/{record.process}] \033[{record.level.color}m{record.level.name}\033[0m] {record.category}.{record.action}{message}'
+    return f'[{time}/{record.process}] \033[{record.level.color}m{record.level.name}\033[0m {record.category}.{record.action}{message}'
 
 def worker(q: Queue, databaseName: str):
     # 初始化基本变量
@@ -24,8 +26,9 @@ def worker(q: Queue, databaseName: str):
     database = SqliteDatabase(databaseName)
     service = LogService(database)
 
-    # 手动开启事务
-    database.begin()
+    # 先开启事务
+    txn = database.atomic()
+    txn.__enter__()
 
     while True:
         try:
@@ -34,7 +37,7 @@ def worker(q: Queue, databaseName: str):
 
             # 判断是否为终止信号
             if record is None:
-                database.commit()
+                txn.__exit__(None, None, None)
                 break
 
             # 处理日志消息
@@ -45,20 +48,30 @@ def worker(q: Queue, databaseName: str):
 
             buffer += 1
             if buffer >= BUFFER_SIZE:
-                database.commit()
+                txn.__exit__(None, None, None)
 
                 buffer = 0
 
-                database.begin()
+                database.__enter__()
 
         except OperationalError as e:
             raise CrashException(f"无法将日志写入数据库，可能有其他实例正在运行。错误信息：{e}")
+
+        except Exception as e:
+            print(f"输出日志时出错：{e}")
+            traceback.print_exception(*sys.exc_info())
+            txn.__exit__(*sys.exc_info())
+
+            buffer = 0
+
+            txn.__enter__()
+
 
     database.close()
 
 
 def createWorker(databaseName: str, queue: Queue):
-    thread = threading.Thread(target=worker, args=(queue, databaseName), daemon=False)
+    thread = threading.Thread(target=worker, args=(queue, databaseName), daemon=True)
     thread.start()
 
     return thread
