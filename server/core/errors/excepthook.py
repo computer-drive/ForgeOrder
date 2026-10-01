@@ -1,10 +1,12 @@
-
+import os
 import sys
 import threading
 import traceback
 
-from core.log import getConsoleLogger, getLogger
-from core.log.formatter import Traceback
+from ..log import  getLogger
+from ..log.schema import Formatter
+
+from .exceptions import CrashException
 
 
 def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
@@ -12,25 +14,33 @@ def excepthook(type, value, tb, thread: threading.Thread | None = None, ):
     if issubclass(type, KeyboardInterrupt):
         print("用户中止了运行。")
 
+        sys.exit(130)
+
+    if issubclass(type, CrashException):
+        print("程序已崩溃：")
+        print("".join(traceback.format_exception(type, value, tb)))
+
+        sys.exit(1)
+        
+
         
     if not thread:
         thread = threading.current_thread()
 
 
-    
-
     try:
         logger = getLogger()
     except ValueError:
-        consoleLogger = getConsoleLogger("errorHandler")
-        consoleLogger.error("".join(traceback.format_exception(type, value, tb)))
+        print("未捕获的异常：")
+        print("".join(traceback.format_exception(type, value, tb)))
         
     else:
         logger.error(
-                        {
+                    Formatter("未捕获的异常（{process} 进程，{thread} 线程）：\n{traceback}"),
+                    {
                         "type": type.__name__,
                         "value": str(value),
-                        "traceback": Traceback(traceback.format_exception(type, value, tb)),
+                        "traceback": "".join(traceback.format_exception(type, value, tb)),
                         "thread": thread.name,
                     }, 
                     category="ErrorHandler",

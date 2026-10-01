@@ -2,9 +2,9 @@ from threading import Thread
 from multiprocessing import Queue
 from typing import Literal, cast
 
-from .console import getConsoleLogger 
 from .context import getLogContext
 # 这两行做导出，不是没用，别删！
+
 from .logger import Logger, setupLogger
 
 

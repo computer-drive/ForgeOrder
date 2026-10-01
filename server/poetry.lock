@@ -274,6 +274,27 @@ icon-conversion = ["imageio"]
 onefile = ["zstandard (>=0.15)"]
 
 [[package]]
+name = "peewee"
+version = "4.5.2"
+description = "a little orm"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "peewee-4.5.2-py3-none-any.whl", hash = "sha256:a7765c76834c84799b533aeaa0afeebdcd123b894faefbcebe495fbf4c7548ba"},
+    {file = "peewee-4.5.2.tar.gz", hash = "sha256:10724cf1a6bda2bcdc4da17c376e6ed1d875f16dcabbb42594123cba1304d598"},
+]
+
+[package.extras]
+aiomysql = ["aiomysql", "greenlet"]
+aiosqlite = ["aiosqlite", "greenlet"]
+asyncpg = ["asyncpg", "greenlet"]
+cysqlite = ["cysqlite (>=0.3.5)"]
+mysql = ["pymysql"]
+postgres = ["psycopg2-binary"]
+psycopg3 = ["psycopg[binary]"]
+
+[[package]]
 name = "pillow"
 version = "12.3.0"
 description = "Python Imaging Library (fork)"
@@ -781,5 +802,5 @@ watchdog = ["watchdog (>=2.3)"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.14"
-content-hash = "02c95389ff27fbde6ad6af0d8a243cb5c115a775cc51c4d8f46d2a14ce35e4db"
+python-versions = ">=3.15"
+content-hash = "e3360a575085e59f40dcc42d854f05f744e76bfef01f83968d8a98f5aa7067a5"
