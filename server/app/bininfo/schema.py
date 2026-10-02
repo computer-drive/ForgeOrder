@@ -5,10 +5,12 @@ from core.serialization.serializers.custom import ProxySerializer
 from core.serialization.manager import useSerializer
 
 
+    
+
 
 @dataclass
 class Schema:
-    isFirstStart : bool = False
+    isFirstStart : bool = False 
     isNormalShutdown : bool = False
     lastStartTimestamp : int = 0
     startupCount : int = 0
@@ -16,19 +18,24 @@ class Schema:
 
     plugins: list[PluginInfo] = field(default_factory=list)
 
+    databaseInfo: DatabaseInfo = DatabaseInfo()
+
 serializerManager = useSerializer()
 
 serializerManager.register(
-            ProxySerializer(
-                            101, Schema, dict, 
-                lambda x: {attr: getattr(x, attr) for attr in dir(x) if not attr.startswith("__")},
-                lambda x: Schema(**x),
-            )
-        )
-serializerManager.register(
-            ProxySerializer(
-                102, PluginInfo, dict, 
-                lambda x: x.toDict(),
-                lambda x: PluginInfo(**x),
-            )
+    ProxySerializer(
+                    101, Schema, dict, 
+        lambda x: {attr: getattr(x, attr) for attr in dir(x) if not attr.startswith("__")},
+        lambda x: Schema(**x),
+    )
 )
+
+serializerManager.register(
+    ProxySerializer(
+        102, PluginInfo, dict, 
+        lambda x: x.toDict(),
+        lambda x: PluginInfo(**x),
+    )
+)
+
+

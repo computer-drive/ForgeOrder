@@ -13,7 +13,6 @@ def parsePlugins(parser: argparse.ArgumentParser):
                 help="插件名称")
 
     
-
     command = parser.add_subparsers(dest="plugin_command", help="插件命令")
 
     parser_list = command.add_parser("list", help="列出所有已被注册的插件", parents=[common])

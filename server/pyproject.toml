@@ -14,9 +14,15 @@ dependencies = [
     "websockets (>=17.1,<18.0)",
     "aioconsole (>=0.8.2,<0.9.0)",
     "peewee (>=4.5.2,<5.0.0)",
+    "pymysql (>=1.2.3,<2.0.0)",
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.4.0,<8.0.0)"
+]
