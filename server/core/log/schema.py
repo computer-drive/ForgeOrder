@@ -17,7 +17,7 @@ class LogLevel:
 ERROR   = LogLevel("ERROR", 10, "91")
 WARNING = LogLevel("WARNING", 20, "93")
 INFO    = LogLevel("INFO", 30, "92")
-NOTICE  = LogLevel("NOTICE", 30, "95")
+NOTICE  = LogLevel("NOTICE", 30, "90")
 DEBUG   = LogLevel("DEBUG", 40, "94")
 
 

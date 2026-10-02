@@ -1,6 +1,7 @@
 from multiprocessing.synchronize import Event as MPEvent
 from multiprocessing import Queue
 from threading import Thread
+import errno
 
 from ..processing.base import ProcessWorker
 from ..config import ConfigManager
@@ -50,20 +51,24 @@ class HTTPWorker(ProcessWorker):
 
         self._app = setupApp(workerLogger, self.config, self.stopEvent)
 
-        workerLogger.info("HTTP 服务正在监听 {host}:{port}", {
+        workerLogger.notice("Worker 启动成功（监听 http://{host}:{port}）", {
                 "host": self.host,
                 "port": self.port,
             }, "Worker", "Started")
         
-            
-        self._server = AppServer(self._app, host=self.host, port=self.port, threads=self.threads)
+        try:
+            self._server = AppServer(self._app, host=self.host, port=self.port, threads=self.threads)
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                workerLogger.error("无法启动HTTP服务：端口 {port} 被占用", {"port": self.port}, "Worker", "Failed")
+                return 
 
         # 启动一个线程监听关闭事件
         watcherThread = Thread(target=self._shutdownWatcher, daemon=True)
         watcherThread.start()
 
 
-        self.pipe.send("started")
+        self.pipe.send("start")
 
         self._server.run()
 

@@ -134,6 +134,7 @@ class ProcessWorker:
         self._process = Process(target=self._worker, name=self.name, args=(children,), daemon=self.daemon)
 
         self._process.start()
+        children.pipe.close()
 
 
     def stop(self):

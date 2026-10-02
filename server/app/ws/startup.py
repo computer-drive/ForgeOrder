@@ -43,6 +43,9 @@ class WebsocketWorker(ProcessWorker):
         except KeyboardInterrupt:
             pass
 
+        # 发送关闭信号
+        self.pipe.send("stop")
+
     def stop(self):
         super().stop()
 

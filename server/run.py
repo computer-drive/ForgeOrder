@@ -77,9 +77,9 @@ if __name__ == "__main__":
     websocketWorker.start()
 
     
-    asyncio.run(startListen(manager, websocketWorker))
+    asyncio.run(startListen(manager, websocketWorker, initTime))
     
-    logger.info("程序已停止", {}, "Stopped", "Main")
+    logger.info("程序已停止", {}, "Stopped")
 
     # 等待日志读取线程退出
     logQueue.put(None)

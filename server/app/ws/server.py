@@ -152,14 +152,16 @@ async def websocketServer(childPipe: WorkerPipe, logger: Logger, config: ConfigM
         pipeTask = asyncio.create_task(
             listenPipe(childPipe, context, logger)
         )
+
         
-        logger.info("WebSocket服务正在监听 {host}:{port}", {
+        logger.info("Worker 启动成功（监听：ws://{host}:{port}）", {
             "host": host,
             "port": port,
         }, "WebSocket", "Started")
-        childPipe.send("started")
 
-        # await asyncio.Future()
+
+        childPipe.send("start")
+
 
         try:
             await pipeTask

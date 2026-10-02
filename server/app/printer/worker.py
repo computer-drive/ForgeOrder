@@ -182,13 +182,13 @@ def printWorker(q: Queue, logger: Logger):
         printTaskService.update(entry, 2, None)
 
 
-        logContext.info({
-            "id": entry,
-        }, "PrintTaskFinished")
+        # logContext.info({
+        #     "id": entry,
+        # }, "PrintTaskFinished")
 
     database.close()      
 
-    logContext.info("", "WorkerStopped")
+    # logContext.info("", "WorkerStopped")
 
     
 
