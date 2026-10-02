@@ -3,7 +3,7 @@ import sys
 from traceback import print_last
 from typing import cast
 
-lazy from app.db.repository import RepositoryManager
+lazy from core.errors.exceptions import CrashException
 lazy from app.service import initService
 lazy from app.service.settings import SettingsService
 lazy from core.database.database import Database
@@ -100,15 +100,13 @@ def validateAppSettings():
             sys.exit(1)
 
 def initDatabase():
-    # 初始化数据库的表结构
-    db = Database(config.get(CONFIG.DATABASE_PATH))
-    db.connect()
-    
-    repos = RepositoryManager(db)
-    repos.init()
-
-    # 关闭数据库连接
-    db.close()
+    databaseInfo = bininfo.data.databaseInfo
+    try:
+        
+        database = databaseInfo.getDatabase()
+        databaseInfo.initalize(database)
+    except ValueError:
+        raise CrashException("数据库信息丢失，'init'命令可帮助你设置")
 
 
 def initBasic():

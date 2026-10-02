@@ -3,10 +3,7 @@ from dataclasses import dataclass, field
 from ..plugins.schema import PluginInfo
 from core.serialization.serializers.custom import ProxySerializer
 from core.serialization.manager import useSerializer
-
-
-    
-
+from ..database.base import Database
 
 @dataclass
 class Schema:
@@ -18,7 +15,7 @@ class Schema:
 
     plugins: list[PluginInfo] = field(default_factory=list)
 
-    databaseInfo: DatabaseInfo = DatabaseInfo()
+    databaseInfo: Database = Database()
 
 serializerManager = useSerializer()
 
