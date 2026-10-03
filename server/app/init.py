@@ -136,10 +136,10 @@ def initServer():
 
 
     # 验证应用项
-    validateAppSettings()
+    # validateAppSettings()
 
     # 初始化打印服务
-    printManager = PrintManager()
+    # printManager = PrintManager()
 
 
 def shutdown(exitCode: int = 0, cli: bool = False):

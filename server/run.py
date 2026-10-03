@@ -16,7 +16,7 @@ lazy from app.wsgi.manager import HTTPWorkerManager
 lazy from app.plugins.load import getPluginManager
 lazy from app.ws.startup import WebsocketWorker
 lazy from app.listen import startListen
-    
+from app.monitor import startMonitor
 
 # 安装全局异常处理器
 installExcepthook() 
@@ -42,6 +42,9 @@ if __name__ == "__main__":
         # 退出程序
 
     initServer()
+
+    # 启动内存监控线程
+    stopEvent = startMonitor(200 * 1024 * 1024) # 100MB
 
 
     ## 设置环境变量
@@ -87,14 +90,4 @@ if __name__ == "__main__":
     getPluginManager().shutdown()
 
     shutdown() 
-
-    
-
-
-    
-    
-
-    
-
-
 
