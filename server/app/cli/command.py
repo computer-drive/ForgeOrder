@@ -4,6 +4,7 @@ import argparse
 from ..plugins.load import initPluginManager
 from ..bininfo import bininfo
 
+
 def parsePluginCommand(args: argparse.Namespace):
 
     pluginManager = initPluginManager(bininfo)
@@ -94,3 +95,55 @@ def parsePluginCommand(args: argparse.Namespace):
     return True
 
 
+def parseInitCommand(args: argparse.Namespace):
+
+    print("欢迎使用ForgeOrder！")
+    print("本程序将帮助你设置数据库信息。请先启动MySQL服务器，然后根据提示进行操作。\n")
+
+    databaseInfo = bininfo.data.databaseInfo
+
+    def inputInfo():
+
+        databaseInfo.host = input("数据库主机名" + (f"（{databaseInfo.host}）" if databaseInfo.host else "") + "：")
+
+        try:
+            databaseInfo.port = int(input("数据库端口" + (f"（{databaseInfo.port}）" if databaseInfo.port else "") + "："))
+        except ValueError:
+            print("端口必须是整数。")
+            return False
+
+        databaseInfo.user = input("数据库用户名" + (f"（{databaseInfo.user}）" if databaseInfo.user else "") + "：")
+
+        databaseInfo.password = input("数据库密码" + (f"（{databaseInfo.password}）" if databaseInfo.password else "") + "：")
+
+        print("正在测试连接...")
+
+        try:
+            db = databaseInfo.getDatabase()
+
+            databaseInfo.initalize(db)
+
+        except Exception as e:
+            print(f"连接测试失败：{e}")
+            return False
+        
+        else:
+            print("连接测试成功。")
+
+            return True
+
+
+    if not inputInfo():
+        print("由于输入问题，程序将退出，已填写的信息已保存。")
+
+
+    bininfo.save()
+
+    return True
+
+    
+
+__all__ = [
+    "parsePluginCommand",
+    "parseInitCommand"
+]

@@ -15,7 +15,7 @@ class Schema:
 
     plugins: list[PluginInfo] = field(default_factory=list)
 
-    databaseInfo: Database = Database()
+    databaseInfo: Database = field(default_factory=Database)
 
 serializerManager = useSerializer()
 
@@ -35,4 +35,10 @@ serializerManager.register(
     )
 )
 
+
+serializerManager.register(ProxySerializer(
+            110, Database, list,
+            lambda x: [x.host, x.port, x.user, x.password],
+            lambda x: Database(x[0], x[1], x[2], x[3])
+        ))
 

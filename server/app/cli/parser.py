@@ -1,7 +1,7 @@
 import argparse
 
 from app.const import VERSION
-from .command import parsePluginCommand
+from .command import *
 
 def parsePlugins(parser: argparse.ArgumentParser):
     common = argparse.ArgumentParser(add_help=False)
@@ -53,6 +53,14 @@ def createParser():
     parser_export_nginx = cliparser.add_parser("export-nginx", help="导出Nginx配置")
 
     parser_run = cliparser.add_parser("run", help="运行服务器")
+
+    parser_run.add_argument("--memory", "-m",
+                type=int,
+                default=128,
+                help="最大内存限制（MB）")
+
+
+    parser_init = cliparser.add_parser("init", help="初始化程序")
     
     return parser
 
@@ -78,6 +86,10 @@ def runCommand(args: argparse.Namespace):
                     return True
                     
                 return parsePluginCommand(args)
+
+            case "init":
+                parseInitCommand(args)
+                return False
     
             case _:
                 return  False

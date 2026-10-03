@@ -13,12 +13,7 @@ class Database:
     user: str | None = None
     password: str | None = None
 
-    def __post__init__(self):
-        self.serializer = ProxySerializer(
-            110, Database, list,
-            lambda x: [x.host, x.port, x.user, x.password],
-            lambda x: Database(x[0], x[1], x[2], x[3])
-        )
+        
 
     def getDatabase(self):
         if self.host is None or self.port is None or self.user is None or self.password is None:
