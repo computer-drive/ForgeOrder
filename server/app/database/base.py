@@ -2,11 +2,10 @@ from dataclasses import dataclass
 
 from peewee import MySQLDatabase
 from playhouse.pool import PooledMySQLDatabase
-from core.serialization.serializers.custom import ProxySerializer
-from .model import TABLES
+from ..service.models import MODELS
 
 @dataclass
-class Database:
+class DatabaseManager:
     host: str | None = None
     port: int | None = None
 
@@ -19,25 +18,33 @@ class Database:
         if self.host is None or self.port is None or self.user is None or self.password is None:
             raise ValueError("Database information is incomplete")
         
-        return MySQLDatabase("forgeorder", host=self.host, port=self.port, user=self.user, password=self.password)
+        db = MySQLDatabase("forgeorder", host=self.host, port=self.port, user=self.user, password=self.password)
 
+        self.initalize(db)
+        
+        return db
+    
     def getDatabasePool(self):
         if self.host is None or self.port is None or self.user is None or self.password is None:
             raise ValueError("Database information is incomplete")
 
-        return PooledMySQLDatabase("forgeorder",
+        db = PooledMySQLDatabase("forgeorder",
                                 host=self.host,
                                 port=self.port,
                                 user=self.user,
                                 password=self.password)
+
+        self.initalize(db)
+
+        return db
     
     @staticmethod
     def initalize(database: MySQLDatabase):
         database.connect(reuse_if_open=True)
 
-        database.bind(TABLES)
+        database.bind(MODELS)
 
-        database.create_tables(TABLES)
+        database.create_tables(MODELS)
 
     
     

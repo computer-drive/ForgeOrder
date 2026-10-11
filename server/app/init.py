@@ -4,8 +4,8 @@ from traceback import print_last
 from typing import cast
 
 lazy from core.errors.exceptions import CrashException
-lazy from app.service import initService
-lazy from app.service.settings import SettingsService
+lazy from app.service_ import initService
+lazy from app.service_.settings import SettingsService
 lazy from core.database.database import Database
 
 lazy from app.printer.service import PrintManager
@@ -22,7 +22,7 @@ lazy from app.exceptions import UserError
 def initRootUser(reset = False):
 
     import random
-    from app.service import initService, UserService
+    from app.service_ import initService, UserService
 
 
     password = "".join(random.choices("abcdefghijklmnopqrstuvwxyz1234567890", k=8))

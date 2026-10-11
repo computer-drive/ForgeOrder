@@ -4,8 +4,6 @@ import time
 from flask import request
 
 
-from app.db.connections import getDatabase
-lazy from app.service.users import UserService
 from app.routes import routeManager
 from core.utils.server import getClientIp
 from app.routes.responseGenerator import ResponseGenerator

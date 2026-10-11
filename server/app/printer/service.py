@@ -1,7 +1,7 @@
 from queue import Queue
 from threading import Thread
 
-from ..service.printTask import PrintTaskService
+# from ..service_.printTask import PrintTaskService
 
 from .receipt import Receipt
 from .worker import createPrintWorker
@@ -36,7 +36,7 @@ class PrintManager:
 
         self.queue, self.workerThread = createPrintWorker(logger)
 
-    def new(self, content: Receipt, service: PrintTaskService, context: dict = {}, ):
+    def new(self, content: Receipt, service, context: dict = {}, ):
 
             
         result = service.create(content, context)
@@ -47,9 +47,9 @@ class PrintManager:
             self.queue.put(taskId)
 
 
-        getLogger().info({
-            "id": taskId,
-        }, "PRINTER", "PrintTaskCreated")
+        # getLogger().info({
+        #     "id": taskId,
+        # }, "PRINTER", "PrintTaskCreated")
 
         return taskId
 

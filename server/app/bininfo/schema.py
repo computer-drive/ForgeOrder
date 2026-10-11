@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from ..plugins.schema import PluginInfo
 from core.serialization.serializers.custom import ProxySerializer
 from core.serialization.manager import useSerializer
-from ..database.base import Database
+from ..database.base import DatabaseManager
 
 @dataclass
 class Schema:
@@ -15,7 +15,7 @@ class Schema:
 
     plugins: list[PluginInfo] = field(default_factory=list)
 
-    databaseInfo: Database = field(default_factory=Database)
+    databaseInfo: DatabaseManager = field(default_factory=DatabaseManager)
 
 serializerManager = useSerializer()
 
@@ -37,8 +37,8 @@ serializerManager.register(
 
 
 serializerManager.register(ProxySerializer(
-            110, Database, list,
+            110, DatabaseManager, list,
             lambda x: [x.host, x.port, x.user, x.password],
-            lambda x: Database(x[0], x[1], x[2], x[3])
+            lambda x: DatabaseManager(x[0], x[1], x[2], x[3])
         ))
 

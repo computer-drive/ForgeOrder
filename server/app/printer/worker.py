@@ -9,13 +9,13 @@ from escpos.escpos import Escpos
 
 
 from app.db.repository import RepositoryManager
-from app.service import SettingsService
+from app.service_ import SettingsService
 from core.log.context import getLogContext
 from core.log.logger import Logger
 from app.db.connections import getDatabase_
-from app.service import initService
-from app.service.printTask import PrintTaskService
-from app.service.settings import SettingsService
+from app.service_ import initService
+from app.service_.printTask import PrintTaskService
+from app.service_.settings import SettingsService
 from .renderer import Renderer
 
 

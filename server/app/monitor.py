@@ -3,7 +3,9 @@ import os
 from dataclasses import dataclass, field
 import time
 from threading import Event, Thread
-import gc
+
+from core.errors.exceptions import CrashException
+
 
 from core.log import getLogger, Logger
 
@@ -39,20 +41,34 @@ def getTotalMemoryUsage(logger: Logger):
     return memory
 
 def monitor(logger: Logger, maxMemory: int, stopEvent: Event):
+    outCount = 0
     while True:
         startTime = time.time()
 
         memory = getTotalMemoryUsage(logger)
 
-
-        
-        
+        # print(memory)
         if memory.total > maxMemory:
-            logger.warning("内存使用超过最大限制：{current} / {maxMemory}MB", {
+
+            if memory.total > maxMemory * 1.5: #150%
+                outCount += 1
+                if outCount >= 10:
+                    logger.error("内存使用超过最大限制：{current} / {maxMemory} MB。即将退出程序", {
+                                    "current": memory.total / 1024 / 1024,
+                                    "maxMemory": maxMemory / 1024 / 1024
+                                }, "Monitor", "MemoryUsage.OutOfMemory")
+
+                    raise CrashException("内存使用超过最大限制")
+
+
+            logger.warning("内存使用超过最大限制：{current} / {maxMemory} MB", {
                 "current": memory.total / 1024 / 1024,
                 "maxMemory": maxMemory / 1024 / 1024
-            }, "Monitor", "MemoryUsage.Warning")
+            }, "Monitor", "MemoryUsage.OutOfMemory")
+
+
         else:
+            outCount = 0
             logger.debug("当前内存使用：{total} / {maxMemory}MB", {
                     "total": memory.total / 1024 / 1024,
                     "maxMemory": maxMemory / 1024 / 1024 

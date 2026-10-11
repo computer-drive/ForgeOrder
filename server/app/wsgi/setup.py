@@ -1,7 +1,7 @@
 
-lazy from ..hooks.beforeRequest import beforeRequest
-lazy from ..hooks.afterRequest import afterRequest
-lazy from ..hooks.errors import setupErrorHandlers
+# lazy from ..hooks.beforeRequest import beforeRequest
+# lazy from ..hooks.afterRequest import afterRequest
+# lazy from ..hooks.errors import setupErrorHandlers
 
 lazy from .app import MyFlaskApp
 lazy from ..views import blueprints
@@ -17,9 +17,9 @@ def setupApp(workerLogger, configManager, stopEvent):
 
 
     
-    app.before_request(beforeRequest)
-    app.after_request(afterRequest)
+    # app.before_request(beforeRequest)
+    # app.after_request(afterRequest)
 
-    setupErrorHandlers(app)
+    # setupErrorHandler/s(app)
     
     return app

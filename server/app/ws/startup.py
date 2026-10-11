@@ -51,6 +51,11 @@ class WebsocketWorker(ProcessWorker):
 
         self.parentPipe.send("stop")
 
+    def forceStop(self):
+        self.stopEvent.set()
+
+        self.stop()
+
     def waitToStart(self):
         # 等待接受数据
         try:

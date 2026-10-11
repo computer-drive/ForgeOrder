@@ -20,17 +20,10 @@ class User(Model):
     class Meta:
         table_name = 'users'
 
-class Settings(Model):
-    id = IntegerField(primary_key=True)
 
-    name = CharField()
-    value = JSONField()
-    
-    class Meta:
-        table_name = 'settings'
 
 TABLES = [
-    User, Settings
+    User
 ]
 
 

@@ -66,21 +66,32 @@ if __name__ == "__main__":
 
     logQueue = cast(multiprocessing.Queue, getQueue())
 
-    manager, _, printerQueue = HTTPWorkerManager(
-        config.get(CONFIG.SERVER_HOST),
-        config.get(CONFIG.SERVER_WORKER_PORT),
-        config.get(CONFIG.SERVER_WORKER_THREADSS),
-        config.get(CONFIG.LOG_LEVEL),
-        logQueue
-    )()
+    try:
+        manager, _, printerQueue = HTTPWorkerManager(
+            config.get(CONFIG.SERVER_HOST),
+            config.get(CONFIG.SERVER_WORKER_PORT),
+            config.get(CONFIG.SERVER_WORKER_THREADSS),
+            config.get(CONFIG.LOG_LEVEL),
+            logQueue,
+            True
+        )()
 
-    
-    # # 启动WebSocket服务
-    websocketWorker = WebsocketWorker("Worker-Websocket", config.get(CONFIG.LOG_LEVEL), logQueue, manager.stopEvent, config, False)
-    websocketWorker.start()
+        
+        # # 启动WebSocket服务
+        websocketWorker = WebsocketWorker("Worker-Websocket", config.get(CONFIG.LOG_LEVEL), logQueue, manager.stopEvent, config, True)
+        websocketWorker.start()
 
-    
-    asyncio.run(startListen(manager, websocketWorker, initTime))
+        
+        asyncio.run(startListen(manager, websocketWorker, initTime))
+
+    except (KeyboardInterrupt, SystemExit):
+        try:
+            manager.forceStop()
+            websocketWorker.stop()
+        except NameError:
+            pass
+
+        print(str(e))
     
     logger.info("程序已停止", {}, "Stopped")
 
